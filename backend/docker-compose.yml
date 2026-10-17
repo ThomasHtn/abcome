@@ -1,0 +1,20 @@
+# Local development database.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: abcome
+      POSTGRES_USER: ${DB_USERNAME:-abcome}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-abcome}
+    ports:
+      - "5432:5432"
+    volumes:
+      - abcome-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-abcome} -d abcome"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  abcome-postgres-data:

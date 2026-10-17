@@ -1,0 +1,56 @@
+# Production stack on the VPS: two images behind the existing Traefik, same origin, /api/* to the backend.
+# The database is the VPS PostgreSQL 17 (dedicated database and role, see .env.example).
+# Usage: cp .env.example .env, fill it, then `docker compose -f docker-compose.prod.yml up -d --build`.
+
+services:
+  backend:
+    build: ./backend
+    image: abcome-backend:latest
+    restart: unless-stopped
+    # The JVM sizes its heap from this limit (MaxRAMPercentage in the Dockerfile).
+    mem_limit: 384m
+    env_file: .env
+    environment:
+      API_DOCS_ENABLED: "false"
+      FORWARD_HEADERS_STRATEGY: framework
+    networks:
+      - traefik
+      - database
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK:-traefik}
+      - traefik.http.routers.abcome-api.rule=Host(`${PUBLIC_HOST:-abcome.thomashtn.dev}`) && PathPrefix(`/api`)
+      - traefik.http.routers.abcome-api.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
+      - traefik.http.routers.abcome-api.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      - traefik.http.routers.abcome-api.middlewares=abcome-ratelimit,abcome-body-limit,abcome-noindex
+      - traefik.http.services.abcome-api.loadbalancer.server.port=8080
+      # Stops floods and password guessing bursts; the backend adds its own per-address lockout on login.
+      - traefik.http.middlewares.abcome-ratelimit.ratelimit.average=20
+      - traefik.http.middlewares.abcome-ratelimit.ratelimit.burst=50
+      # A 15-second recording stays well under 2 MB; anything larger is refused before the backend.
+      - traefik.http.middlewares.abcome-body-limit.buffering.maxRequestBodyBytes=2097152
+      - traefik.http.middlewares.abcome-noindex.headers.customresponseheaders.X-Robots-Tag=noindex, nofollow
+
+  frontend:
+    build: ./frontend
+    image: abcome-frontend:latest
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK:-traefik}
+      - traefik.http.routers.abcome-web.rule=Host(`${PUBLIC_HOST:-abcome.thomashtn.dev}`)
+      - traefik.http.routers.abcome-web.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
+      - traefik.http.routers.abcome-web.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      - traefik.http.services.abcome-web.loadbalancer.server.port=80
+
+networks:
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:-traefik}
+  database:
+    external: true
+    name: ${DATABASE_NETWORK:-database}

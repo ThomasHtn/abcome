@@ -1,0 +1,46 @@
+/* Palette of the mockup. `static`: Tailwind never sees component stylesheets, so it must emit every token. */
+
+@theme static {
+  /* Salmon, the primary hue: grounds, the main button, the mascot. */
+  --color-salmon-50: #fff5f1;
+  --color-salmon-100: #ffe6dd;
+  --color-salmon-200: #ffd0c1;
+  --color-salmon-300: #ffb49e;
+  --color-salmon-400: #f7957c;
+  --color-salmon-700: #b4513b;
+
+  /* Lavender, the secondary hue: fields, focus, audio controls. */
+  --color-lavender-50: #f5f3fe;
+  --color-lavender-100: #e8e4fb;
+  --color-lavender-200: #d2cbf6;
+  --color-lavender-300: #b3a9ec;
+  --color-lavender-400: #9488df;
+  --color-lavender-700: #5246a8;
+
+  /* Neutrals; `text-muted` still clears WCAG AA on `background` and white. */
+  --color-background: #fff9f6;
+  --color-surface: #fff;
+  --color-border: #efe6e2;
+  --color-text-muted: #6e6882;
+  --color-ink: #2f2a40;
+
+  /* Status `learning` (UI "En route"): ground, dot, text. */
+  --color-learning-bg: #ffe1e1;
+  --color-learning-dot: #e5534b;
+  --color-learning-text: #a8231c;
+
+  /* Status `almost` (UI "Presque"): ground, dot, text. */
+  --color-almost-bg: #ffebd2;
+  --color-almost-dot: #f29a38;
+  --color-almost-text: #9a4f00;
+
+  /* Status `mastered` (UI "Bien dit"): ground, dot, text. */
+  --color-mastered-bg: #ddf4e4;
+  --color-mastered-dot: #3fb26a;
+  --color-mastered-text: #1d6b3c;
+
+  /* Form feedback reuses the status hues, so an error reads like "En route". */
+  --color-danger: #e5534b;
+  --color-danger-text: #a8231c;
+  --color-success-text: #1d6b3c;
+}

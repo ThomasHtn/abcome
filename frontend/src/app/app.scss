@@ -1,0 +1,9 @@
+/* Root component: one full-height mobile column every screen fills. */
+
+@use 'tools' as *;
+
+/* Dynamic viewport height, so the mobile browser bars never cut the bottom of a screen. */
+:host {
+  display: block;
+  min-block-size: 100dvh;
+}

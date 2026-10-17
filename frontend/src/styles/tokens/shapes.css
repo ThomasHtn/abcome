@@ -1,0 +1,18 @@
+/* Radii and soft shadows of the mockup; shadows are tinted by the hue of what casts them. */
+
+@theme static {
+  /* Radii: filter chips, cards, large blocks and sheets, pill buttons. */
+  --radius-chip: 0.75rem;
+  --radius-card: 1.25rem;
+  --radius-block: 1.75rem;
+  --radius-pill: 9999px;
+
+  /* Main salmon button, lifted off the ground. */
+  --shadow-salmon: 0 10px 22px rgb(247 149 124 / 40%);
+
+  /* Round lavender audio button. */
+  --shadow-lavender: 0 6px 14px rgb(82 70 168 / 30%);
+
+  /* Bottom sheet, cast upwards. */
+  --shadow-sheet: 0 -10px 30px rgb(180 81 59 / 10%);
+}

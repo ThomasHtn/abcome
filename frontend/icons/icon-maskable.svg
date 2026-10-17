@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Maskable and Apple touch icon: full-bleed background, the OS cuts its own shape out of it. -->
+  <rect width="512" height="512" fill="#FFE6DD" />
+  <!-- Mascot kept inside the central safe circle (80 % of the width) so no mask crops it. -->
+  <g transform="translate(256 256) scale(2.8) translate(-60 -58.5)">
+    <ellipse cx="42" cy="32" rx="11" ry="27" fill="#FFB49E" transform="rotate(-14 42 50)" />
+    <ellipse cx="42" cy="34" rx="5" ry="17" fill="#D2CBF6" transform="rotate(-14 42 50)" />
+    <ellipse cx="78" cy="32" rx="11" ry="27" fill="#FFB49E" transform="rotate(10 78 50)" />
+    <ellipse cx="78" cy="34" rx="5" ry="17" fill="#D2CBF6" transform="rotate(10 78 50)" />
+    <ellipse cx="60" cy="76" rx="44" ry="38" fill="#FFB49E" />
+    <ellipse cx="45" cy="70" rx="6" ry="7.5" fill="#2F2A40" />
+    <circle cx="47" cy="67" r="2.2" fill="#FFFFFF" />
+    <ellipse cx="75" cy="70" rx="6" ry="7.5" fill="#2F2A40" />
+    <circle cx="77" cy="67" r="2.2" fill="#FFFFFF" />
+    <circle cx="33" cy="84" r="7" fill="#F7957C" opacity="0.75" />
+    <circle cx="87" cy="84" r="7" fill="#F7957C" opacity="0.75" />
+    <path d="M51 85 Q60 97 69 85 Z" fill="#2F2A40" />
+    <rect x="57" y="85" width="6" height="4" rx="1" fill="#FFFFFF" />
+  </g>
+</svg>

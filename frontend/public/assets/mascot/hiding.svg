@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -30 120 150" width="120" height="150">
+  <!-- Lapinou covering its eyes while a password is typed; keeps swaying. -->
+  <style>
+    /* Sways from the feet, like the idle state, so the swap looks seamless. */
+    .lapinou {
+      transform-box: fill-box;
+      transform-origin: 50% 90%;
+    }
+
+    /* Motion only for users who did not ask for less of it; paws are simply shown otherwise. */
+    @media (prefers-reduced-motion: no-preference) {
+      .lapinou {
+        animation: sway 3.2s ease-in-out infinite;
+      }
+
+      .paws {
+        animation: cover 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      }
+    }
+
+    /* Slow breathing sway, same as idle. */
+    @keyframes sway {
+      0%,
+      100% {
+        transform: translateY(0) rotate(-3deg);
+      }
+      50% {
+        transform: translateY(-8px) rotate(3deg);
+      }
+    }
+
+    /* Paws rise from the cheeks onto the eyes, with a small overshoot. */
+    @keyframes cover {
+      from {
+        transform: translateY(18px);
+        opacity: 0;
+      }
+      to {
+        transform: none;
+        opacity: 1;
+      }
+    }
+  </style>
+  <g class="lapinou">
+    <!-- Ears: salmon outside, lavender inside. -->
+    <ellipse cx="42" cy="32" rx="11" ry="27" fill="#FFB49E" transform="rotate(-14 42 50)" />
+    <ellipse cx="42" cy="34" rx="5" ry="17" fill="#D2CBF6" transform="rotate(-14 42 50)" />
+    <ellipse cx="78" cy="32" rx="11" ry="27" fill="#FFB49E" transform="rotate(10 78 50)" />
+    <ellipse cx="78" cy="34" rx="5" ry="17" fill="#D2CBF6" transform="rotate(10 78 50)" />
+    <!-- Head and body in one round shape. -->
+    <ellipse cx="60" cy="76" rx="44" ry="38" fill="#FFB49E" />
+    <!-- Cheeks. -->
+    <circle cx="33" cy="84" r="7" fill="#F7957C" opacity="0.75" />
+    <circle cx="87" cy="84" r="7" fill="#F7957C" opacity="0.75" />
+    <!-- Smile with one front tooth. -->
+    <path d="M51 85 Q60 97 69 85 Z" fill="#2F2A40" />
+    <rect x="57" y="85" width="6" height="4" rx="1" fill="#FFFFFF" />
+    <!-- Paws over the eyes, toes marked by small crosses. -->
+    <g class="paws">
+      <ellipse cx="44" cy="70" rx="13" ry="11" fill="#F7957C" />
+      <ellipse cx="76" cy="70" rx="13" ry="11" fill="#F7957C" />
+      <path d="M37 66h4M43 64v4M71 66h4M77 64v4" stroke="#FFB49E" stroke-width="2" stroke-linecap="round" />
+    </g>
+  </g>
+</svg>

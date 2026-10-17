@@ -1,0 +1,12 @@
+/* Imports only; order is cascade order, so append new files at the end of their group. */
+
+@import 'tailwindcss';
+
+/* Design tokens from docs/spec.md: palette, type, shapes, motion. */
+@import './styles/tokens/colors.css';
+@import './styles/tokens/typography.css';
+@import './styles/tokens/shapes.css';
+@import './styles/tokens/motion.css';
+
+/* Element defaults. */
+@import './styles/base.css';
