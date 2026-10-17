@@ -1,0 +1,43 @@
+<!-- Native modal dialog; a click on its own box means the veil was tapped. -->
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- the veil is a pointer shortcut; keyboards close with Escape, natively. -->
+<dialog
+  #dialog
+  class="bottom-sheet"
+  [attr.aria-label]="heading()"
+  (close)="onNativeClose()"
+  (click)="onDialogClick($event)"
+>
+  <div class="bottom-sheet__body flex flex-col gap-3.5">
+    <!-- Grab handle, decorative. -->
+    <div class="bottom-sheet__handle" aria-hidden="true"></div>
+
+    <!-- Title and close button; a long title wraps instead of widening the sheet. -->
+    <div class="flex min-w-0 items-center justify-between gap-3">
+      <h2 class="bottom-sheet__title">{{ heading() }}</h2>
+      @if (closable()) {
+        <button
+          app-icon-button
+          class="bottom-sheet__close"
+          type="button"
+          aria-label="Fermer"
+          (click)="close()"
+        >
+          <svg app-icon name="x" [size]="18" [strokeWidth]="2.4"></svg>
+        </button>
+      }
+    </div>
+
+    <!-- Content of the sheet, given by the screen; the wrapper leaves its layout to the body. -->
+    <div #content class="contents">
+      <ng-content />
+
+      <!-- Save error, announced as soon as it appears and placed above the actions. -->
+      @if (error(); as message) {
+        <p class="bottom-sheet__error" role="alert">{{ message }}</p>
+      }
+
+      <!-- Buttons of the sheet, marked `sheetActions` by the screen. -->
+      <ng-content select="[sheetActions]" />
+    </div>
+  </div>
+</dialog>

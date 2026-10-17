@@ -1,0 +1,170 @@
+/* Mascot card of the home screen: salmon block with two decorative bubbles and a white speech bubble. */
+
+@use 'tools' as *;
+
+/* Salmon block; the decorative bubbles are clipped by its corners. */
+.home-summary {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-block);
+  padding: 1rem 1.125rem;
+  background-color: var(--color-salmon-100);
+}
+
+/* Salmon bubble, top right. */
+.home-summary::before {
+  position: absolute;
+  inset-block-start: -1.875rem;
+  inset-inline-end: -1.5rem;
+  inline-size: 6.875rem;
+  block-size: 6.875rem;
+  border-radius: 50%;
+  background-color: var(--color-salmon-200);
+  content: '';
+}
+
+/* Lavender bubble, bottom right. */
+.home-summary::after {
+  position: absolute;
+  inset-block-end: -2.25rem;
+  inset-inline-end: 2.5rem;
+  inline-size: 4.375rem;
+  block-size: 4.375rem;
+  border-radius: 50%;
+  background-color: var(--color-lavender-100);
+  content: '';
+}
+
+/* Lapinou stays above the decorative bubbles. */
+.home-summary__mascot {
+  position: relative;
+  z-index: 1;
+}
+
+/* White speech bubble, growing from Lapinou's side; drops under him when too narrow to read. */
+.home-summary__bubble {
+  position: relative;
+  flex: 1 1 8rem;
+  z-index: 1;
+  border-radius: var(--radius-card);
+  padding: 0.75rem 0.875rem;
+  background-color: var(--color-surface);
+  transform-origin: 0 60%;
+
+  @include motion {
+    animation: home-summary-bubble 0.5s 0.2s var(--ease-pop) both;
+  }
+}
+
+/* "Côme a déjà dit ...". */
+.home-summary__headline {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* The count, in the child's salmon. */
+.home-summary__count {
+  color: var(--color-salmon-700);
+}
+
+/* Latest word or sentence, wrapping rather than cut, even inside a long unbroken word. */
+.home-summary__latest {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+/* Count list, reset. */
+.home-summary__counts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* One count, written in its status color. */
+.home-summary__status {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+/* Count of "En route" words. */
+.home-summary__status--learning {
+  --home-summary-dot: var(--color-learning-dot);
+
+  color: var(--color-learning-text);
+}
+
+/* Count of "Presque" words. */
+.home-summary__status--almost {
+  --home-summary-dot: var(--color-almost-dot);
+
+  color: var(--color-almost-text);
+}
+
+/* Count of "Bien dit" words. */
+.home-summary__status--mastered {
+  --home-summary-dot: var(--color-mastered-dot);
+
+  color: var(--color-mastered-text);
+}
+
+/* Colored dot before a count. */
+.home-summary__dot {
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+  border-radius: 50%;
+  background-color: var(--home-summary-dot);
+}
+
+/* Short phones: a smaller Lapinou and tighter bubble keep the card low, the bubble beside him. */
+@media (450px < height <= 700px) {
+  .home-summary {
+    padding: 0.625rem 0.875rem;
+  }
+
+  .home-summary__mascot {
+    inline-size: clamp(3.5rem, 18vw, 4.5rem);
+  }
+
+  .home-summary__bubble {
+    flex-basis: 7rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .home-summary__headline {
+    font-size: 1.0625rem;
+    line-height: 1.15;
+  }
+
+  .home-summary__latest {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+/* Tablets and desktops: the bubble keeps a reading width instead of stretching along the card. */
+@include from(md) {
+  .home-summary__bubble {
+    max-inline-size: 32rem;
+  }
+}
+
+/* The speech bubble swells in after the card ("bulle" in the mockup). */
+@keyframes home-summary-bubble {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

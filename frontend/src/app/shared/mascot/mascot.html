@@ -1,0 +1,27 @@
+@if (tappable()) {
+  <!-- Tappable mascot: a real button, its name says what a tap does. -->
+  <button class="mascot__button" type="button" aria-label="Faire coucou à Lapinou" (click)="jump()">
+    @for (frame of frames(); track frame.key) {
+      <img
+        class="mascot__image"
+        alt=""
+        [ngSrc]="source()"
+        [width]="size()"
+        [height]="height()"
+        [priority]="priority()"
+      />
+    }
+  </button>
+} @else {
+  <!-- Decorative or described mascot. -->
+  @for (frame of frames(); track frame.key) {
+    <img
+      class="mascot__image"
+      [alt]="description()"
+      [ngSrc]="source()"
+      [width]="size()"
+      [height]="height()"
+      [priority]="priority()"
+    />
+  }
+}

@@ -1,0 +1,72 @@
+<app-page-header heading="Nouveau mot" backLink="/" />
+
+<div class="word-new enter motion-step-1 flex flex-col gap-4.5">
+  <!-- Lapinou asks the question of the current step. -->
+  <app-mascot-bubble live [size]="60">{{ question() }}</app-mascot-bubble>
+
+  @if (choice(); as chosen) {
+    <div class="pop flex flex-col gap-4.5">
+      <!-- The chosen word, with a way back to the search. -->
+      <div class="word-new__chosen flex flex-wrap items-center gap-3.5">
+        <span class="word-new__initial" aria-hidden="true">{{ initial() }}</span>
+        <span class="word-new__chosen-text flex min-w-0 flex-col gap-0.5">
+          <span class="word-new__label">{{ chosen.label }}</span>
+          <span class="word-new__category">{{ categoryLabels[chosen.category] }}</span>
+        </span>
+        <button app-button type="button" variant="outline" size="sm" (click)="change()">
+          Changer
+        </button>
+      </div>
+
+      @if (existing(); as word) {
+        <!-- Already in the notebook: progress goes on its page, not in a duplicate. -->
+        <div class="word-new__known pop flex flex-col gap-3" role="status">
+          <p class="word-new__known-title">Côme dit déjà {{ word.label | quote }}&nbsp;!</p>
+          <p class="word-new__known-text">
+            Pour noter qu'il le prononce mieux, ajoute une étape depuis sa page plutôt que de créer
+            un doublon.
+          </p>
+          <a app-button variant="secondary" block [routerLink]="['/mots', word.id]">Voir sa page</a>
+        </div>
+      } @else {
+        <!-- First stage: how, how well and when. -->
+        <app-pronunciation-form
+          dateHint="Aujourd'hui par défaut, touche pour choisir une autre date."
+          [(draft)]="draft"
+        />
+      }
+    </div>
+  } @else {
+    <!-- Step 1: find the word. -->
+    <app-word-picker
+      searchLabel="Chercher dans le dictionnaire"
+      [words]="words()"
+      [entries]="entries()"
+      [(query)]="query"
+      (picked)="choose($event)"
+    />
+  }
+</div>
+
+@if (choice() && !existing()) {
+  <!-- Save, once something is written. -->
+  <app-action-bar>
+    <button
+      app-button
+      type="button"
+      size="lg"
+      block
+      [disabled]="!ready() || saving()"
+      (click)="save()"
+    >
+      @if (ready()) {
+        <span class="word-new__plus" aria-hidden="true">
+          <svg app-icon name="plus" [size]="20" [strokeWidth]="2.6"></svg>
+        </span>
+        Enregistrer le mot
+      } @else {
+        Note d'abord comment il le dit
+      }
+    </button>
+  </app-action-bar>
+}

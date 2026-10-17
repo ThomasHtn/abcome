@@ -1,0 +1,216 @@
+<app-page-header [heading]="title()" backLink="/" />
+
+@switch (phase()) {
+  @case ('pick') {
+    <!-- Step 2: which word is this sound? -->
+    <div class="recording-new enter flex flex-col gap-4">
+      @if (clipUrl(); as url) {
+        <app-recording-clip
+          [src]="url"
+          [levels]="clipBars()"
+          [durationMs]="clip()?.durationMs ?? 0"
+        />
+      }
+      <h2 class="recording-new__question">À quel mot correspond ce son ?</h2>
+      <app-word-picker
+        searchLabel="Chercher ou créer un mot"
+        emptyState="notebook"
+        [words]="words()"
+        [entries]="entries()"
+        [(query)]="query"
+        (picked)="choose($event)"
+      />
+      @if (saving()) {
+        <!-- An existing word was chosen: its sound is on its way. -->
+        <p class="recording-new__saving" role="status">Enregistrement du son…</p>
+      }
+    </div>
+  }
+
+  @case ('note') {
+    <!-- Step 3, new word only: its first pronunciation. -->
+    <div class="recording-new recording-new--with-bar enter flex flex-col gap-4.5">
+      @if (clipUrl(); as url) {
+        <app-recording-clip
+          [src]="url"
+          [levels]="clipBars()"
+          [durationMs]="clip()?.durationMs ?? 0"
+        />
+      }
+
+      @if (target(); as chosen) {
+        <!-- The new word, with a way back to the search. -->
+        <div class="recording-new__target flex items-center gap-3">
+          <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span class="recording-new__overline">Nouveau mot</span>
+            <span class="recording-new__target-label">{{ chosen.label }}</span>
+          </span>
+          <button app-button type="button" variant="outline" size="sm" (click)="changeWord()">
+            Changer
+          </button>
+        </div>
+      }
+
+      <app-pronunciation-form
+        spokenLabel="Sur ce son, Côme dit"
+        dateLabel="Dit pour la première fois le"
+        [(draft)]="draft"
+      />
+
+      <!-- What saving will do. -->
+      <p class="recording-new__effect flex items-start gap-2.5" role="status">
+        <span
+          class="recording-new__effect-dot"
+          aria-hidden="true"
+          [class.recording-new__effect-dot--learning]="ready() && draft().status === 'learning'"
+          [class.recording-new__effect-dot--almost]="ready() && draft().status === 'almost'"
+          [class.recording-new__effect-dot--mastered]="ready() && draft().status === 'mastered'"
+        ></span>
+        {{ target()?.label | quote }} rejoint ses mots, avec ce son pour premier souvenir.
+      </p>
+    </div>
+
+    <app-action-bar>
+      <button
+        app-button
+        type="button"
+        size="lg"
+        block
+        [disabled]="!ready() || saving()"
+        (click)="save()"
+      >
+        @if (ready()) {
+          <span class="recording-new__plus" aria-hidden="true">
+            <svg app-icon name="plus" [size]="20" [strokeWidth]="2.6"></svg>
+          </span>
+        }
+        {{ saveText() }}
+      </button>
+    </app-action-bar>
+  }
+
+  @case ('done') {
+    <!-- Step 4: saved, with confetti. -->
+    @if (done(); as copy) {
+      <div class="recording-new__done pop flex flex-1 flex-col items-center justify-center gap-4">
+        <app-mascot state="jump" alt="Lapinou est content" [size]="120" />
+        <p class="recording-new__done-title" role="status">{{ copy.title }}</p>
+        <p class="recording-new__done-text">{{ copy.text }}</p>
+        <div class="mt-2 flex flex-col gap-2.5 self-stretch">
+          <a app-button size="lg" block [routerLink]="['/mots', copy.wordId]">Voir sa page</a>
+          <button app-button type="button" variant="outline" block (click)="another()">
+            Enregistrer un autre son
+          </button>
+        </div>
+      </div>
+    }
+  }
+
+  @default {
+    <!-- Step 1: record, listen, retry or keep. -->
+    <div class="recording-new recording-new--record enter flex flex-1 flex-col gap-4.5">
+      <app-mascot-bubble live [size]="56">{{ instruction() }}</app-mascot-bubble>
+
+      <!-- Waveform and clock. -->
+      <div class="recording-new__wave flex flex-col items-center justify-center gap-2.5">
+        <app-level-bars class="self-stretch" [levels]="bars()" [tone]="waveTone()" />
+        <span
+          class="recording-new__clock"
+          [class.recording-new__clock--live]="phase() === 'recording'"
+        >
+          {{ clock() }}
+        </span>
+      </div>
+
+      <!-- Controls of the step. -->
+      <div class="flex flex-1 items-center justify-center">
+        @if (phase() === 'recording') {
+          <div class="flex flex-col items-center gap-3.5">
+            <button
+              class="recording-new__stop"
+              type="button"
+              aria-label="Arrêter l'enregistrement"
+              (click)="stopRecording()"
+            >
+              <span class="recording-new__stop-square" aria-hidden="true"></span>
+            </button>
+            <span class="recording-new__caption recording-new__caption--live">
+              Touche pour arrêter
+            </span>
+          </div>
+        } @else if (phase() === 'review' && clipUrl()) {
+          <div class="pop flex flex-col items-center gap-5.5 self-stretch">
+            <div class="recording-new__controls flex flex-wrap items-start justify-center">
+              <div class="flex flex-col items-center gap-2">
+                <button
+                  class="recording-new__side recording-new__side--retry press"
+                  type="button"
+                  aria-label="Recommencer l'enregistrement"
+                  (click)="startRecording()"
+                >
+                  <svg app-icon name="rotate-ccw" [size]="28" [strokeWidth]="2.4"></svg>
+                </button>
+                <span
+                  class="recording-new__side-label recording-new__side-label--retry"
+                  aria-hidden="true"
+                >
+                  Recommencer
+                </span>
+              </div>
+              <div class="recording-new__listen flex flex-col items-center gap-2">
+                <app-audio-button
+                  size="lg"
+                  label="Écouter le son"
+                  [src]="clipUrl() ?? ''"
+                  (playingChange)="playing.set($event)"
+                />
+                <span class="recording-new__side-label" aria-hidden="true">
+                  {{ playing() ? 'Arrêter' : 'Écouter' }}
+                </span>
+              </div>
+              <div class="flex flex-col items-center gap-2">
+                <button
+                  class="recording-new__side recording-new__side--keep press"
+                  type="button"
+                  aria-label="Garder ce son"
+                  [disabled]="saving() || tooShort()"
+                  (click)="keep()"
+                >
+                  <svg app-icon name="check" [size]="30" [strokeWidth]="2.8"></svg>
+                </button>
+                <span
+                  class="recording-new__side-label recording-new__side-label--keep"
+                  aria-hidden="true"
+                >
+                  Garder
+                </span>
+              </div>
+            </div>
+            @if (tooShort()) {
+              <!-- A tap on stop too early: explain why the sound cannot be kept. -->
+              <p class="recording-new__note recording-new__note--warning" role="status">
+                Ce son est trop court. Recommence en laissant Côme parler un peu plus longtemps.
+              </p>
+            } @else {
+              <p class="recording-new__note">
+                Recommencer efface ce son et relance l'enregistrement tout de suite.
+              </p>
+            }
+          </div>
+        } @else {
+          <div class="flex flex-col items-center gap-3.5">
+            <button
+              class="recording-new__mic"
+              type="button"
+              aria-label="Commencer l'enregistrement"
+              (click)="startRecording()"
+            >
+              <svg app-icon name="mic" [size]="52" [strokeWidth]="2.2"></svg>
+            </button>
+            <span class="recording-new__caption">Touche pour enregistrer</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+}

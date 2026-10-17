@@ -5,7 +5,11 @@
   --radius-chip: 0.75rem;
   --radius-card: 1.25rem;
   --radius-block: 1.75rem;
+  --radius-sheet: 2rem;
   --radius-pill: 9999px;
+
+  /* Square icon buttons of the headers (back, log out, delete). */
+  --radius-icon-button: 1rem;
 
   /* Main salmon button, lifted off the ground. */
   --shadow-salmon: 0 10px 22px rgb(247 149 124 / 40%);
@@ -13,6 +17,21 @@
   /* Round lavender audio button. */
   --shadow-lavender: 0 6px 14px rgb(82 70 168 / 30%);
 
-  /* Bottom sheet, cast upwards. */
-  --shadow-sheet: 0 -10px 30px rgb(180 81 59 / 10%);
+  /* Word and sentence cards resting on the page. */
+  --shadow-card: 0 8px 20px rgb(180 81 59 / 10%);
+
+  /* Header icon buttons, slightly more lifted than cards. */
+  --shadow-raised: 0 6px 16px rgb(180 81 59 / 12%);
+
+  /* White search field on the cream ground. */
+  --shadow-field: 0 6px 16px rgb(82 70 168 / 8%);
+
+  /* Small word chips (frequent words). */
+  --shadow-chip: 0 4px 12px rgb(180 81 59 / 10%);
+
+  /* Bottom action bar, cast upwards. */
+  --shadow-bar: 0 -8px 24px rgb(180 81 59 / 8%);
+
+  /* Bottom sheet, cast upwards over the veiled page. */
+  --shadow-sheet: 0 -12px 32px rgb(47 42 64 / 18%);
 }

@@ -1,2 +1,8 @@
-<!-- Current screen, chosen by app.routes.ts. -->
-<router-outlet />
+<!-- Current screen, chosen by app.routes.ts, in the centred mobile column. -->
+<main class="app__screen">
+  <router-outlet />
+</main>
+
+<!-- Feedback shared by every screen. -->
+<app-toast-outlet />
+<app-celebration-burst />

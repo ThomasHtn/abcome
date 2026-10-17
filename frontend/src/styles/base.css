@@ -4,6 +4,7 @@
   /* Light mode only: the notebook keeps its pastel ground whatever the system theme. */
   html {
     color-scheme: light;
+    font-size: var(--root-font-size);
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
@@ -29,6 +30,22 @@
 
   p {
     text-wrap: pretty;
+  }
+
+  /* Form controls take the page's faces instead of the browser's. */
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Tappable things look tappable on desktop too. */
+  button:not(:disabled),
+  [role='button'],
+  label:has(input[type='radio']) {
+    cursor: pointer;
   }
 
   /* Mobile first: no double-tap zoom delay on controls. */

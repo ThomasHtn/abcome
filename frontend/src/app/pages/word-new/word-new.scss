@@ -1,0 +1,96 @@
+/* Add-word screen: chosen word card, "already said" panel, save button badge. */
+
+@use 'tools' as *;
+
+/* Tablets and desktops: the form keeps a reading width, centred in the wide column, and so does its action bar. */
+:host {
+  --action-bar-max-width: var(--layout-reading-width);
+
+  display: block;
+  inline-size: 100%;
+  max-inline-size: var(--layout-reading-width);
+  margin-inline: auto;
+}
+
+/* Screen body, clear of the fixed save bar. */
+.word-new {
+  padding: 0.5rem var(--layout-gutter) var(--layout-action-bar-space);
+}
+
+/* White card of the chosen word. */
+.word-new__chosen {
+  border-radius: var(--radius-block);
+  padding: 0.875rem 1rem;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+/* Word and category take the room left; under about 4rem (200 % zoom) "Changer" wraps below them. */
+.word-new__chosen-text {
+  flex: 1 1 4rem;
+}
+
+/* Salmon tile with the word's first letter. */
+.word-new__initial {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 3.25rem;
+  block-size: 3.25rem;
+  border-radius: 1.125rem;
+  background-color: var(--color-salmon-100);
+  color: var(--color-salmon-700);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* The word itself. */
+.word-new__label {
+  font-family: var(--font-display);
+  overflow-wrap: anywhere;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Its category. */
+.word-new__category {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+/* Lavender panel when Côme already says the word. */
+.word-new__known {
+  border-radius: var(--radius-block);
+  padding: 1.125rem;
+  background-color: var(--color-lavender-50);
+}
+
+/* "Côme dit déjà « x » !" */
+.word-new__known-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Why the page and not a duplicate. */
+.word-new__known-text {
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+/* White disc holding the plus of the save button. */
+.word-new__plus {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+}

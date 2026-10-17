@@ -1,0 +1,103 @@
+/* Filter chips: tinted pills, the pressed one outlined in ink. */
+
+@use 'tools' as *;
+
+/* A size container, so the chips compact themselves on narrow screens. */
+:host {
+  display: block;
+  container: filter-chips / inline-size;
+}
+
+/* Sideways scroll without a visible bar, as on the mockup. */
+.filter-chips {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+/* Runs under the screen gutters; the padding keeps the chips aligned with the content at rest. */
+.filter-chips--bleed {
+  margin-inline: calc(-1 * var(--layout-gutter));
+  padding-inline: var(--layout-gutter);
+  scroll-padding-inline: var(--layout-gutter);
+}
+
+/* Equal shares of the width; wraps instead of scrolling when even compact chips cannot fit. */
+.filter-chips--fill {
+  flex-wrap: wrap;
+  overflow-x: visible;
+}
+
+/* Grows and shrinks with its siblings, never below its own label. */
+.filter-chips--fill .filter-chips__chip {
+  flex: 1 1 0;
+  min-inline-size: max-content;
+  padding-inline: 0.5rem;
+}
+
+/* Narrow phones (iPhone SE): tighter gaps and padding keep the four chips on one row. */
+@container filter-chips (width < 22rem) {
+  .filter-chips--fill {
+    gap: 0.375rem;
+  }
+
+  .filter-chips--fill .filter-chips__chip {
+    padding-inline: 0.375rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* A chip: 44 px touch target, bold body face, outline reserved so pressing never shifts it. */
+.filter-chips__chip {
+  flex: none;
+  min-block-size: 2.75rem;
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  padding-inline: 1rem;
+  font-size: var(--text-meta);
+  font-weight: 800;
+
+  @include motion {
+    transition: transform var(--duration-press) var(--ease-pop);
+  }
+}
+
+/* Squashes under the finger. */
+.filter-chips__chip:active {
+  @include motion {
+    transform: scale(0.95);
+  }
+}
+
+/* Pressed chip. */
+.filter-chips__chip[aria-pressed='true'] {
+  border-color: var(--color-ink);
+}
+
+/* "Tous": ink chip. */
+.filter-chips__chip--neutral {
+  background-color: var(--color-ink);
+  color: var(--color-surface);
+}
+
+/* A neutral chip shows its pressed state with a lavender ring, ink on ink would not show. */
+.filter-chips__chip--neutral[aria-pressed='true'] {
+  border-color: var(--color-lavender-300);
+}
+
+/* "En route" chip. */
+.filter-chips__chip--learning {
+  background-color: var(--color-learning-bg);
+  color: var(--color-learning-text);
+}
+
+/* "Presque" chip. */
+.filter-chips__chip--almost {
+  background-color: var(--color-almost-bg);
+  color: var(--color-almost-text);
+}
+
+/* "Bien dit" chip. */
+.filter-chips__chip--mastered {
+  background-color: var(--color-mastered-bg);
+  color: var(--color-mastered-text);
+}

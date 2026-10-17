@@ -1,0 +1,44 @@
+/* Search pill: white on the page, lavender inside a card; magnifier in lavender. */
+
+@use 'tools' as *;
+
+/* White pill lifted off the cream page. */
+.search-field {
+  box-sizing: border-box;
+  min-block-size: 3rem;
+  border-radius: var(--radius-pill);
+  padding-inline: 1.125rem;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-field);
+}
+
+/* Flat lavender pill, for a white card. */
+.search-field--tint {
+  background-color: var(--color-lavender-50);
+  box-shadow: none;
+}
+
+/* Focus shows on the whole pill, the input itself draws nothing. */
+.search-field:focus-within {
+  outline: 3px solid var(--color-lavender-400);
+  outline-offset: 2px;
+}
+
+/* Magnifier. */
+.search-field__icon {
+  flex: none;
+  color: var(--color-lavender-700);
+}
+
+/* Borderless input; 16 px at least, or iOS zooms on focus. */
+.search-field__input {
+  border: 0;
+  background: transparent;
+  font-size: var(--text-body);
+  outline: none;
+}
+
+/* Placeholder dim but readable. */
+.search-field__input::placeholder {
+  color: var(--color-text-muted);
+}

@@ -1,0 +1,21 @@
+<div class="flex flex-col gap-4.5">
+  <!-- What Côme said, written big. -->
+  <app-text-field
+    [label]="spokenLabel()"
+    [placeholder]="spokenPlaceholder()"
+    [maxLength]="spokenMaxLength"
+    [value]="draft().spoken"
+    (valueChange)="update({ spoken: $event })"
+  />
+
+  <!-- How close it was. -->
+  <app-status-picker [value]="draft().status" (valueChange)="update({ status: $event })" />
+
+  <!-- When it was said. -->
+  <app-date-field
+    [label]="dateLabel()"
+    [hint]="dateHint()"
+    [value]="draft().date"
+    (valueChange)="update({ date: $event })"
+  />
+</div>

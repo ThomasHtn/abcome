@@ -1,0 +1,15 @@
+<!-- Play or stop; the name follows the state. -->
+<button
+  class="audio-button"
+  type="button"
+  [class.audio-button--lg]="size() === 'lg'"
+  [class.audio-button--playing]="playing()"
+  [attr.aria-label]="playing() ? 'Arrêter le son' : label()"
+  (click)="toggle()"
+>
+  @if (playing()) {
+    <svg app-icon name="square" filled [size]="size() === 'lg' ? 34 : 18"></svg>
+  } @else {
+    <svg app-icon name="play" filled [size]="size() === 'lg' ? 40 : 22"></svg>
+  }
+</button>

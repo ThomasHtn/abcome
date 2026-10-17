@@ -1,0 +1,27 @@
+<!-- Live region kept in the page, so screen readers announce each new toast; a top-layer popover. -->
+<div #region class="toast-outlet" role="status" popover="manual">
+  @if (toasts.current(); as toast) {
+    <!-- Keyed by id, so a repeated message pops again. -->
+    @for (key of [toast.id]; track key) {
+      <p class="toast-outlet__toast pop flex items-center gap-2.5">
+        @if (toast.tone === 'error') {
+          <svg
+            class="toast-outlet__icon toast-outlet__icon--error"
+            app-icon
+            name="triangle-alert"
+            [size]="18"
+          ></svg>
+        } @else {
+          <svg
+            class="toast-outlet__icon"
+            app-icon
+            name="check"
+            [size]="18"
+            [strokeWidth]="2.6"
+          ></svg>
+        }
+        {{ toast.text }}
+      </p>
+    }
+  }
+</div>

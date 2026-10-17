@@ -1,0 +1,84 @@
+<app-bottom-sheet
+  [heading]="heading()"
+  [open]="true"
+  [error]="error()"
+  (openChange)="onOpenChange($event)"
+>
+  @if (mode() === 'form') {
+    <!-- Sentence form; Enter in the last field saves. -->
+    <form
+      id="sentence-sheet-form"
+      class="flex flex-col gap-3.5"
+      novalidate
+      (submit)="$event.preventDefault(); save()"
+    >
+      <app-text-field
+        label="Ce que Côme a dit"
+        placeholder="ex. a pu ato"
+        multiline
+        [maxLength]="maxLength"
+        [(value)]="spoken"
+      />
+      <app-text-field
+        label="Ce qu'il voulait dire"
+        placeholder="ex. Il n'y a plus de gâteau"
+        tone="plain"
+        optional
+        [maxLength]="maxLength"
+        [(value)]="meaning"
+      />
+      <app-date-field label="Dite le" [(value)]="date" />
+
+      <!-- Deletion, only for a sentence that exists. -->
+      @if (sentence()) {
+        <button
+          app-button
+          class="self-start"
+          type="button"
+          variant="link"
+          [disabled]="busy()"
+          (click)="mode.set('confirm')"
+        >
+          Supprimer cette phrase
+        </button>
+      }
+    </form>
+  } @else {
+    <!-- Deletion question in place of the form. -->
+    <div class="sentence-sheet__confirm pop flex flex-col gap-3.5">
+      <p class="sentence-sheet__question">Supprimer {{ sentence()?.spoken | quote }}&nbsp;?</p>
+      <p class="sentence-sheet__warning">On ne pourra pas revenir en arrière.</p>
+    </div>
+  }
+
+  <!-- Buttons below the error: cancel or keep on the left, save or delete on the right. -->
+  <div sheetActions class="grid grid-cols-2 gap-2.5">
+    @if (mode() === 'form') {
+      <button
+        app-button
+        type="button"
+        variant="outline"
+        [disabled]="busy()"
+        (click)="closed.emit()"
+      >
+        Annuler
+      </button>
+      <button app-button type="submit" form="sentence-sheet-form" [disabled]="!canSave()">
+        Enregistrer
+      </button>
+    } @else {
+      <button
+        app-button
+        type="button"
+        variant="outline"
+        [disabled]="busy()"
+        (click)="mode.set('form')"
+      >
+        Garder
+      </button>
+      <button app-button type="button" variant="danger" [disabled]="busy()" (click)="remove()">
+        Oui, supprimer
+      </button>
+    }
+  </div>
+</app-bottom-sheet>

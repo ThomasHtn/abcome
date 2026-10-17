@@ -1,0 +1,50 @@
+import { FAMILY_TIME_ZONE, LONG_MONTHS, SHORT_MONTHS } from './date.constants';
+import { DayAndMonth } from './date.model';
+
+/**
+ * Today as `yyyy-MM-dd` in the family's time zone; `now` is a parameter so tests pin the clock.
+ */
+export function todayIso(now: Date = new Date()): string {
+  // The Canadian locale prints ISO dates, so no manual padding is needed.
+  return new Intl.DateTimeFormat('en-CA', { timeZone: FAMILY_TIME_ZONE }).format(now);
+}
+
+/**
+ * Year, month (1 to 12) and day of an ISO date, read as text so no time zone can shift it.
+ */
+function parts(iso: string): [number, number, number] {
+  const [year, month, day] = iso.split('-').map((part) => Number.parseInt(part, 10));
+  return [year, month, day];
+}
+
+/**
+ * "16 sept.", for lists where the year is obvious.
+ */
+export function formatShortDate(iso: string): string {
+  const [, month, day] = parts(iso);
+  return `${day} ${SHORT_MONTHS[month - 1]}`;
+}
+
+/**
+ * "16 sept. 2026", for stage captions and the date field.
+ */
+export function formatShortDateWithYear(iso: string): string {
+  const [year] = parts(iso);
+  return `${formatShortDate(iso)} ${year}`;
+}
+
+/**
+ * "16 septembre 2026", for screen reader labels and confirmations.
+ */
+export function formatLongDate(iso: string): string {
+  const [year, month, day] = parts(iso);
+  return `${day} ${LONG_MONTHS[month - 1]} ${year}`;
+}
+
+/**
+ * Day number and dot-less short month of the date tile on word and sentence cards ("16", "sept").
+ */
+export function dayAndMonth(iso: string): DayAndMonth {
+  const [, month, day] = parts(iso);
+  return { day: String(day), month: SHORT_MONTHS[month - 1].replace('.', '') };
+}

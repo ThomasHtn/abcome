@@ -1,0 +1,13 @@
+@if (celebration.burst(); as burst) {
+  <!-- Decorative: the toast that comes with it says what happened. -->
+  @for (key of [burst]; track key) {
+    <img
+      class="celebration-burst"
+      alt=""
+      aria-hidden="true"
+      width="400"
+      height="400"
+      ngSrc="assets/celebration/confetti.svg"
+    />
+  }
+}

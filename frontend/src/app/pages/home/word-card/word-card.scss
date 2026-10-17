@@ -1,0 +1,96 @@
+/* Word card of the home list: white card on the cream ground, popping in one after the other. */
+
+@use 'tools' as *;
+
+/* Block host measured by the narrow-card query below. */
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
+/* The card is the whole link; the delay follows its place in the list. */
+.word-card {
+  box-sizing: border-box;
+  inline-size: 100%;
+  border-radius: var(--radius-card);
+  padding: 0.875rem 1rem 0.875rem 1.125rem;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  color: var(--color-ink);
+  text-decoration: none;
+  animation-delay: calc(var(--word-card-index, 0) * var(--motion-step));
+
+  @include motion {
+    transition: transform var(--duration-press) var(--ease-pop);
+  }
+}
+
+/* Squashes under the finger. */
+.word-card:active {
+  @include motion {
+    transform: scale(0.97);
+  }
+}
+
+/* What Côme says, the star of the card; a long form wraps on two lines at most. */
+.word-card__spoken {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display);
+  font-size: 1.3125rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+/* The word itself, quieter; two lines at most. */
+.word-card__label {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  color: var(--color-text-muted);
+  font-size: var(--text-body);
+  font-weight: 700;
+}
+
+/* One stage of the progress, colored by its status. */
+.word-card__stage {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 50%;
+}
+
+/* Stage "En route". */
+.word-card__stage--learning {
+  background-color: var(--color-learning-dot);
+}
+
+/* Stage "Presque". */
+.word-card__stage--almost {
+  background-color: var(--color-almost-dot);
+}
+
+/* Stage "Bien dit". */
+.word-card__stage--mastered {
+  background-color: var(--color-mastered-dot);
+}
+
+/* Narrow card (strong zoom): date and status on top, the words below on the full width. */
+@container (width < 17rem) {
+  .word-card {
+    flex-wrap: wrap;
+  }
+
+  .word-card__text {
+    flex-basis: 100%;
+    order: 1;
+  }
+
+  .word-card__badge {
+    margin-inline-start: auto;
+  }
+}

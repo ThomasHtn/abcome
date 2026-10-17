@@ -1,0 +1,15 @@
+/* Confetti burst centred over the screen, never catching a tap. */
+
+@use 'tools' as *;
+
+/* Centred slightly above the middle, like the mockup, above sheets' veil but below dialogs. */
+.celebration-burst {
+  position: fixed;
+  inset-block-start: 42%;
+  inset-inline-start: 50%;
+  z-index: 30;
+  inline-size: min(25rem, 100vw);
+  block-size: auto;
+  pointer-events: none;
+  translate: -50% -50%;
+}

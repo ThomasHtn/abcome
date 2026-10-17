@@ -1,0 +1,46 @@
+/* Screen frame: one mobile column, centred on wider screens, clear of the notch and home bar. */
+
+@theme static {
+  /* Widest the screen column grows: a phone column, widened from md by the rules below. */
+  --layout-max-width: 30rem;
+
+  /* Comfortable width of a form screen (add a word, record, log in), centred in a wider column. */
+  --layout-reading-width: 40rem;
+
+  /* Side margin of every screen. */
+  --layout-gutter: 1.25rem;
+
+  /* Notch and home indicator insets; zero on browsers without them. */
+  --layout-safe-top: env(safe-area-inset-top, 0px);
+  --layout-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --layout-safe-left: env(safe-area-inset-left, 0px);
+  --layout-safe-right: env(safe-area-inset-right, 0px);
+
+  /* Room a scrolling list leaves at its end so the fixed action bar never hides its last item. */
+  --layout-action-bar-space: calc(7.5rem + var(--layout-safe-bottom));
+}
+
+/*
+ * Tablets and desktops: a centred column capped at 72rem, gutters growing with the breakpoint, like
+ * valostats' page column but narrower (64rem of content at xl, three 20rem cards side by side).
+ */
+@media (width >= 48rem) {
+  :root {
+    --layout-max-width: 72rem;
+    --layout-gutter: 2rem;
+  }
+}
+
+/* Laptops (lg). */
+@media (width >= 64rem) {
+  :root {
+    --layout-gutter: 3rem;
+  }
+}
+
+/* Desktops (xl). */
+@media (width >= 80rem) {
+  :root {
+    --layout-gutter: 4rem;
+  }
+}

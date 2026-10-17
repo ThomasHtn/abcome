@@ -1,0 +1,17 @@
+<!-- Whole pill is the label, so a tap anywhere focuses the field. -->
+<label
+  class="search-field flex items-center gap-2.5"
+  [class.search-field--tint]="tone() === 'tint'"
+>
+  <svg class="search-field__icon" app-icon name="search" [size]="20" [strokeWidth]="2.2"></svg>
+  <input
+    class="search-field__input min-w-0 flex-1"
+    type="search"
+    autocomplete="off"
+    enterkeyhint="search"
+    [value]="value()"
+    [placeholder]="label()"
+    [attr.aria-label]="label()"
+    (input)="onInput($event)"
+  />
+</label>

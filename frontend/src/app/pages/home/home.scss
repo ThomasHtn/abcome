@@ -1,0 +1,178 @@
+/* Home screen: cream page, salmon mascot card, lavender tabs, card list above the action bar. */
+
+@use 'tools' as *;
+
+/* The screen fills the app column. */
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+/* Page padding; the list ends clear of the fixed action bar. */
+.home {
+  --home-gap: 0.75rem;
+
+  gap: var(--home-gap);
+  padding: calc(1.75rem + var(--layout-safe-top)) var(--layout-gutter)
+    var(--layout-action-bar-space);
+  background-color: var(--color-background);
+  color: var(--color-ink);
+}
+
+/* Short phones (iPhone SE): tighter top and gaps, so the first words show above the action bar. */
+@media (450px < height <= 700px) {
+  .home {
+    --home-gap: 0.5rem;
+
+    padding-block-start: calc(1rem + var(--layout-safe-top));
+  }
+}
+
+/* Title row, slightly apart from the mascot card. */
+.home__header {
+  padding-block-end: 0.25rem;
+}
+
+/* "Les mots de Côme", fluid so it holds on one line from 320 px. */
+.home__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 7.5vw, 1.875rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* The child's name, in salmon. */
+.home__child {
+  color: var(--color-salmon-700);
+}
+
+/* Lavender track holding the two tabs. */
+.home__tabs {
+  margin-block-start: 0.125rem;
+  border-radius: var(--radius-pill);
+  padding: 0.25rem;
+  background-color: var(--color-lavender-50);
+}
+
+/* One tab: lavender text on the track. */
+.home__tab {
+  min-block-size: 2.75rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-lavender-700);
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+
+  @include motion {
+    transition:
+      background-color var(--duration-press),
+      box-shadow var(--duration-press);
+  }
+}
+
+/* Open tab: white pill lifted off the track. */
+.home__tab--selected {
+  background-color: var(--color-surface);
+  box-shadow: 0 4px 12px tint(lavender-700, 15%);
+  color: var(--color-ink);
+}
+
+/* Tabs, search and filters, spaced like the blocks of the screen. */
+.home__controls {
+  gap: var(--home-gap);
+}
+
+/* List area under the search. */
+.home__panel {
+  gap: 0.625rem;
+}
+
+/* Under the filters, the list keeps the tighter spacing it had as part of the panel. */
+.home__panel--filtered {
+  margin-block-start: calc(0.625rem - var(--home-gap));
+}
+
+/* Card list, one column on phones. */
+.home__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0.25rem 0 0;
+  list-style: none;
+}
+
+/* A card fills its cell, so cards of a grid row share one height. */
+.home__list > li {
+  display: grid;
+}
+
+/* Tablets and desktops: the controls on one row where they fit, the cards in a responsive grid. */
+@include from(md) {
+  .home {
+    --home-gap: 1rem;
+  }
+
+  .home__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: 0.875rem;
+  }
+}
+
+/* Empty, loading or error message in the list area. */
+.home__message {
+  margin: 0;
+  padding: 1.5rem 0.5rem;
+  text-align: center;
+}
+
+/* Text of a list message. */
+.home__message-text {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+/* White disc holding the "+" of the add buttons. */
+.home__plus {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  color: var(--color-salmon-700);
+}
+
+/* Round lavender microphone next to "Ajouter un mot". */
+.home__record {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 3.75rem;
+  block-size: 3.75rem;
+  border-radius: 50%;
+  background-color: var(--color-lavender-700);
+  box-shadow: 0 10px 22px tint(lavender-700, 35%);
+  color: var(--color-surface);
+
+  @include motion {
+    transition: transform var(--duration-press) var(--ease-pop);
+  }
+}
+
+/* Squashes under the finger. */
+.home__record:active {
+  @include motion {
+    transform: scale(0.93);
+  }
+}

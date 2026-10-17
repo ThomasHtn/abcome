@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Confetti burst ("Fête"): salmon, lavender and status colors fly out from the centre once, then fade. -->
+  <style>
+    /* Hidden by default, so users who ask for less motion see nothing at all. */
+    .piece {
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    /* Motion only for users who did not ask for less of it. */
+    @media (prefers-reduced-motion: no-preference) {
+      .piece {
+        animation: burst 1.2s cubic-bezier(0.15, 0.8, 0.3, 1) both;
+      }
+    }
+
+    /* Each piece pops at the centre, flies to its own offset (--x, --y) while spinning (--r), fading only at the end. */
+    @keyframes burst {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0) scale(0.4);
+      }
+      15% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+      }
+      70% {
+        opacity: 1;
+        transform: translate(calc(var(--x) * 0.9), calc(var(--y) * 0.9)) rotate(calc(var(--r) * 0.8)) scale(0.85);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(0.7);
+      }
+    }
+  </style>
+  <!-- Twenty-four pieces spread around the circle, alternating dots and rounded strips. -->
+  <g>
+    <circle class="piece" cx="200" cy="200" r="6" fill="#FFB49E" style="--x:-10px;--y:-120px;--r:180deg;animation-delay:0.00s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#9488DF" style="--x:62px;--y:-153px;--r:247deg;animation-delay:0.03s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#3FB26A" style="--x:59px;--y:-127px;--r:314deg;animation-delay:0.06s" />
+    <circle class="piece" cx="200" cy="200" r="6" fill="#F29A38" style="--x:146px;--y:-114px;--r:381deg;animation-delay:0.09s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#F7957C" style="--x:98px;--y:-69px;--r:448deg;animation-delay:0.00s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#B3A9EC" style="--x:163px;--y:-23px;--r:515deg;animation-delay:0.03s" />
+    <circle class="piece" cx="200" cy="200" r="6" fill="#FFD0C1" style="--x:139px;--y:-12px;--r:222deg;animation-delay:0.06s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#5246A8" style="--x:172px;--y:69px;--r:289deg;animation-delay:0.09s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#FFB49E" style="--x:109px;--y:51px;--r:356deg;animation-delay:0.00s" />
+    <circle class="piece" cx="200" cy="200" r="6" fill="#9488DF" style="--x:102px;--y:130px;--r:423deg;animation-delay:0.03s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#3FB26A" style="--x:80px;--y:115px;--r:490deg;animation-delay:0.06s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#F29A38" style="--x:26px;--y:183px;--r:197deg;animation-delay:0.09s" />
+    <circle class="piece" cx="200" cy="200" r="6" fill="#F7957C" style="--x:10px;--y:120px;--r:264deg;animation-delay:0.00s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#B3A9EC" style="--x:-62px;--y:153px;--r:331deg;animation-delay:0.03s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#FFD0C1" style="--x:-59px;--y:127px;--r:398deg;animation-delay:0.06s" />
+    <circle class="piece" cx="200" cy="200" r="6" fill="#5246A8" style="--x:-146px;--y:114px;--r:465deg;animation-delay:0.09s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#FFB49E" style="--x:-98px;--y:69px;--r:532deg;animation-delay:0.00s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#9488DF" style="--x:-163px;--y:23px;--r:239deg;animation-delay:0.03s" />
+    <circle class="piece" cx="200" cy="200" r="6" fill="#3FB26A" style="--x:-139px;--y:12px;--r:306deg;animation-delay:0.06s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#F29A38" style="--x:-172px;--y:-69px;--r:373deg;animation-delay:0.09s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#F7957C" style="--x:-109px;--y:-51px;--r:440deg;animation-delay:0.00s" />
+    <circle class="piece" cx="200" cy="200" r="6" fill="#B3A9EC" style="--x:-102px;--y:-130px;--r:507deg;animation-delay:0.03s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#FFD0C1" style="--x:-80px;--y:-115px;--r:214deg;animation-delay:0.06s" />
+    <rect class="piece" x="194" y="192" width="12" height="16" rx="3" fill="#5246A8" style="--x:-26px;--y:-183px;--r:281deg;animation-delay:0.09s" />
+  </g>
+</svg>

@@ -7,3 +7,19 @@
   display: block;
   min-block-size: 100dvh;
 }
+
+/* The screen column: phone width, centred on a tablet or desktop. */
+.app__screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100dvh;
+  max-inline-size: var(--layout-max-width);
+  margin-inline: auto;
+
+  /* Clear of the notch in landscape; zero on browsers without insets. */
+  padding-inline: var(--layout-safe-left) var(--layout-safe-right);
+
+  /* Safety net: a stray overflow (a scaled tile, a shadow) never makes the page scroll sideways. */
+  overflow-x: clip;
+}

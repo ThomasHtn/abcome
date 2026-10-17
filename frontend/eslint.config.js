@@ -42,10 +42,11 @@ module.exports = defineConfig([
           style: 'camelCase',
         },
       ],
+      // Attribute selectors too, so buttons and links stay native elements (`<button app-button>`).
       '@angular-eslint/component-selector': [
         'error',
         {
-          type: 'element',
+          type: ['element', 'attribute'],
           prefix: 'app',
           style: 'kebab-case',
         },

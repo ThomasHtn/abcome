@@ -1,0 +1,32 @@
+<!-- Whole card is the link to the word's page, read as one sentence. -->
+<a
+  class="word-card pop flex items-center gap-3.5"
+  [routerLink]="['/mots', card().id]"
+  [attr.aria-label]="card().ariaLabel"
+  [style.--word-card-index]="stagger()"
+>
+  <app-date-tile [day]="card().day" [month]="card().month" />
+
+  <!-- What Côme says now, then the word with one dot per stage when it has progressed. -->
+  <span class="word-card__text flex min-w-0 flex-1 flex-col gap-0.5">
+    <span class="word-card__spoken">{{ card().spoken | quote }}</span>
+    <span class="flex min-w-0 items-center gap-2">
+      <span class="word-card__label">{{ card().label }}</span>
+      @if (card().stageStatuses.length > 0) {
+        <span class="flex flex-none items-center gap-1" aria-hidden="true">
+          @for (status of card().stageStatuses; track $index) {
+            <span
+              class="word-card__stage"
+              [class.word-card__stage--learning]="status === 'learning'"
+              [class.word-card__stage--almost]="status === 'almost'"
+              [class.word-card__stage--mastered]="status === 'mastered'"
+            ></span>
+          }
+        </span>
+      }
+    </span>
+  </span>
+
+  <!-- Current status. -->
+  <app-status-badge class="word-card__badge" [status]="card().status" />
+</a>

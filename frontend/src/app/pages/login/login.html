@@ -1,0 +1,79 @@
+<div class="login flex flex-1 flex-col">
+  <!-- Salmon ground filling the screen beyond the column. -->
+  <div class="login__ground" aria-hidden="true"></div>
+
+  <!-- Lapinou, the name of the app and what it is for. -->
+  <div
+    class="login__intro enter flex flex-1 flex-col items-center justify-center gap-2.5 px-6 pt-10 pb-6 md:flex-none"
+  >
+    <app-mascot priority [state]="mascotState()" [size]="170" />
+    <h1 class="login__title">ABC<span class="login__title-accent">ome</span></h1>
+    <p class="login__tagline">Le carnet des premiers mots de Côme</p>
+  </div>
+
+  <!-- Password sheet rising from the bottom. -->
+  <form
+    class="login__sheet enter-bottom flex flex-col gap-3.5"
+    novalidate
+    (submit)="submit($event)"
+  >
+    <!-- Hidden account name, so password managers can save the family password. -->
+    <input type="text" name="username" autocomplete="username" value="famille" hidden />
+
+    <label class="login__label" for="login-password">Mot de passe</label>
+
+    <!-- Pill holding the field and the show/hide toggle; shaken once after a refusal. -->
+    <div
+      class="login__field flex items-center gap-2.5"
+      [class.login__field--focused]="focused()"
+      [class.login__field--error]="error() !== null"
+      [class.shake]="shaking()"
+      (animationend)="shaking.set(false)"
+    >
+      <svg class="login__lock" app-icon name="lock" [size]="20" [strokeWidth]="2"></svg>
+      <input
+        id="login-password"
+        class="login__input min-w-0 flex-1"
+        name="password"
+        autocomplete="current-password"
+        aria-describedby="login-help"
+        [type]="passwordVisible() ? 'text' : 'password'"
+        [value]="password()"
+        [attr.aria-invalid]="error() !== null"
+        (input)="onInput($event)"
+        (focus)="focused.set(true)"
+        (blur)="focused.set(false)"
+      />
+      <button
+        class="login__toggle"
+        type="button"
+        [attr.aria-label]="
+          passwordVisible() ? 'Cacher le mot de passe' : 'Afficher le mot de passe'
+        "
+        (click)="toggleVisibility()"
+      >
+        @if (passwordVisible()) {
+          <svg app-icon name="eye-off" [size]="22" [strokeWidth]="2"></svg>
+        } @else {
+          <svg app-icon name="eye" [size]="22" [strokeWidth]="2"></svg>
+        }
+      </button>
+    </div>
+
+    <!-- Error or success, announced to screen readers; keeps its height so nothing jumps. -->
+    <p
+      id="login-help"
+      class="login__help"
+      [class.login__help--error]="error() !== null"
+      [class.login__help--success]="succeeded()"
+      [attr.role]="error() !== null ? 'alert' : 'status'"
+    >
+      {{ helpText() }}
+    </p>
+
+    <button app-button type="submit" size="lg" block [disabled]="!canSubmit()">
+      Ouvrir le carnet
+      <svg app-icon name="arrow-right" [size]="20" [strokeWidth]="2.4"></svg>
+    </button>
+  </form>
+</div>

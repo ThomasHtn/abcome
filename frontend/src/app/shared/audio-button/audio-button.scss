@@ -1,0 +1,45 @@
+/* Round lavender audio control; a light ring while playing. */
+
+@use 'tools' as *;
+
+/* Not stretched by a flex parent. */
+:host {
+  display: inline-flex;
+  flex: none;
+}
+
+/* 52 px disc, white icon, lavender shadow. */
+.audio-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 3.25rem;
+  block-size: 3.25rem;
+  border: 0;
+  border-radius: 50%;
+  background-color: var(--color-lavender-700);
+  color: var(--color-surface);
+  box-shadow: var(--shadow-lavender);
+
+  @include motion {
+    transition: transform var(--duration-press) var(--ease-pop);
+  }
+}
+
+/* Squashes under the finger. */
+.audio-button:active {
+  @include motion {
+    transform: scale(0.92);
+  }
+}
+
+/* Recorder's main control. */
+.audio-button--lg {
+  inline-size: 7rem;
+  block-size: 7rem;
+}
+
+/* Playing: soft lavender ring. */
+.audio-button--playing {
+  outline: 4px solid var(--color-lavender-200);
+}

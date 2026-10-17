@@ -1,0 +1,46 @@
+<div class="text-field flex flex-col gap-2" [class.text-field--plain]="tone() === 'plain'">
+  <!-- Label, with "(facultatif)" for an optional field. -->
+  <label class="text-field__label" [for]="id">
+    {{ label() }}
+    @if (optional()) {
+      <span class="text-field__optional">(facultatif)</span>
+    }
+  </label>
+
+  <!-- The field itself, one line or several. -->
+  @if (multiline()) {
+    <textarea
+      class="text-field__control text-field__control--multiline"
+      rows="2"
+      [id]="id"
+      [value]="value()"
+      [placeholder]="placeholder()"
+      [attr.maxlength]="maxLength()"
+      [attr.aria-invalid]="error() ? 'true' : null"
+      [attr.aria-describedby]="error() || hint() ? id + '-help' : null"
+      (input)="onInput($event)"
+    ></textarea>
+  } @else {
+    <input
+      class="text-field__control"
+      type="text"
+      [id]="id"
+      [value]="value()"
+      [placeholder]="placeholder()"
+      [attr.maxlength]="maxLength()"
+      [attr.autocomplete]="autocomplete()"
+      [attr.aria-invalid]="error() ? 'true' : null"
+      [attr.aria-describedby]="error() || hint() ? id + '-help' : null"
+      (input)="onInput($event)"
+    />
+  }
+
+  <!-- Error first, else the hint. -->
+  @if (error(); as message) {
+    <span class="text-field__help text-field__help--error" role="alert" [id]="id + '-help'">
+      {{ message }}
+    </span>
+  } @else if (hint(); as message) {
+    <span class="text-field__help" [id]="id + '-help'">{{ message }}</span>
+  }
+</div>

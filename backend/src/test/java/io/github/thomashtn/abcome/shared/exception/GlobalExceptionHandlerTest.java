@@ -3,11 +3,13 @@ package io.github.thomashtn.abcome.shared.exception;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +18,11 @@ import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
@@ -50,7 +51,7 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ApiErrorResponse> response =
             handler.handleResourceNotFound(new ResourceNotFoundException("Word not found."), request);
 
-        assertError(response, HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND");
+        assertError(response, HttpStatus.NOT_FOUND, "NOT_FOUND");
         assertThat(response.getBody().detail()).isEqualTo("Word not found.");
         assertThat(response.getBody().instance()).hasToString("/api/words/42");
         assertThat(response.getBody().title()).isEqualTo("Not Found");
@@ -63,7 +64,7 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ApiErrorResponse> response =
             handler.handleInvalidRequest(new InvalidRequestException("The date cannot be in the future."), request);
 
-        assertError(response, HttpStatus.BAD_REQUEST, "INVALID_ARGUMENT");
+        assertError(response, HttpStatus.BAD_REQUEST, "INVALID_REQUEST");
         assertThat(response.getBody().detail()).isEqualTo("The date cannot be in the future.");
     }
 
@@ -76,7 +77,7 @@ class GlobalExceptionHandlerTest {
 
         ResponseEntity<ApiErrorResponse> response = handler.handleTypeMismatch(exception, request);
 
-        assertError(response, HttpStatus.BAD_REQUEST, "INVALID_ARGUMENT");
+        assertError(response, HttpStatus.BAD_REQUEST, "INVALID_REQUEST");
         assertThat(response.getBody().detail()).contains("page").doesNotContain("abc");
     }
 
@@ -92,7 +93,7 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ApiErrorResponse> response = handler.handleValidationFailure(
             new MethodArgumentNotValidException(parameter, bindingResult), request);
 
-        assertError(response, HttpStatus.BAD_REQUEST, "VALIDATION_FAILED");
+        assertError(response, HttpStatus.BAD_REQUEST, "INVALID_REQUEST");
         assertThat(response.getBody().errors())
             .containsEntry("label", "must not be blank")
             .containsEntry("spoken", "must not be blank")
@@ -107,7 +108,7 @@ class GlobalExceptionHandlerTest {
 
         ResponseEntity<ApiErrorResponse> response = handler.handleUnreadableBody(exception, request);
 
-        assertError(response, HttpStatus.BAD_REQUEST, "MALFORMED_REQUEST");
+        assertError(response, HttpStatus.BAD_REQUEST, "INVALID_REQUEST");
         assertThat(response.getBody().detail()).doesNotContain("Unexpected token");
     }
 
@@ -118,7 +119,7 @@ class GlobalExceptionHandlerTest {
 
         ResponseEntity<ApiErrorResponse> response = handler.handleNoResourceFound(exception, request);
 
-        assertError(response, HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND");
+        assertError(response, HttpStatus.NOT_FOUND, "NOT_FOUND");
     }
 
     @Test
@@ -141,21 +142,58 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("Renders an upload above the multipart limit as 413")
-    void rendersUploadTooLarge() {
+    @DisplayName("Renders a body above the size limit as 413")
+    void rendersPayloadTooLarge() {
         ResponseEntity<ApiErrorResponse> response =
-            handler.handleUploadTooLarge(new MaxUploadSizeExceededException(2L * 1024 * 1024), request);
+            handler.handlePayloadTooLarge(new PayloadTooLargeException("Too big."), request);
 
         assertError(response, HttpStatus.CONTENT_TOO_LARGE, "PAYLOAD_TOO_LARGE");
     }
 
     @Test
-    @DisplayName("Renders an upload without file as 400")
-    void rendersMissingPart() {
+    @DisplayName("Renders a content type refused by the application as 415")
+    void rendersUnsupportedMediaType() {
         ResponseEntity<ApiErrorResponse> response =
-            handler.handleMissingPart(new MissingServletRequestPartException("file"), request);
+            handler.handleUnsupportedMediaType(new UnsupportedMediaTypeException("Not audio."), request);
 
-        assertError(response, HttpStatus.BAD_REQUEST, "INVALID_ARGUMENT");
+        assertError(response, HttpStatus.UNSUPPORTED_MEDIA_TYPE, "UNSUPPORTED_MEDIA_TYPE");
+    }
+
+    @Test
+    @DisplayName("Renders a content type no route accepts as 415")
+    void rendersMediaTypeNotSupported() {
+        ResponseEntity<ApiErrorResponse> response = handler.handleMediaTypeNotSupported(
+            new HttpMediaTypeNotSupportedException("text/plain"), request);
+
+        assertError(response, HttpStatus.UNSUPPORTED_MEDIA_TYPE, "UNSUPPORTED_MEDIA_TYPE");
+    }
+
+    @Test
+    @DisplayName("Renders a conflict as 409 with its own code")
+    void rendersConflict() {
+        ResponseEntity<ApiErrorResponse> response =
+            handler.handleConflict(new ConflictException("WORD_ALREADY_EXISTS", "Already there."), request);
+
+        assertError(response, HttpStatus.CONFLICT, "WORD_ALREADY_EXISTS");
+    }
+
+    @Test
+    @DisplayName("Renders a refused sign-in as 401 with its own code")
+    void rendersUnauthorized() {
+        ResponseEntity<ApiErrorResponse> response =
+            handler.handleUnauthorized(new UnauthorizedException("INVALID_CREDENTIALS", "Wrong password."), request);
+
+        assertError(response, HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS");
+    }
+
+    @Test
+    @DisplayName("Renders a lockout as 429 with Retry-After rounded up to the next second")
+    void rendersTooManyRequests() {
+        ResponseEntity<ApiErrorResponse> response = handler.handleTooManyRequests(
+            new TooManyRequestsException(Duration.ofMillis(61_200), "Wait."), request);
+
+        assertError(response, HttpStatus.TOO_MANY_REQUESTS, "TOO_MANY_ATTEMPTS");
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("62");
     }
 
     @Test
@@ -164,7 +202,7 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ApiErrorResponse> response = handler.handleMissingParameter(
             new MissingServletRequestParameterException("query", "String"), request);
 
-        assertError(response, HttpStatus.BAD_REQUEST, "INVALID_ARGUMENT");
+        assertError(response, HttpStatus.BAD_REQUEST, "INVALID_REQUEST");
         assertThat(response.getBody().detail()).contains("query");
     }
 

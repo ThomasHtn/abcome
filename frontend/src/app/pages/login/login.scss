@@ -1,0 +1,195 @@
+/* Login screen: salmon ground, Lapinou on top, white password sheet at the bottom. */
+
+@use 'tools' as *;
+
+/* The screen fills the app column. */
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+/* Salmon ground; the two decorative bubbles are drawn behind the content. */
+.login {
+  position: relative;
+  overflow: hidden;
+  min-block-size: 100dvh;
+  background-color: var(--color-salmon-100);
+  color: var(--color-ink);
+}
+
+/* Salmon behind the whole screen, past the app column on a tablet or desktop. */
+.login__ground {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  background-color: var(--color-salmon-100);
+}
+
+/* Large salmon bubble, top left. */
+.login::before {
+  position: absolute;
+  inset-block-start: -2.5rem;
+  inset-inline-start: -3.75rem;
+  inline-size: 12.5rem;
+  block-size: 12.5rem;
+  border-radius: 50%;
+  background-color: var(--color-salmon-200);
+  content: '';
+}
+
+/* Smaller lavender bubble, right. */
+.login::after {
+  position: absolute;
+  inset-block-start: 10.625rem;
+  inset-inline-end: -3.125rem;
+  inline-size: 8.75rem;
+  block-size: 8.75rem;
+  border-radius: 50%;
+  background-color: var(--color-lavender-100);
+  content: '';
+}
+
+/* Content sits above the bubbles and clear of the notch. */
+.login__intro {
+  position: relative;
+  z-index: 1;
+  padding-block-start: calc(2.5rem + var(--layout-safe-top));
+}
+
+/* "ABCome", the large rounded name. */
+.login__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: -0.0625rem;
+  line-height: 1;
+}
+
+/* "ome", the child's part of the name. */
+.login__title-accent {
+  color: var(--color-salmon-700);
+}
+
+/* What the notebook is. */
+.login__tagline {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* White sheet with a rounded top, lifted off the salmon ground. */
+.login__sheet {
+  position: relative;
+  z-index: 1;
+  border-start-start-radius: var(--radius-sheet);
+  border-start-end-radius: var(--radius-sheet);
+  padding: 1.75rem var(--layout-gutter) calc(2.25rem + var(--layout-safe-bottom));
+  background-color: var(--color-surface);
+  box-shadow: 0 -10px 30px tint(salmon-700, 10%);
+}
+
+/* "Mot de passe". */
+.login__label {
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
+  font-weight: 600;
+}
+
+/* Lavender pill; its border lights up on focus and turns red after a refusal. */
+.login__field {
+  block-size: 3.625rem;
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  padding-inline: 1.125rem 0.5rem;
+  background-color: var(--color-lavender-50);
+
+  @include motion {
+    transition: border-color var(--duration-press);
+  }
+}
+
+/* Focused field. */
+.login__field--focused {
+  border-color: var(--color-lavender-400);
+}
+
+/* Refused password; wins over the focus color. */
+.login__field--error {
+  border-color: var(--color-danger);
+}
+
+/* Padlock, decorative. */
+.login__lock {
+  flex: none;
+  color: var(--color-lavender-700);
+}
+
+/* The password itself, bold and slightly spaced so dots stay countable. */
+.login__input {
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.0625rem;
+  outline: none;
+}
+
+/* Show/hide toggle, a full 44 px target. */
+.login__toggle {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+/* Keyboard focus on the toggle, since the field's own outline is removed. */
+.login__toggle:focus-visible {
+  outline: 3px solid var(--color-lavender-400);
+}
+
+/* Line under the field, reserved even when empty so the button never moves. */
+.login__help {
+  min-block-size: 1.25rem;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  font-weight: 700;
+}
+
+/* Refusal message. */
+.login__help--error {
+  color: var(--color-danger-text);
+}
+
+/* Accepted password. */
+.login__help--success {
+  color: var(--color-success-text);
+}
+
+/* Tablets and desktops: Lapinou and the password card centred together on the salmon ground. */
+@include from(md) {
+  .login {
+    justify-content: center;
+    padding-block-end: 3rem;
+  }
+
+  .login__sheet {
+    inline-size: min(100% - 2 * var(--layout-gutter), 26rem);
+    margin-inline: auto;
+    border-radius: var(--radius-sheet);
+    padding: 1.75rem 2rem 2rem;
+    box-shadow: 0 20px 50px tint(salmon-700, 14%);
+  }
+}

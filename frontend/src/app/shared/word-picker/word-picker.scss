@@ -1,0 +1,151 @@
+/* Word search: suggestion card, "add anyway" offer, recent words and frequent shortcuts. */
+
+@use 'tools' as *;
+
+/* White card holding the suggestions, sliding in under the field. */
+.word-picker__suggestions {
+  border-radius: var(--radius-block);
+  padding: 0.375rem;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
+
+  @include motion {
+    animation: word-picker-slide var(--duration-fade) ease-out both;
+  }
+}
+
+/* One suggestion: a 52 px row. */
+.word-picker__suggestion {
+  min-block-size: 3.25rem;
+  border: 0;
+  border-radius: 1.125rem;
+  padding: 0.375rem 0.75rem;
+  background-color: transparent;
+  color: var(--color-ink);
+  text-align: start;
+
+  @include hover {
+    background-color: var(--color-lavender-50);
+  }
+}
+
+/* Label: muted rest, so the typed part stands out. */
+.word-picker__label {
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+
+  @include truncate;
+}
+
+/* Typed part, bold in the display face. */
+.word-picker__head {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+/* Category pill. */
+.word-picker__chip {
+  flex: none;
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.625rem;
+  background-color: var(--color-lavender-50);
+  color: var(--color-lavender-700);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+/* "déjà dit" pill, salmon. */
+.word-picker__chip--known {
+  background-color: var(--color-salmon-50);
+  color: var(--color-salmon-700);
+}
+
+/* Dashed salmon offer to add a word outside the dictionary. */
+.word-picker__offer {
+  min-block-size: 3.25rem;
+  border: 2px dashed var(--color-salmon-300);
+  border-radius: var(--radius-card);
+  padding: 0.5rem 1rem;
+  background-color: var(--color-salmon-50);
+  color: var(--color-salmon-700);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-align: start;
+
+  @include motion {
+    animation: word-picker-slide var(--duration-fade) ease-out both;
+  }
+}
+
+/* Small capital section titles ("Ses mots", "Mots fréquents à cet âge"). */
+.word-picker__section {
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* A notebook word card: what Côme says, then the word. */
+.word-picker__word {
+  min-block-size: 3.5rem;
+  border: 0;
+  border-radius: 1.125rem;
+  padding: 0.5rem 0.875rem;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-chip);
+  color: var(--color-ink);
+  text-align: start;
+}
+
+/* What Côme says, big. */
+.word-picker__spoken {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* The word under it; a long word wraps rather than widening the page. */
+.word-picker__caption {
+  overflow-wrap: anywhere;
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  font-weight: 700;
+}
+
+/* Frequent word chip, never wider than the column. */
+.word-picker__shortcut {
+  max-inline-size: 100%;
+  min-block-size: 2.75rem;
+  overflow-wrap: anywhere;
+  border: 0;
+  border-radius: var(--radius-pill);
+  padding: 0 1rem;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-chip);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Suggestions slide down a little as they appear ("glisse"). */
+@keyframes word-picker-slide {
+  from {
+    opacity: 0;
+    transform: translateY(-0.375rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

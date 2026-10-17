@@ -1,0 +1,106 @@
+/* Bottom sheet: white drawer with rounded top, rising with a bounce over a fading ink veil. */
+
+@use 'tools' as *;
+
+/* The dialog sits at the bottom of the screen column, full width up to the column's. */
+.bottom-sheet {
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: var(--layout-max-width);
+  max-block-size: calc(100dvh - 2rem);
+  margin: auto auto 0;
+  border: 0;
+  border-start-start-radius: var(--radius-sheet);
+  border-start-end-radius: var(--radius-sheet);
+  padding: 0;
+  overflow: hidden auto;
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-sheet);
+  overscroll-behavior: contain;
+}
+
+/* Rises with a light bounce when opened. */
+.bottom-sheet[open] {
+  @include motion {
+    animation: sheet-rise var(--duration-sheet) var(--ease-sheet) both;
+  }
+}
+
+/* Ink veil over the page, fading in. */
+.bottom-sheet::backdrop {
+  background-color: tint(ink, 38%);
+
+  @include motion {
+    animation: fade-in var(--duration-fade) ease-out both;
+  }
+}
+
+/* Inner padding lives here, so a tap on the dialog box itself can only be the veil. */
+.bottom-sheet__body {
+  padding: 0.625rem 1.25rem calc(1.75rem + var(--layout-safe-bottom));
+}
+
+/* Grab handle. */
+.bottom-sheet__handle {
+  align-self: center;
+  inline-size: 2.75rem;
+  block-size: 0.3125rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-border);
+}
+
+/* Sheet title; long words break rather than push the close button out. */
+.bottom-sheet__title {
+  min-inline-size: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Close tile: flat salmon instead of the raised white header tile. */
+.bottom-sheet__close {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: 0.875rem;
+  background-color: var(--color-salmon-50);
+  box-shadow: none;
+}
+
+/* Save error: danger text on the learning ground, above the actions. */
+.bottom-sheet__error {
+  margin: 0;
+  border-radius: var(--radius-chip);
+  padding: 0.75rem 1rem;
+  background-color: var(--color-learning-bg);
+  color: var(--color-danger-text);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+/* Tablets and desktops: a centred modal, rounded all round, fading and growing in instead of rising. */
+@include from(md) {
+  .bottom-sheet {
+    max-inline-size: 32rem;
+    max-block-size: calc(100dvh - 4rem);
+    margin: auto;
+    border-radius: var(--radius-sheet);
+  }
+
+  .bottom-sheet[open] {
+    @include motion {
+      animation: sheet-pop var(--duration-sheet) var(--ease-sheet) both;
+    }
+  }
+
+  .bottom-sheet__body {
+    padding: 1.25rem 1.75rem 1.75rem;
+  }
+
+  .bottom-sheet__handle {
+    display: none;
+  }
+}

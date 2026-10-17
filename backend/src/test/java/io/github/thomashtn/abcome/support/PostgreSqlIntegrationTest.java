@@ -1,9 +1,21 @@
 package io.github.thomashtn.abcome.support;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import jakarta.servlet.http.Cookie;
+import java.util.Arrays;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
@@ -11,23 +23,65 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  *
  * <p>Singleton container pattern: started once in a static initializer and reaped by Ryuk, so the
  * container outlives every test class instead of stopping after the first one. Tests run on the
- * production {@code application.properties}, Flyway included.</p>
+ * production {@code application.properties}, Flyway included, with a known family password.</p>
+ *
+ * <p>spring-dotenv also reads the developer's {@code backend/.env} during tests, so the production
+ * login lockout is pinned here; a subclass may override it with its own {@link TestPropertySource}.</p>
  */
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestPropertySource(properties = "app.auth.lockout-enabled=true")
 public abstract class PostgreSqlIntegrationTest {
+
+    /**
+     * Family password every test signs in with.
+     */
+    protected static final String FAMILY_PASSWORD = "une phrase de passe pour les tests";
+
+    /**
+     * Name of the session cookie, as configured in {@code application.properties}.
+     */
+    protected static final String SESSION_COOKIE = "__Host-ABCOME_SESSION";
+
+    /**
+     * CSRF token the test client sends, in the cookie and the header, as Angular does.
+     */
+    private static final String XSRF_TOKEN = "test-xsrf-token";
+
+    /**
+     * Address of the signed-in test client; lockout tests use their own addresses.
+     */
+    private static final String CLIENT_ADDRESS = "192.0.2.1";
 
     /**
      * PostgreSQL container shared by every test class.
      */
     private static final PostgreSQLContainer POSTGRESQL = new PostgreSQLContainer("postgres:17-alpine");
 
+    /**
+     * Argon2id hash of {@link #FAMILY_PASSWORD}, computed once for the whole suite.
+     */
+    private static final String FAMILY_PASSWORD_HASH =
+        Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8().encode(FAMILY_PASSWORD);
+
     static {
         POSTGRESQL.start();
     }
 
     /**
-     * Points the datasource at the shared container.
+     * Client sending requests through the whole filter chain.
+     */
+    @Autowired
+    private MockMvc mockMvc;
+
+    /**
+     * Direct database access, to reset the notebook between tests.
+     */
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    /**
+     * Points the datasource at the shared container and sets the family password hash.
      *
      * @param registry Spring dynamic property registry
      */
@@ -36,5 +90,73 @@ public abstract class PostgreSqlIntegrationTest {
         registry.add("spring.datasource.url", POSTGRESQL::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRESQL::getUsername);
         registry.add("spring.datasource.password", POSTGRESQL::getPassword);
+        registry.add("app.auth.password-hash", () -> FAMILY_PASSWORD_HASH);
+    }
+
+    /**
+     * Returns the client sending requests through the whole filter chain.
+     *
+     * @return MockMvc client
+     */
+    protected MockMvc mockMvc() {
+        return mockMvc;
+    }
+
+    /**
+     * Empties the notebook; stages and recordings go with their words.
+     */
+    protected void clearNotebook() {
+        jdbcTemplate.execute("TRUNCATE word, sentence RESTART IDENTITY CASCADE");
+    }
+
+    /**
+     * Signs in with the family password and returns the session cookie.
+     *
+     * @return session cookie to send with the next requests
+     * @throws Exception when the request fails
+     */
+    protected Cookie signIn() throws Exception {
+        return mockMvc.perform(post("/api/auth/login")
+                .with(xsrf())
+                .with(remoteAddress(CLIENT_ADDRESS))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"password\":\"" + FAMILY_PASSWORD + "\"}"))
+            .andExpect(status().isNoContent())
+            .andReturn()
+            .getResponse()
+            .getCookie(SESSION_COOKIE);
+    }
+
+    /**
+     * Sends the CSRF token the way the browser does: the {@code XSRF-TOKEN} cookie echoed in
+     * {@code X-XSRF-TOKEN}.
+     *
+     * <p>Spring Security's own {@code csrf()} post-processor is not used: it swaps the shared
+     * filter's repository for a session-backed one, which then leaks into every later request.</p>
+     *
+     * @return request post-processor
+     */
+    protected static RequestPostProcessor xsrf() {
+        return request -> {
+            Cookie[] existing = request.getCookies() == null ? new Cookie[0] : request.getCookies();
+            Cookie[] cookies = Arrays.copyOf(existing, existing.length + 1);
+            cookies[existing.length] = new Cookie("XSRF-TOKEN", XSRF_TOKEN);
+            request.setCookies(cookies);
+            request.addHeader("X-XSRF-TOKEN", XSRF_TOKEN);
+            return request;
+        };
+    }
+
+    /**
+     * Sends a request from the given address, as the reverse proxy would report it.
+     *
+     * @param address remote address
+     * @return request post-processor
+     */
+    protected static RequestPostProcessor remoteAddress(String address) {
+        return request -> {
+            request.setRemoteAddr(address);
+            return request;
+        };
     }
 }

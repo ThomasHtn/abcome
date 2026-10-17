@@ -1,0 +1,23 @@
+<!-- Toggle buttons; the pressed one is outlined in ink. -->
+<div
+  class="filter-chips flex gap-2"
+  role="group"
+  [class.filter-chips--bleed]="bleed()"
+  [class.filter-chips--fill]="fill()"
+  [attr.aria-label]="label()"
+>
+  @for (option of options(); track option.value) {
+    <button
+      class="filter-chips__chip"
+      type="button"
+      [class.filter-chips__chip--neutral]="option.tone === 'neutral'"
+      [class.filter-chips__chip--learning]="option.tone === 'learning'"
+      [class.filter-chips__chip--almost]="option.tone === 'almost'"
+      [class.filter-chips__chip--mastered]="option.tone === 'mastered'"
+      [attr.aria-pressed]="value() === option.value"
+      (click)="value.set(option.value)"
+    >
+      {{ option.label }}
+    </button>
+  }
+</div>

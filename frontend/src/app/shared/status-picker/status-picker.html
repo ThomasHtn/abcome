@@ -1,0 +1,29 @@
+<fieldset class="status-picker">
+  <!-- Question of the group, styled like the other field labels. -->
+  <legend class="status-picker__legend">{{ label() }}</legend>
+
+  <!-- One tile per status: a hidden native radio inside its label. -->
+  <div class="grid grid-cols-3 gap-2">
+    @for (status of statuses; track status) {
+      <label
+        class="status-picker__option"
+        [class.status-picker__option--learning]="status === 'learning'"
+        [class.status-picker__option--almost]="status === 'almost'"
+        [class.status-picker__option--mastered]="status === 'mastered'"
+      >
+        <input
+          class="status-picker__input"
+          type="radio"
+          [name]="name"
+          [value]="status"
+          [checked]="value() === status"
+          (change)="value.set(status)"
+        />
+        <span class="status-picker__dot" aria-hidden="true">
+          <img alt="" width="16" height="16" [ngSrc]="'assets/status/' + status + '.svg'" />
+        </span>
+        {{ labels[status] }}
+      </label>
+    }
+  </div>
+</fieldset>

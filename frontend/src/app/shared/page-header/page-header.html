@@ -1,0 +1,12 @@
+<header class="page-header enter flex items-center gap-3.5">
+  <!-- Back to the previous screen. -->
+  @if (backLink(); as link) {
+    <a app-icon-button [routerLink]="link" [attr.aria-label]="backLabel()">
+      <svg app-icon name="chevron-left" [size]="24" [strokeWidth]="2.4"></svg>
+    </a>
+  }
+
+  <!-- Title, then the optional action pushed to the right. -->
+  <h1 class="page-header__title min-w-0 flex-1">{{ heading() }}</h1>
+  <ng-content select="[headerAction]" />
+</header>

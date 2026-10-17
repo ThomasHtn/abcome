@@ -1,0 +1,33 @@
+<div class="date-field flex flex-col gap-2">
+  <!-- Label of the day asked. -->
+  <label class="date-field__label" [for]="id">{{ label() }}</label>
+
+  <!-- Dashed salmon box with a calendar icon around the native date input. -->
+  <span
+    class="date-field__box flex items-center gap-2.5"
+    [class.date-field__box--invalid]="invalid()"
+  >
+    <svg class="date-field__icon" app-icon name="calendar-days" [size]="20" [strokeWidth]="2"></svg>
+    <input
+      class="date-field__input min-w-0 flex-1"
+      type="date"
+      required
+      [id]="id"
+      [value]="value()"
+      [max]="max"
+      [attr.aria-invalid]="invalid()"
+      [attr.aria-describedby]="describedBy()"
+      (change)="onChange($event)"
+    />
+  </span>
+
+  <!-- Why the day cannot be saved (empty or in the future). -->
+  @if (error(); as message) {
+    <span class="date-field__error" [id]="id + '-error'">{{ message }}</span>
+  }
+
+  <!-- Optional help ("Aujourd'hui par défaut..."). -->
+  @if (hint(); as message) {
+    <span class="date-field__hint" [id]="id + '-hint'">{{ message }}</span>
+  }
+</div>

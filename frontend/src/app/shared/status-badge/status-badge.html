@@ -1,0 +1,20 @@
+<!-- Dot named for screen readers, or a white pill whose written label names it. -->
+<span
+  class="status-badge"
+  [class.status-badge--pill]="variant() === 'pill'"
+  [class.status-badge--learning]="status() === 'learning'"
+  [class.status-badge--almost]="status() === 'almost'"
+  [class.status-badge--mastered]="status() === 'mastered'"
+  [class.status-badge--sm]="size() === 'sm'"
+  [class.status-badge--lg]="size() === 'lg'"
+  [attr.role]="variant() === 'dot' ? 'img' : null"
+  [attr.aria-label]="variant() === 'dot' ? label() : null"
+>
+  <!-- Colored dot carrying the status glyph. -->
+  <span class="status-badge__dot" aria-hidden="true">
+    <img alt="" [ngSrc]="glyph()" [width]="glyphSize()" [height]="glyphSize()" />
+  </span>
+  @if (variant() === 'pill') {
+    {{ label() }}
+  }
+</span>

@@ -1,0 +1,19 @@
+/* White strip reminding the recorded sound. */
+
+@use 'tools' as *;
+
+/* Card with the play button on the left. */
+.recording-clip {
+  border-radius: var(--radius-block);
+  padding: 0.625rem 0.875rem 0.625rem 0.625rem;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+/* Length of the sound. */
+.recording-clip__duration {
+  flex: none;
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  font-weight: 800;
+}

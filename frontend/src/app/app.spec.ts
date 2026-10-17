@@ -11,11 +11,13 @@ describe('App', () => {
     });
   });
 
-  it('renders the router outlet that hosts every screen', () => {
+  it('hosts the screen column and the shared feedback', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('router-outlet')).not.toBeNull();
+    expect(element.querySelector('main router-outlet')).not.toBeNull();
+    expect(element.querySelector('app-toast-outlet [role="status"]')).not.toBeNull();
+    expect(element.querySelector('app-celebration-burst')).not.toBeNull();
   });
 });

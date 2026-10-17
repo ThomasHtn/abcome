@@ -1,0 +1,51 @@
+/* Toast: ink bubble above the action bar, check in salmon. */
+
+@use 'tools' as *;
+
+/* Fixed right above the action bar (its measured height) or the home bar, in the screen column.
+   A manual popover in the top layer, so it shows over an open sheet; it lets taps through. */
+.toast-outlet {
+  position: fixed;
+  inset: auto 0 calc(max(var(--action-bar-height, 0px), var(--layout-safe-bottom)) + 0.75rem);
+  z-index: 20;
+  box-sizing: border-box;
+  inline-size: auto;
+  max-inline-size: var(--layout-max-width);
+  block-size: auto;
+  margin: 0 auto;
+  border: 0;
+  padding: 0 var(--layout-gutter);
+  overflow: visible;
+  background: transparent;
+  color: inherit;
+  pointer-events: none;
+}
+
+/* The bubble. */
+.toast-outlet__toast {
+  margin: 0;
+  border-radius: var(--radius-card);
+  padding: 0.875rem 1.125rem;
+  background-color: var(--color-ink);
+  color: var(--color-surface);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+/* Success check. */
+.toast-outlet__icon {
+  flex: none;
+  color: var(--color-salmon-300);
+}
+
+/* Failure sign. */
+.toast-outlet__icon--error {
+  color: var(--color-almost-dot);
+}
+
+/* Tablets and desktops: a bubble of reading width, centred, rather than one as wide as the column. */
+@include from(md) {
+  .toast-outlet {
+    max-inline-size: calc(28rem + 2 * var(--layout-gutter));
+  }
+}

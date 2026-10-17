@@ -43,3 +43,15 @@
   --text-meta: 0.875rem;
   --text-meta--line-height: 1.4;
 }
+
+/* Root size every rem follows: 100 % on phones and tablets, a step larger on laptops and desktops. */
+:root {
+  --root-font-size: 100%;
+}
+
+/* Laptops and desktops (lg): the whole type scale grows a little, read from further away. */
+@media (width >= 64rem) {
+  :root {
+    --root-font-size: 106.25%;
+  }
+}

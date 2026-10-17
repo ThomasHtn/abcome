@@ -1,0 +1,34 @@
+/* Date tile of the home cards: lavender square, day in display type over the month. */
+
+@use 'tools' as *;
+
+/* Fixed-size tile that never shrinks next to a long word. */
+:host {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  inline-size: 3.125rem;
+  block-size: 3.375rem;
+  border-radius: var(--radius-icon-button);
+  background-color: var(--color-lavender-50);
+  color: var(--color-lavender-700);
+}
+
+/* Day of the month. */
+.date-tile__day {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Short month, small capitals, at the 12 px floor of readable text. */
+.date-tile__month {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.03rem;
+  text-transform: uppercase;
+}

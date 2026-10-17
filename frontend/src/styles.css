@@ -2,11 +2,15 @@
 
 @import 'tailwindcss';
 
-/* Design tokens from docs/spec.md: palette, type, shapes, motion. */
+/* Design tokens from docs/spec.md: palette, type, shapes, layout, motion. */
 @import './styles/tokens/colors.css';
 @import './styles/tokens/typography.css';
 @import './styles/tokens/shapes.css';
+@import './styles/tokens/layout.css';
 @import './styles/tokens/motion.css';
 
 /* Element defaults. */
 @import './styles/base.css';
+
+/* Shared keyframes and motion utilities (`enter`, `pop`, `motion-step-N`, `press`). */
+@import './styles/motion.css';

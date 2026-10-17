@@ -14,9 +14,10 @@ RUN npm run build
 
 # ---- Runtime stage ------------------------------------------------------------
 # nginx serves the bundle; Traefik terminates HTTPS and routes /api/* to the backend on the same origin.
-FROM nginx:1.29-alpine AS runtime
+# The unprivileged image runs every nginx process as the `nginx` user, never root.
+FROM nginxinc/nginx-unprivileged:1.29-alpine AS runtime
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /workspace/dist/frontend/browser /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 8080

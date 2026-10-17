@@ -1,0 +1,9 @@
+<div class="flex items-end gap-2.5">
+  <!-- Decorative: the bubble says it all. -->
+  <app-mascot alt="" [state]="state()" [size]="size()" />
+
+  <!-- The words of the mascot, given by the screen. -->
+  <p class="mascot-bubble__text" [attr.role]="live() ? 'status' : null">
+    <ng-content />
+  </p>
+</div>

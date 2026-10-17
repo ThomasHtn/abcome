@@ -1,0 +1,408 @@
+/* Word page: hero on the status color, timeline of stages, sheet rows, goodbye screen. */
+
+@use 'tools' as *;
+
+/* Header row: back on the left, "⋯" on the right, clear of the notch. */
+.word-detail__header {
+  padding: calc(1.75rem + var(--layout-safe-top)) var(--layout-gutter) 0.5rem;
+}
+
+/* Screen body, clear of the fixed action bar: hero, progress and sounds stacked. */
+.word-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+  padding: 0.5rem var(--layout-gutter) var(--layout-action-bar-space);
+}
+
+/* Hero card, tinted by the current status: Lapinou, the word and its status, centred. */
+.word-detail__hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  overflow: hidden;
+  border-radius: var(--radius-sheet);
+  padding: 1.25rem 1rem 1.375rem;
+  text-align: center;
+}
+
+/* "En route" hero. */
+.word-detail__hero--learning {
+  background-color: var(--color-learning-bg);
+}
+
+/* "Presque" hero. */
+.word-detail__hero--almost {
+  background-color: var(--color-almost-bg);
+}
+
+/* "Bien dit" hero. */
+.word-detail__hero--mastered {
+  background-color: var(--color-mastered-bg);
+}
+
+/* Soft white disc in the corner, decorative. */
+.word-detail__halo {
+  position: absolute;
+  inset-block-start: -1.875rem;
+  inset-inline-end: -1.875rem;
+  inline-size: 7.5rem;
+  block-size: 7.5rem;
+  border-radius: 50%;
+  background-color: tint(surface, 45%);
+}
+
+/* The word, very big. */
+.word-detail__word {
+  position: relative;
+  font-size: 2.875rem;
+  font-weight: 700;
+  line-height: 1;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* A longer word gets a smaller title, so it breaks between syllables rather than everywhere. */
+.word-detail__word--long {
+  font-size: 2.125rem;
+}
+
+/* A very long word, smaller still. */
+.word-detail__word--very-long {
+  font-size: 1.75rem;
+}
+
+/* Short phones (iPhone SE): a lower header and hero, so the latest stage shows above the action bar. */
+@media (450px < height <= 700px) {
+  .word-detail__header {
+    padding-block-start: calc(1rem + var(--layout-safe-top));
+  }
+
+  .word-detail__hero {
+    padding: 0.75rem 1rem 0.875rem;
+  }
+
+  .word-detail__mascot {
+    inline-size: 3.5rem;
+  }
+
+  .word-detail__word {
+    font-size: 2.25rem;
+  }
+
+  .word-detail__word--long {
+    font-size: 1.875rem;
+  }
+
+  .word-detail__word--very-long {
+    font-size: 1.5rem;
+  }
+}
+
+/* "Ses progrès"; never wraps, the hint next to it gives way on narrow screens. */
+.word-detail__section {
+  flex: none;
+  font-size: 1.375rem;
+  font-weight: 600;
+}
+
+/* "Touche une étape pour la modifier". */
+.word-detail__hint {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-align: end;
+}
+
+/* Timeline list, measured by the narrow-timeline query below. */
+.word-detail__stages {
+  container-type: inline-size;
+}
+
+/* One stage row; pops in, newest first, one step apart. */
+.word-detail__stage {
+  position: relative;
+  padding-block-end: 0.75rem;
+
+  @include motion {
+    animation: pop var(--duration-pop) var(--ease-pop) both;
+    animation-delay: calc(var(--motion-step) * var(--stage-index, 0));
+  }
+}
+
+/* The oldest stage ends the list. */
+.word-detail__stage:last-child {
+  padding-block-end: 0;
+}
+
+/* Line linking a stage to the older one below it, behind the dots. */
+.word-detail__stage--linked::before {
+  position: absolute;
+  inset-block: 50% -50%;
+  inset-inline-start: 1rem;
+  inline-size: 3px;
+  border-radius: 3px;
+  background-color: var(--color-border);
+  content: '';
+}
+
+/* Dot ringed with the page color so the line seems to pass behind it. */
+.word-detail__dot {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px var(--color-background);
+}
+
+/* Stage card on its status tint. */
+.word-detail__card {
+  border: 0;
+  border-radius: var(--radius-card);
+  padding: 0.75rem 1rem;
+  color: var(--color-ink);
+  text-align: start;
+}
+
+/* The newest stage stands out. */
+.word-detail__card--latest {
+  padding: 1rem 1.125rem;
+}
+
+/* "En route" card. */
+.word-detail__card--learning {
+  background-color: var(--color-learning-bg);
+}
+
+/* "Presque" card. */
+.word-detail__card--almost {
+  background-color: var(--color-almost-bg);
+}
+
+/* "Bien dit" card. */
+.word-detail__card--mastered {
+  background-color: var(--color-mastered-bg);
+}
+
+/* Day and title of the stage. */
+.word-detail__caption {
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+/* Caption of an "En route" card, in its status text color to stay above 4.5:1 on the pink. */
+.word-detail__card--learning .word-detail__caption {
+  color: var(--color-learning-text);
+}
+
+/* Caption of a "Presque" card. */
+.word-detail__card--almost .word-detail__caption {
+  color: var(--color-almost-text);
+}
+
+/* Caption of a "Bien dit" card. */
+.word-detail__card--mastered .word-detail__caption {
+  color: var(--color-mastered-text);
+}
+
+/* What Côme said. */
+.word-detail__spoken {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+/* The newest spoken form, bigger. */
+.word-detail__card--latest .word-detail__spoken {
+  font-size: 1.625rem;
+  font-weight: 600;
+}
+
+/* Pencil tile hinting that a tap edits. */
+.word-detail__edit {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.125rem;
+  block-size: 2.125rem;
+  border-radius: 0.75rem;
+  background-color: tint(surface, 75%);
+}
+
+/* White disc holding the plus of the main button. */
+.word-detail__plus {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+}
+
+/* Record button: a 60 px lavender tile next to the main button. */
+.word-detail__record {
+  flex: none;
+  inline-size: 3.75rem;
+  block-size: 3.75rem;
+  border-radius: 50%;
+  background-color: var(--color-lavender-50);
+  color: var(--color-lavender-700);
+  box-shadow: none;
+}
+
+/* A big row of the "⋯" menu. */
+.word-detail__action {
+  min-block-size: 4rem;
+  border: 0;
+  border-radius: 1.375rem;
+  padding: 0 1.125rem;
+  background-color: var(--color-lavender-50);
+  color: var(--color-lavender-700);
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
+  font-weight: 600;
+  text-align: start;
+}
+
+/* Destructive row, red. */
+.word-detail__action--danger {
+  background-color: var(--color-learning-bg);
+  color: var(--color-danger-text);
+}
+
+/* White tile holding the row's icon. */
+.word-detail__action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: 0.875rem;
+  background-color: var(--color-surface);
+}
+
+/* Question above the stage list. */
+.word-detail__sheet-text {
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  font-weight: 600;
+}
+
+/* A stage in the "Modifier" list, on its status tint. */
+.word-detail__row {
+  min-block-size: 3.75rem;
+  border: 0;
+  border-radius: 1.125rem;
+  padding: 0.5rem 0.875rem;
+  color: var(--color-ink);
+  text-align: start;
+}
+
+/* "En route" row. */
+.word-detail__row--learning {
+  background-color: var(--color-learning-bg);
+}
+
+/* "Presque" row. */
+.word-detail__row--almost {
+  background-color: var(--color-almost-bg);
+}
+
+/* "Bien dit" row. */
+.word-detail__row--mastered {
+  background-color: var(--color-mastered-bg);
+}
+
+/* Spoken form in the list. */
+.word-detail__row-spoken {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+/* Title and day in the list. */
+.word-detail__row-caption {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+/* Caption of an "En route" row, in its status text color for contrast. */
+.word-detail__row--learning .word-detail__row-caption {
+  color: var(--color-learning-text);
+}
+
+/* Caption of a "Presque" row. */
+.word-detail__row--almost .word-detail__row-caption {
+  color: var(--color-almost-text);
+}
+
+/* Caption of a "Bien dit" row. */
+.word-detail__row--mastered .word-detail__row-caption {
+  color: var(--color-mastered-text);
+}
+
+/* Underlined red text button, quieter than the form's actions. */
+.word-detail__remove-stage {
+  align-self: flex-start;
+  min-block-size: 2.75rem;
+  padding: 0 0.25rem;
+  color: var(--color-danger-text);
+  font-size: var(--text-meta);
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+/* Goodbye or not-found screen. */
+.word-detail__gone {
+  padding: 0 2rem;
+  text-align: center;
+}
+
+/* Its sentence. */
+.word-detail__gone-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* Quiet loading line. */
+.word-detail__loading {
+  padding: calc(6rem + var(--layout-safe-top)) var(--layout-gutter);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* Narrow timeline (strong zoom): the decorative pencil goes so the spoken form keeps its room. */
+@container (width < 17rem) {
+  .word-detail__card {
+    padding-inline: 0.75rem;
+  }
+
+  .word-detail__edit {
+    display: none;
+  }
+}
+
+/* Laptops and desktops: the hero card on the left, kept in view; progress and sounds on the right. */
+@include from(lg) {
+  .word-detail {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1.5rem 2.5rem;
+    align-items: start;
+  }
+
+  .word-detail__hero {
+    position: sticky;
+    inset-block-start: 2rem;
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+}

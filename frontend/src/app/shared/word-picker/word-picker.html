@@ -1,0 +1,87 @@
+<div class="flex flex-col gap-2">
+  <!-- The search itself. -->
+  <app-search-field [label]="searchLabel()" [(value)]="query" />
+
+  @if (!blank()) {
+    <!-- Matches, the typed part in bold. -->
+    @if (suggestions().length > 0) {
+      <ul class="word-picker__suggestions flex flex-col" aria-label="Suggestions">
+        @for (suggestion of suggestions(); track suggestion.label) {
+          <li>
+            <button
+              class="word-picker__suggestion press flex w-full items-center gap-3"
+              type="button"
+              [attr.aria-label]="suggestionName(suggestion)"
+              (click)="pick(suggestion)"
+            >
+              <span class="word-picker__label min-w-0 flex-1">
+                <b class="word-picker__head">{{ suggestion.head }}</b
+                >{{ suggestion.tail }}
+              </span>
+              <span class="word-picker__chip">{{ categoryLabels[suggestion.category] }}</span>
+              @if (suggestion.word) {
+                <span class="word-picker__chip word-picker__chip--known">déjà dit</span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    }
+
+    <!-- The typed word is nowhere: add it anyway. -->
+    @if (offer(); as label) {
+      <button
+        class="word-picker__offer press flex items-center gap-2.5"
+        type="button"
+        (click)="pickOffer(label)"
+      >
+        <svg app-icon name="circle-plus" [size]="22" [strokeWidth]="2.2"></svg>
+        Pas dans le dictionnaire&nbsp;: ajouter {{ label | quote }} quand même
+      </button>
+    }
+  } @else {
+    <!-- Before typing: the notebook's recent words... -->
+    @if (recentWords().length > 0) {
+      <section class="mt-1.5 flex flex-col gap-2" [attr.aria-labelledby]="id + '-recent'">
+        <h2 class="word-picker__section" [id]="id + '-recent'">Ses mots</h2>
+        <ul class="flex flex-col gap-2">
+          @for (recent of recentWords(); track recent.word.id) {
+            <li>
+              <button
+                class="word-picker__word press flex w-full items-center gap-3"
+                type="button"
+                (click)="pickWord(recent.word)"
+              >
+                <span class="flex min-w-0 flex-1 flex-col">
+                  <span class="word-picker__spoken">{{ recent.current.spoken | quote }}</span>
+                  <span class="word-picker__caption">{{ recent.word.label }}</span>
+                </span>
+                <app-status-badge size="sm" [status]="recent.current.status" />
+              </button>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <!-- ...or the frequent first words not said yet. -->
+    @if (shortcuts().length > 0) {
+      <section class="mt-1.5 flex flex-col gap-2.5" [attr.aria-labelledby]="id + '-frequent'">
+        <h2 class="word-picker__section" [id]="id + '-frequent'">Mots fréquents à cet âge</h2>
+        <ul class="flex flex-wrap gap-2">
+          @for (shortcut of shortcuts(); track shortcut.label) {
+            <li>
+              <button
+                class="word-picker__shortcut press"
+                type="button"
+                (click)="pickEntry(shortcut)"
+              >
+                {{ shortcut.label }}
+              </button>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+</div>

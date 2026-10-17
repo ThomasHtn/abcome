@@ -33,5 +33,5 @@ EXPOSE 8080
 # Health: http://localhost:8080/actuator/health (see backend/README.md). No HTTP client is bundled
 # here for a HEALTHCHECK instruction — orchestrators typically probe this endpoint themselves
 # (Kubernetes liveness/readiness probes, Docker Compose `healthcheck` with an external prober, etc.).
-# Heap follows the container memory limit set in docker-compose.prod.yml, so the JVM never outgrows it.
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]
+# Heap takes 60 % of the container limit (docker-compose.prod.yml); the rest is for metaspace, threads and buffers.
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=60", "-jar", "app.jar"]

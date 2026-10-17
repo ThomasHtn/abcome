@@ -1,0 +1,36 @@
+/* Square header button: 48 px white tile with a soft shadow; the host is the native button or link. */
+
+@use 'tools' as *;
+
+/* Tile, icon centred in ink. */
+:host {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 3rem;
+  block-size: 3rem;
+  border: 0;
+  border-radius: var(--radius-icon-button);
+  padding: 0;
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-raised);
+
+  @include motion {
+    transition: transform var(--duration-press) var(--ease-pop);
+  }
+}
+
+/* Squashes under the finger. */
+:host(:active) {
+  @include motion {
+    transform: scale(0.92);
+  }
+}
+
+/* Destructive action: red icon. */
+:host(.icon-button--danger) {
+  color: var(--color-danger-text);
+}

@@ -1,0 +1,66 @@
+/* Sound gallery of the word page: white rows with a play button, the day and length, a delete button. */
+
+@use 'tools' as *;
+
+/* "Ses sons", same weight as "Ses progrès". */
+.sound-gallery__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.375rem;
+  font-weight: 600;
+}
+
+/* Number of sounds, a lavender pill next to the title. */
+.sound-gallery__count {
+  border-radius: var(--radius-pill);
+  padding: 0.125rem 0.625rem;
+  background-color: var(--color-lavender-100);
+  color: var(--color-lavender-700);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+/* One sound row, a white card; rows pop in one step apart. */
+.sound-gallery__item {
+  border-radius: var(--radius-card);
+  padding: 0.5rem 0.5rem 0.5rem 0.625rem;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
+
+  @include motion {
+    animation: pop var(--duration-pop) var(--ease-pop) both;
+    animation-delay: calc(var(--motion-step) * var(--sound-index, 0));
+  }
+}
+
+/* "17 oct. · 0:03". */
+.sound-gallery__caption {
+  color: var(--color-ink);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Empty state on a lavender tint. */
+.sound-gallery__empty {
+  border-radius: var(--radius-card);
+  padding: 1rem 1.125rem;
+  background-color: var(--color-lavender-50);
+}
+
+/* Invitation to record; a long word breaks rather than overflowing the box. */
+.sound-gallery__empty-text {
+  overflow-wrap: anywhere;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Record link: never wider than the box, its label wraps under a strong zoom. */
+.sound-gallery__record {
+  max-inline-size: 100%;
+  text-wrap: balance;
+  white-space: normal;
+}

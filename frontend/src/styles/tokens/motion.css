@@ -4,13 +4,21 @@
   /* Arrivals decelerate hard: screens cascading in, the bottom bar sliding up. */
   --ease-entry: cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* Overshoot then settle: a new word popping in, a pressed button, a rising sheet. */
+  /* Overshoot then settle: a new word popping in, a pressed button. */
   --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* Durations: `press` for touch feedback, `entry` for screens, `pop` for list items. */
+  /* A sheet rising with a light bounce. */
+  --ease-sheet: cubic-bezier(0.22, 1.2, 0.36, 1);
+
+  /* Durations: `press` for touch feedback, `entry` for screens, `pop` for list items, `sheet` for drawers. */
   --duration-press: 200ms;
   --duration-entry: 500ms;
   --duration-pop: 600ms;
+  --duration-sheet: 350ms;
+  --duration-fade: 250ms;
+
+  /* Delay between two blocks of a screen cascading in, and between two list items popping in. */
+  --motion-step: 70ms;
 
   /* Applied to every `transition-*` utility that does not name its own. */
   --default-transition-duration: var(--duration-press);

@@ -1,0 +1,28 @@
+<app-bottom-sheet closable="false" [heading]="heading()" [(open)]="open">
+  <!-- What the action implies. -->
+  @if (message()) {
+    <p class="confirm-sheet__message">{{ message() }}</p>
+  }
+
+  <!-- Cancel on the left, confirm on the right. -->
+  <div class="mt-1 grid grid-cols-2 gap-2.5">
+    <button
+      app-button
+      type="button"
+      variant="outline"
+      [disabled]="busy()"
+      (click)="open.set(false)"
+    >
+      {{ cancelLabel() }}
+    </button>
+    <button
+      app-button
+      type="button"
+      [variant]="tone()"
+      [disabled]="busy()"
+      (click)="confirmed.emit()"
+    >
+      {{ confirmLabel() }}
+    </button>
+  </div>
+</app-bottom-sheet>

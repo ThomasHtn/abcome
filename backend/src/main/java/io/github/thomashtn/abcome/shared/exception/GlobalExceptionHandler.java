@@ -6,17 +6,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
@@ -25,7 +25,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
  * <p>Every caller mistake gets its own 4xx handler; anything else reaches the catch-all, is logged
  * and answered with a generic 500 that never echoes an internal message.</p>
  *
- * <p>The {@code code} values are a contract with the frontend, which maps them to French messages:
+ * <p>The {@code code} values are a contract with the frontend, listed in {@code docs/spec.md}:
  * change one on both sides or not at all.</p>
  */
 @RestControllerAdvice
@@ -37,14 +37,14 @@ public class GlobalExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
-     * Code of a request value the API cannot accept.
+     * Code of any request the API cannot accept as sent: bad value, missing field, malformed body.
      */
-    private static final String INVALID_ARGUMENT = "INVALID_ARGUMENT";
+    private static final String INVALID_REQUEST = "INVALID_REQUEST";
 
     /**
      * Code of an unknown resource, whether an entity or a route.
      */
-    private static final String RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND";
+    private static final String NOT_FOUND = "NOT_FOUND";
 
     /**
      * Clock stamping each problem response.
@@ -71,7 +71,7 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiErrorResponse> handleResourceNotFound(
         ResourceNotFoundException exception, HttpServletRequest request
     ) {
-        return problem(HttpStatus.NOT_FOUND, RESOURCE_NOT_FOUND, exception.getMessage(), request);
+        return problem(HttpStatus.NOT_FOUND, NOT_FOUND, exception.getMessage(), request);
     }
 
     /**
@@ -88,9 +88,7 @@ public class GlobalExceptionHandler {
         Map<String, String> errors = new LinkedHashMap<>();
         exception.getBindingResult().getFieldErrors()
             .forEach(error -> errors.putIfAbsent(error.getField(), error.getDefaultMessage()));
-        return problem(
-            HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "One or more fields are invalid.", request, errors
-        );
+        return problem(HttpStatus.BAD_REQUEST, INVALID_REQUEST, "One or more fields are invalid.", request, errors);
     }
 
     /**
@@ -104,7 +102,7 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiErrorResponse> handleInvalidRequest(
         InvalidRequestException exception, HttpServletRequest request
     ) {
-        return problem(HttpStatus.BAD_REQUEST, INVALID_ARGUMENT, exception.getMessage(), request);
+        return problem(HttpStatus.BAD_REQUEST, INVALID_REQUEST, exception.getMessage(), request);
     }
 
     /**
@@ -119,7 +117,7 @@ public class GlobalExceptionHandler {
         MethodArgumentTypeMismatchException exception, HttpServletRequest request
     ) {
         String detail = "Parameter '" + exception.getName() + "' has an invalid value.";
-        return problem(HttpStatus.BAD_REQUEST, INVALID_ARGUMENT, detail, request);
+        return problem(HttpStatus.BAD_REQUEST, INVALID_REQUEST, detail, request);
     }
 
     /**
@@ -134,37 +132,7 @@ public class GlobalExceptionHandler {
         HttpMessageNotReadableException exception, HttpServletRequest request
     ) {
         String detail = "The request body is malformed or holds an unsupported value.";
-        return problem(HttpStatus.BAD_REQUEST, "MALFORMED_REQUEST", detail, request);
-    }
-
-    /**
-     * Handles an upload above the multipart limit set by {@code spring.servlet.multipart.*}.
-     *
-     * @param exception exception raised by the multipart resolver
-     * @param request   current HTTP request
-     * @return 413 response
-     */
-    @ExceptionHandler(MaxUploadSizeExceededException.class)
-    ResponseEntity<ApiErrorResponse> handleUploadTooLarge(
-        MaxUploadSizeExceededException exception, HttpServletRequest request
-    ) {
-        String detail = "The uploaded file is too large.";
-        return problem(HttpStatus.CONTENT_TOO_LARGE, "PAYLOAD_TOO_LARGE", detail, request);
-    }
-
-    /**
-     * Handles a multipart request without its expected part.
-     *
-     * @param exception missing-part exception
-     * @param request   current HTTP request
-     * @return 400 response
-     */
-    @ExceptionHandler(MissingServletRequestPartException.class)
-    ResponseEntity<ApiErrorResponse> handleMissingPart(
-        MissingServletRequestPartException exception, HttpServletRequest request
-    ) {
-        String detail = "Part '" + exception.getRequestPartName() + "' is required.";
-        return problem(HttpStatus.BAD_REQUEST, INVALID_ARGUMENT, detail, request);
+        return problem(HttpStatus.BAD_REQUEST, INVALID_REQUEST, detail, request);
     }
 
     /**
@@ -179,7 +147,96 @@ public class GlobalExceptionHandler {
         MissingServletRequestParameterException exception, HttpServletRequest request
     ) {
         String detail = "Parameter '" + exception.getParameterName() + "' is required.";
-        return problem(HttpStatus.BAD_REQUEST, INVALID_ARGUMENT, detail, request);
+        return problem(HttpStatus.BAD_REQUEST, INVALID_REQUEST, detail, request);
+    }
+
+    /**
+     * Handles a wrong password or a missing session.
+     *
+     * @param exception unauthorized exception, carrying its code
+     * @param request   current HTTP request
+     * @return 401 response
+     */
+    @ExceptionHandler(UnauthorizedException.class)
+    ResponseEntity<ApiErrorResponse> handleUnauthorized(UnauthorizedException exception, HttpServletRequest request) {
+        return problem(HttpStatus.UNAUTHORIZED, exception.getCode(), exception.getMessage(), request);
+    }
+
+    /**
+     * Handles a request that clashes with the current data.
+     *
+     * @param exception conflict exception, carrying its code
+     * @param request   current HTTP request
+     * @return 409 response
+     */
+    @ExceptionHandler(ConflictException.class)
+    ResponseEntity<ApiErrorResponse> handleConflict(ConflictException exception, HttpServletRequest request) {
+        return problem(HttpStatus.CONFLICT, exception.getCode(), exception.getMessage(), request);
+    }
+
+    /**
+     * Handles a body above the accepted size.
+     *
+     * @param exception payload-too-large exception
+     * @param request   current HTTP request
+     * @return 413 response
+     */
+    @ExceptionHandler(PayloadTooLargeException.class)
+    ResponseEntity<ApiErrorResponse> handlePayloadTooLarge(
+        PayloadTooLargeException exception, HttpServletRequest request
+    ) {
+        return problem(HttpStatus.CONTENT_TOO_LARGE, "PAYLOAD_TOO_LARGE", exception.getMessage(), request);
+    }
+
+    /**
+     * Handles a content type refused by the application.
+     *
+     * @param exception unsupported-media-type exception
+     * @param request   current HTTP request
+     * @return 415 response
+     */
+    @ExceptionHandler(UnsupportedMediaTypeException.class)
+    ResponseEntity<ApiErrorResponse> handleUnsupportedMediaType(
+        UnsupportedMediaTypeException exception, HttpServletRequest request
+    ) {
+        return problem(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "UNSUPPORTED_MEDIA_TYPE", exception.getMessage(), request);
+    }
+
+    /**
+     * Handles a content type no route accepts, refused by Spring MVC before any controller.
+     *
+     * @param exception exception raised by the {@code consumes} condition
+     * @param request   current HTTP request
+     * @return 415 response
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    ResponseEntity<ApiErrorResponse> handleMediaTypeNotSupported(
+        HttpMediaTypeNotSupportedException exception, HttpServletRequest request
+    ) {
+        String detail = "This content type is not accepted here.";
+        return problem(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "UNSUPPORTED_MEDIA_TYPE", detail, request);
+    }
+
+    /**
+     * Handles a caller locked out after too many attempts, telling it when to retry.
+     *
+     * @param exception too-many-requests exception, carrying the wait
+     * @param request   current HTTP request
+     * @return 429 response with a {@code Retry-After} header in seconds
+     */
+    @ExceptionHandler(TooManyRequestsException.class)
+    ResponseEntity<ApiErrorResponse> handleTooManyRequests(
+        TooManyRequestsException exception, HttpServletRequest request
+    ) {
+        ApiErrorResponse body = ApiErrorResponse.of(
+            HttpStatus.TOO_MANY_REQUESTS, "TOO_MANY_ATTEMPTS", exception.getMessage(),
+            request.getRequestURI(), clock.instant()
+        );
+        // Rounded up, so a client waiting exactly this long is never refused once more.
+        long seconds = Math.max(1, (exception.getRetryAfter().toMillis() + 999) / 1000);
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+            .header(HttpHeaders.RETRY_AFTER, Long.toString(seconds))
+            .body(body);
     }
 
     /**
@@ -194,7 +251,7 @@ public class GlobalExceptionHandler {
         NoResourceFoundException exception, HttpServletRequest request
     ) {
         String detail = "The requested resource does not exist.";
-        return problem(HttpStatus.NOT_FOUND, RESOURCE_NOT_FOUND, detail, request);
+        return problem(HttpStatus.NOT_FOUND, NOT_FOUND, detail, request);
     }
 
     /**

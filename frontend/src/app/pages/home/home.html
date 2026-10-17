@@ -1,0 +1,191 @@
+<div class="home flex flex-col">
+  <!-- Title of the open tab and the log out button. -->
+  <header class="home__header enter flex items-center justify-between gap-3">
+    <h1 class="home__title">
+      Les {{ tab() === 'words' ? 'mots' : 'phrases' }} de <span class="home__child">Côme</span>
+    </h1>
+    <button
+      app-icon-button
+      type="button"
+      aria-label="Se déconnecter"
+      (click)="logoutOpen.set(true)"
+    >
+      <svg app-icon name="log-out" [size]="22" [strokeWidth]="2"></svg>
+    </button>
+  </header>
+
+  <!-- Lapinou and the notebook in one sentence. -->
+  <app-home-summary class="enter motion-step-1" [summary]="summary()" />
+
+  <!-- Tabs, search and the status filters; one row on wider screens when they fit. -->
+  <div class="home__controls flex flex-col md:flex-row md:flex-wrap md:items-center">
+    <!-- Words / sentences tabs; arrow keys move between them. -->
+    <div
+      class="home__tabs enter motion-step-2 grid grid-cols-2 gap-1 md:w-64 md:flex-none"
+      role="tablist"
+      aria-label="Type de notes"
+    >
+      <button
+        #wordsTab
+        id="home-tab-words"
+        class="home__tab"
+        type="button"
+        role="tab"
+        aria-controls="home-panel"
+        [class.home__tab--selected]="tab() === 'words'"
+        [attr.aria-selected]="tab() === 'words'"
+        [attr.tabindex]="tab() === 'words' ? 0 : -1"
+        (click)="selectTab('words')"
+        (keydown.arrowleft)="switchTabByKey()"
+        (keydown.arrowright)="switchTabByKey()"
+      >
+        Mots
+      </button>
+      <button
+        #sentencesTab
+        id="home-tab-sentences"
+        class="home__tab"
+        type="button"
+        role="tab"
+        aria-controls="home-panel"
+        [class.home__tab--selected]="tab() === 'sentences'"
+        [attr.aria-selected]="tab() === 'sentences'"
+        [attr.tabindex]="tab() === 'sentences' ? 0 : -1"
+        (click)="selectTab('sentences')"
+        (keydown.arrowleft)="switchTabByKey()"
+        (keydown.arrowright)="switchTabByKey()"
+      >
+        Phrases
+      </button>
+    </div>
+
+    <!-- Search on the open tab. -->
+    <app-search-field
+      class="enter motion-step-3 md:min-w-64 md:flex-1"
+      [label]="tab() === 'words' ? 'Chercher un mot de Côme' : 'Chercher une phrase'"
+      [value]="query()"
+      (valueChange)="search($event)"
+    />
+
+    @if (tab() === 'words') {
+      <!-- Status filters, sharing the width so all four always fit on one row. -->
+      <app-filter-chips
+        class="md:w-96 md:flex-none"
+        label="Filtrer par couleur"
+        fill
+        [options]="filterOptions"
+        [(value)]="filter"
+      />
+    }
+  </div>
+
+  <!-- Content of the open tab. -->
+  <div
+    id="home-panel"
+    class="home__panel flex flex-col"
+    role="tabpanel"
+    [class.home__panel--filtered]="tab() === 'words'"
+    [attr.aria-labelledby]="tab() === 'words' ? 'home-tab-words' : 'home-tab-sentences'"
+  >
+    @switch (openListState()) {
+      @case ('loading') {
+        <p class="home__message" role="status">Ouverture du carnet…</p>
+      }
+      @case ('error') {
+        <!-- The list could not be loaded: say so and offer a retry. -->
+        <div class="home__message flex flex-col items-center gap-3" role="alert">
+          <p class="home__message-text">Le carnet n'a pas pu s'ouvrir. Vérifie la connexion.</p>
+          <button
+            app-button
+            type="button"
+            variant="soft"
+            size="sm"
+            (click)="tab() === 'words' ? wordsApi.words.reload() : sentencesApi.sentences.reload()"
+          >
+            Réessayer
+          </button>
+        </div>
+      }
+      @default {
+        @if (tab() === 'words') {
+          <!-- Words, newest first. -->
+          @if (wordCards().length > 0) {
+            <ul class="home__list" aria-label="Mots de Côme">
+              @for (card of wordCards(); track card.id; let index = $index) {
+                <li><app-word-card [card]="card" [index]="index" /></li>
+              }
+            </ul>
+          } @else {
+            <!-- Nothing to show: why, and a shortcut to add the searched word. -->
+            <div class="home__message flex flex-col items-center gap-3">
+              <p class="home__message-text">{{ emptyWords() }}</p>
+              @if (trimmedQuery()) {
+                <a
+                  app-button
+                  variant="soft"
+                  size="sm"
+                  routerLink="/mots/nouveau"
+                  [queryParams]="{ mot: trimmedQuery() }"
+                >
+                  Ajouter {{ trimmedQuery() | quote }} à ses mots
+                </a>
+              }
+            </div>
+          }
+        } @else {
+          <!-- Sentences, newest first; a tap opens one for editing. -->
+          @if (sentenceCards().length > 0) {
+            <ul class="home__list" aria-label="Phrases de Côme">
+              @for (card of sentenceCards(); track card.sentence.id; let index = $index) {
+                <li>
+                  <app-sentence-card [card]="card" [index]="index" (edit)="openSentence($event)" />
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="home__message home__message-text">{{ emptySentences() }}</p>
+          }
+        }
+      }
+    }
+  </div>
+</div>
+
+<!-- Main actions of the open tab. -->
+<app-action-bar>
+  @if (tab() === 'words') {
+    <a app-button class="min-w-0 flex-1" size="lg" routerLink="/mots/nouveau">
+      <span class="home__plus" aria-hidden="true">
+        <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
+      </span>
+      Ajouter un mot
+    </a>
+    <a class="home__record" routerLink="/sons/nouveau" aria-label="Enregistrer un son">
+      <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
+    </a>
+  } @else {
+    <button app-button type="button" size="lg" block (click)="openSentence(null)">
+      <span class="home__plus" aria-hidden="true">
+        <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
+      </span>
+      Ajouter une phrase
+    </button>
+  }
+</app-action-bar>
+
+<!-- Sentence sheet, created fresh for every opening. -->
+@if (sentenceSheet(); as request) {
+  <app-sentence-sheet [sentence]="request.sentence" (closed)="sentenceSheet.set(null)" />
+}
+
+<!-- Logout question. -->
+<app-confirm-sheet
+  heading="Se déconnecter ?"
+  message="Les mots de Côme restent enregistrés. Il faudra retaper le mot de passe pour rouvrir le carnet."
+  confirmLabel="Se déconnecter"
+  cancelLabel="Rester"
+  tone="dark"
+  [busy]="loggingOut()"
+  [(open)]="logoutOpen"
+  (confirmed)="logout()"
+/>

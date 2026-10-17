@@ -1,0 +1,61 @@
+/* Date field: dashed salmon box, salmon calendar and date, like the mockup's "Aujourd'hui" chip. */
+
+@use 'tools' as *;
+
+/* Field label, same as the text fields. */
+.date-field__label {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+/* Dashed box, tinted salmon. */
+.date-field__box {
+  box-sizing: border-box;
+  min-block-size: 3.375rem;
+  border: 2px dashed var(--color-salmon-300);
+  border-radius: var(--radius-card);
+  padding-inline: 1rem;
+  background-color: var(--color-salmon-50);
+}
+
+/* Focus shows on the whole box. */
+.date-field__box:focus-within {
+  outline: 3px solid var(--color-lavender-400);
+  outline-offset: 2px;
+}
+
+/* Calendar icon. */
+.date-field__icon {
+  flex: none;
+  color: var(--color-salmon-700);
+}
+
+/* Borderless native input, bold salmon text. */
+.date-field__input {
+  border: 0;
+  background: transparent;
+  color: var(--color-salmon-700);
+  font-size: var(--text-body);
+  font-weight: 800;
+  outline: none;
+}
+
+/* Invalid day: the dashes turn danger red. */
+.date-field__box--invalid {
+  border-color: var(--color-danger);
+}
+
+/* Help line. */
+.date-field__hint {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* Error line, under the box. */
+.date-field__error {
+  color: var(--color-danger-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+}

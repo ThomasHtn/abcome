@@ -1,0 +1,64 @@
+/* Fixed bottom bar, aligned with the centred screen column. */
+
+@use 'tools' as *;
+
+/* Cream bar with rounded top corners and an upward shadow; a size container for its row. */
+.action-bar {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  max-inline-size: var(--layout-max-width);
+  margin-inline: auto;
+  border-start-start-radius: var(--radius-block);
+  border-start-end-radius: var(--radius-block);
+  padding: 1rem calc(var(--layout-gutter) + var(--layout-safe-right))
+    calc(1.75rem + var(--layout-safe-bottom)) calc(var(--layout-gutter) + var(--layout-safe-left));
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-bar);
+  container: action-bar / inline-size;
+}
+
+/* Short phones (iPhone SE): less padding, so the list above shows one more card. */
+@media (450px < height <= 700px) {
+  .action-bar {
+    padding-block: 0.625rem calc(0.875rem + var(--layout-safe-bottom));
+  }
+}
+
+/* Landscape phones: a thinner bar leaves room for the form above it. */
+@media (height <= 450px) {
+  .action-bar {
+    padding-block: 0.5rem calc(0.5rem + var(--layout-safe-bottom));
+  }
+}
+
+/* Too narrow for the main button and the round one side by side: stack them, centred. */
+@container action-bar (width < 16rem) {
+  .action-bar__row {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* Tablets and desktops: no phone bar any more; the actions float at their natural width, right-aligned
+   with the column (or with the page's reading width, `--action-bar-max-width`), and taps pass between them. */
+@include from(md) {
+  .action-bar {
+    max-inline-size: var(--action-bar-max-width, var(--layout-max-width));
+    border-radius: 0;
+    padding: 0 calc(var(--layout-gutter) + var(--layout-safe-right))
+      calc(1.5rem + var(--layout-safe-bottom)) calc(var(--layout-gutter) + var(--layout-safe-left));
+    background-color: transparent;
+    box-shadow: none;
+    pointer-events: none;
+  }
+
+  .action-bar__row {
+    inline-size: fit-content;
+    max-inline-size: 100%;
+    margin-inline-start: auto;
+    pointer-events: auto;
+  }
+}

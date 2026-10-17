@@ -1,0 +1,25 @@
+/* Lapinou: the animation lives in the SVG asset, this only frames it. */
+
+@use 'tools' as *;
+
+/* Sized by its image, never stretched by a flex parent. */
+:host {
+  display: inline-block;
+  flex: none;
+  line-height: 0;
+}
+
+/* Bare button around the image: the mascot is the target. */
+.mascot__button {
+  border: 0;
+  border-radius: var(--radius-card);
+  padding: 0;
+  background: none;
+}
+
+/* The SVG keeps its own frame, so states line up when they swap; a parent may narrow the host to shrink it. */
+.mascot__image {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+}

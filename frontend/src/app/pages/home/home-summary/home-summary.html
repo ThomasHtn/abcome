@@ -1,0 +1,36 @@
+<section class="home-summary flex flex-wrap items-center gap-3" aria-label="Résumé du carnet">
+  <!-- Lapinou jumps when tapped, just for fun. -->
+  <app-mascot class="home-summary__mascot" tappable priority [size]="104" />
+
+  <!-- Speech bubble: how many, the latest, and the colors on the words tab. -->
+  <div class="home-summary__bubble flex min-w-0 flex-col gap-1">
+    @if (summary().total > 0) {
+      <p class="home-summary__headline">
+        Côme a déjà dit <span class="home-summary__count">{{ summary().countText }}</span> !
+      </p>
+    } @else {
+      <p class="home-summary__headline">{{ summary().emptyHeadline }}</p>
+    }
+
+    @if (summary().latest; as latest) {
+      <p class="home-summary__latest">{{ summary().latestLabel }}&nbsp;: {{ latest | quote }}</p>
+    }
+
+    @if (summary().statusCounts; as counts) {
+      <ul class="home-summary__counts mt-1 flex flex-wrap gap-x-1.5 gap-y-0.5">
+        @for (count of counts; track count.status) {
+          <li
+            class="home-summary__status flex items-center gap-1"
+            [class.home-summary__status--learning]="count.status === 'learning'"
+            [class.home-summary__status--almost]="count.status === 'almost'"
+            [class.home-summary__status--mastered]="count.status === 'mastered'"
+          >
+            <span class="home-summary__dot" aria-hidden="true"></span>
+            <span aria-hidden="true">{{ count.count }}</span>
+            <span class="sr-only">{{ count.label }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</section>

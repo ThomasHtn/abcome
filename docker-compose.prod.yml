@@ -8,7 +8,7 @@ services:
     image: abcome-backend:latest
     restart: unless-stopped
     # The JVM sizes its heap from this limit (MaxRAMPercentage in the Dockerfile).
-    mem_limit: 384m
+    mem_limit: 512m
     env_file: .env
     environment:
       API_DOCS_ENABLED: "false"
@@ -45,7 +45,8 @@ services:
       - traefik.http.routers.abcome-web.rule=Host(`${PUBLIC_HOST:-abcome.thomashtn.dev}`)
       - traefik.http.routers.abcome-web.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
       - traefik.http.routers.abcome-web.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
-      - traefik.http.services.abcome-web.loadbalancer.server.port=80
+      # The unprivileged nginx image listens on 8080.
+      - traefik.http.services.abcome-web.loadbalancer.server.port=8080
 
 networks:
   traefik:

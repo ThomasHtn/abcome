@@ -1,0 +1,138 @@
+/* Pill buttons of the design system; the host is the native button or link itself. */
+
+@use 'tools' as *;
+
+/* Shared shape: rounded display label, centred icon and text, no underline on links. */
+:host {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  padding-inline: 1.25rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+
+  @include motion {
+    transition:
+      transform var(--duration-press) var(--ease-pop),
+      box-shadow var(--duration-press);
+  }
+}
+
+/* Squashes under the finger ("Rebond"). */
+:host(:active:not(:disabled, [aria-disabled='true'])) {
+  @include motion {
+    transform: scale(0.95);
+  }
+}
+
+/* Bottom-bar action; a long label wraps on two balanced lines rather than pushing its neighbour out. */
+:host(.button--lg) {
+  min-block-size: 3.75rem;
+  font-size: 1.25rem;
+  line-height: 1.15;
+  text-align: center;
+  text-wrap: balance;
+  white-space: normal;
+}
+
+/* Stacked bar (200 % zoom): the button never outgrows the bar, a long word hyphenates instead. */
+@container action-bar (width < 16rem) {
+  :host(.button--lg) {
+    max-inline-size: 100%;
+    padding-inline: 1rem;
+    hyphens: auto;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Sheet and form action. */
+:host(.button--md) {
+  min-block-size: 3.5rem;
+  font-size: 1.0625rem;
+}
+
+/* Inline action ("Changer", "Ajouter « x »"), still a 44 px touch target. */
+:host(.button--sm) {
+  min-block-size: 2.75rem;
+  padding-inline: 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 800;
+}
+
+/* Full width of its container. */
+:host(.button--block) {
+  display: flex;
+  inline-size: 100%;
+}
+
+/* Main action: salmon, lifted. */
+:host(.button--primary) {
+  background-color: var(--color-salmon-300);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-salmon);
+}
+
+/* Save: solid lavender. */
+:host(.button--secondary) {
+  background-color: var(--color-lavender-700);
+  color: var(--color-surface);
+}
+
+/* Cancel and secondary choices: white with a lavender outline. */
+:host(.button--outline) {
+  border-color: var(--color-lavender-200);
+  background-color: var(--color-surface);
+  color: var(--color-lavender-700);
+}
+
+/* Log out: ink. */
+:host(.button--dark) {
+  background-color: var(--color-ink);
+  color: var(--color-surface);
+}
+
+/* Confirmed deletion: deep red. */
+:host(.button--danger) {
+  background-color: var(--color-danger-text);
+  color: var(--color-surface);
+}
+
+/* Light suggestion: lavender tint. */
+:host(.button--soft) {
+  background-color: var(--color-lavender-50);
+  color: var(--color-lavender-700);
+}
+
+/* Text action ("Supprimer cette phrase"): underlined red text, no pill. */
+:host(.button--link) {
+  min-block-size: 2.75rem;
+  padding-inline: 0.25rem;
+  background-color: transparent;
+  color: var(--color-danger-text);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+/* Not ready yet ("Note d'abord comment il le dit"): faded and flat, still readable. */
+:host(:disabled),
+:host([aria-disabled='true']) {
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* A disabled main action turns pale salmon rather than grey. */
+:host(.button--primary:disabled),
+:host(.button--primary[aria-disabled='true']) {
+  background-color: var(--color-salmon-100);
+}

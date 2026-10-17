@@ -1,0 +1,142 @@
+/* Shared keyframes and the motion utilities templates use: `enter`, `enter-bottom`, `pop`, `motion-step-N`. */
+
+/* A screen block rising into place ("Entrée"). */
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The bottom action bar sliding up from below the screen. */
+@keyframes enter-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A new item bouncing into a list ("Pop"). */
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+
+  70% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* A bottom sheet rising with a light bounce ("Tiroir"). */
+@keyframes sheet-rise {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+/* A centred dialog fading and growing in (bottom sheets on tablets and desktops). */
+@keyframes sheet-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The veil behind a sheet fading in. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* A field shaken after a wrong answer. */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20%,
+  60% {
+    transform: translateX(-0.5rem);
+  }
+
+  40%,
+  80% {
+    transform: translateX(0.5rem);
+  }
+}
+
+/* Block of a screen cascading in; pair with `motion-step-N` to stagger blocks. */
+@utility enter {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: enter var(--duration-entry) var(--ease-entry) both;
+  }
+}
+
+/* Fixed bottom bar arriving after the screen. */
+@utility enter-bottom {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: enter-bottom 0.55s 0.25s var(--ease-sheet) both;
+  }
+}
+
+/* List item or card bouncing in; pair with `motion-step-N` for a staggered list. */
+@utility pop {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: pop var(--duration-pop) var(--ease-pop) both;
+  }
+}
+
+/* Field shaken once after an error. */
+@utility shake {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: shake 0.4s ease-in-out;
+  }
+}
+
+/* Staggers `enter` or `pop`: `motion-step-2` starts two steps after the first block. */
+@utility motion-step-* {
+  animation-delay: calc(var(--motion-step) * --value(integer));
+}
+
+/* Pressed feedback of a tappable element that is not an `app-button`. */
+@utility press {
+  @media (prefers-reduced-motion: no-preference) {
+    transition: transform var(--duration-press) var(--ease-pop);
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}

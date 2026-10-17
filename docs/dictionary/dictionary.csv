@@ -1,0 +1,737 @@
+acquisition_rank,label,category,frequent,source
+1,papa,people,true,ifdc
+2,maman,people,true,ifdc
+3,non,games_routines,true,ifdc
+4,allô,sounds,true,ifdc
+5,ouaf ouaf,sounds,true,ifdc
+6,bébé,people,true,ifdc
+7,au revoir,games_routines,true,ifdc
+8,oh oh,sounds,true,ifdc
+9,pain,food_drink,true,ifdc
+10,meuh,sounds,true,ifdc
+11,merci,games_routines,true,ifdc
+12,chaussure,clothing,true,ifdc
+13,coucou,games_routines,true,ifdc
+14,bravo,games_routines,true,ifdc
+15,vroum,sounds,true,ifdc
+16,encore,quantifiers,true,ifdc
+17,là,prepositions,true,ifdc
+18,ballon,toys,true,ifdc
+19,gâteau,food_drink,true,ifdc
+20,chaussettes,clothing,true,ifdc
+21,chat,animals,true,ifdc
+22,chien,animals,true,ifdc
+23,bain,games_routines,true,ifdc
+24,aïe,sounds,true,ifdc
+25,oui,games_routines,false,ifdc
+26,miaou,sounds,false,ifdc
+27,lapin,animals,false,ifdc
+28,aïe bobo,body_parts,false,ifdc
+29,eau,food_drink,false,ifdc
+30,chaud,descriptive_words,false,ifdc
+31,chaude,descriptive_words,false,ifdc
+32,nez,body_parts,false,ifdc
+33,boire,action_words,false,ifdc
+34,pied,body_parts,false,ifdc
+35,main,body_parts,false,ifdc
+36,chapeau,clothing,false,ifdc
+37,pomme,food_drink,false,ifdc
+38,grrrr,sounds,false,ifdc
+39,oiseau,animals,false,ifdc
+40,chausson,clothing,false,ifdc
+41,pantoufle,clothing,false,ifdc
+42,pot,household,false,ifdc
+43,voiture,vehicles,false,ifdc
+44,poisson,animals,false,ifdc
+45,chut,games_routines,false,ifdc
+46,banane,food_drink,false,ifdc
+47,yeux,body_parts,false,ifdc
+48,couche,clothing,false,ifdc
+49,parti,descriptive_words,false,ifdc
+50,coin coin,sounds,false,ifdc
+51,miam miam,sounds,false,ifdc
+52,tête,body_parts,false,ifdc
+53,pas,quantifiers,false,ifdc
+54,cassé,descriptive_words,false,ifdc
+55,clefs,household,false,ifdc
+56,biberon,household,false,ifdc
+57,avion,vehicles,false,ifdc
+58,ça,pronouns,false,ifdc
+59,bêê bêê,sounds,false,ifdc
+60,poupée,toys,false,ifdc
+61,maison,places,false,ifdc
+62,poule,animals,false,ifdc
+63,moto,vehicles,false,ifdc
+64,casser,action_words,false,ifdc
+65,vélo,vehicles,false,ifdc
+66,cheveux,body_parts,false,ifdc
+67,nounours,animals,false,ifdc
+68,bateau,vehicles,false,ifdc
+69,télé,furniture_rooms,false,ifdc
+70,bonbons,food_drink,false,ifdc
+71,froid,descriptive_words,false,ifdc
+72,grand-mère,people,false,ifdc
+73,fleur,outside,false,ifdc
+74,livre,toys,false,ifdc
+75,oreille,body_parts,false,ifdc
+76,porte,furniture_rooms,false,ifdc
+77,canard,animals,false,ifdc
+78,dent,body_parts,false,ifdc
+79,sucette,food_drink,false,ifdc
+80,bonjour,games_routines,false,ifdc
+81,cuillère,household,false,ifdc
+82,pantalon,clothing,false,ifdc
+83,fourchette,household,false,ifdc
+84,bouche,body_parts,false,ifdc
+85,vache,animals,false,ifdc
+86,verre,household,false,ifdc
+87,balle,toys,false,ifdc
+88,lit,furniture_rooms,false,ifdc
+89,chocolat,food_drink,false,ifdc
+90,pas bon,descriptive_words,false,ifdc
+91,chaise,furniture_rooms,false,ifdc
+92,cheval,animals,false,ifdc
+93,dehors,places,false,ifdc
+94,zizi,body_parts,false,ifdc
+95,lait,food_drink,false,ifdc
+96,crayon,toys,false,ifdc
+97,pâtes,food_drink,false,ifdc
+98,tracteur,vehicles,false,ifdc
+99,cacher,action_words,false,ifdc
+100,ainsi font font,games_routines,false,ifdc
+101,cochon,animals,false,ifdc
+102,tomber,action_words,false,ifdc
+103,sale,descriptive_words,false,ifdc
+104,poussette,vehicles,false,ifdc
+105,caillou,outside,false,ifdc
+106,boutons,clothing,false,ifdc
+107,là-bas,prepositions,false,ifdc
+108,pyjama,clothing,false,ifdc
+109,camion,vehicles,false,ifdc
+110,lunettes,household,false,ifdc
+111,manger,action_words,false,ifdc
+112,bon,descriptive_words,false,ifdc
+113,bonne,descriptive_words,false,ifdc
+114,bavette,clothing,false,ifdc
+115,bavoir,clothing,false,ifdc
+116,tchou tchou,sounds,false,ifdc
+117,grand-père,people,false,ifdc
+118,fromage,food_drink,false,ifdc
+119,s'il te plaît,games_routines,false,ifdc
+120,train,vehicles,false,ifdc
+121,beau,descriptive_words,false,ifdc
+122,belle,descriptive_words,false,ifdc
+123,faire un bisou,action_words,false,ifdc
+124,bras,body_parts,false,ifdc
+125,fesses,body_parts,false,ifdc
+126,pleurer,action_words,false,ifdc
+127,bonne nuit,games_routines,false,ifdc
+128,gants,clothing,false,ifdc
+129,body,clothing,false,ifdc
+130,tante,people,false,ifdc
+131,cadeau,toys,false,ifdc
+132,assiette,household,false,ifdc
+133,beurre,food_drink,false,ifdc
+134,pull,clothing,false,ifdc
+135,manteau,clothing,false,ifdc
+136,ours,animals,false,ifdc
+137,à,prepositions,false,ifdc
+138,faire bravo,action_words,false,ifdc
+139,nounou,people,false,ifdc
+140,yaourt,food_drink,false,ifdc
+141,couteau,household,false,ifdc
+142,poubelle,household,false,ifdc
+143,téléphone,household,false,ifdc
+144,doigt,body_parts,false,ifdc
+145,où,question_words,false,ifdc
+146,balai,household,false,ifdc
+147,danser,action_words,false,ifdc
+148,dormir,action_words,false,ifdc
+149,regarder,action_words,false,ifdc
+150,pluie,outside,false,ifdc
+151,monsieur,people,false,ifdc
+152,table,furniture_rooms,false,ifdc
+153,ventre,body_parts,false,ifdc
+154,photo,household,false,ifdc
+155,bottes,clothing,false,ifdc
+156,fermer,action_words,false,ifdc
+157,soupe,food_drink,false,ifdc
+158,attention,descriptive_words,false,ifdc
+159,papier,household,false,ifdc
+160,porter,action_words,false,ifdc
+161,coquin,descriptive_words,false,ifdc
+162,coquine,descriptive_words,false,ifdc
+163,coq,animals,false,ifdc
+164,petits gâteaux,food_drink,false,ifdc
+165,culotte,clothing,false,ifdc
+166,slip,clothing,false,ifdc
+167,musique,household,false,ifdc
+168,éléphant,animals,false,ifdc
+169,mouton,animals,false,ifdc
+170,donner,action_words,false,ifdc
+171,tortue,animals,false,ifdc
+172,lion,animals,false,ifdc
+173,moi,pronouns,false,ifdc
+174,dame,people,false,ifdc
+175,joue,body_parts,false,ifdc
+176,avoir soif,descriptive_words,false,ifdc
+177,fraise,food_drink,false,ifdc
+178,goûter,food_drink,false,ifdc
+179,salut,games_routines,false,ifdc
+180,sucre,food_drink,false,ifdc
+181,toboggan,outside,false,ifdc
+182,soleil,outside,false,ifdc
+183,carottes,food_drink,false,ifdc
+184,à moi,pronouns,false,ifdc
+185,papillon,animals,false,ifdc
+186,vent,outside,false,ifdc
+187,garçon,people,false,ifdc
+188,savon,household,false,ifdc
+189,jouer,action_words,false,ifdc
+190,fille,people,false,ifdc
+191,jambe,body_parts,false,ifdc
+192,œuf,food_drink,false,ifdc
+193,aller,action_words,false,ifdc
+194,dans,prepositions,false,ifdc
+195,singe,animals,false,ifdc
+196,quoi,question_words,false,ifdc
+197,stylo,toys,false,ifdc
+198,cocorico,sounds,false,ifdc
+199,oncle,people,false,ifdc
+200,lune,outside,false,ifdc
+201,lumière,household,false,ifdc
+202,neige,outside,false,ifdc
+203,cuisine,furniture_rooms,false,ifdc
+204,loup,animals,false,ifdc
+205,jouet,toys,false,ifdc
+206,s'asseoir,action_words,false,ifdc
+207,aspirateur,household,false,ifdc
+208,boîte,household,false,ifdc
+209,souris,animals,false,ifdc
+210,ciseaux,household,false,ifdc
+211,collier,clothing,false,ifdc
+212,en bas,prepositions,false,ifdc
+213,avoir peur,descriptive_words,false,ifdc
+214,brosse à dent,household,false,ifdc
+215,compote,food_drink,false,ifdc
+216,chambre,furniture_rooms,false,ifdc
+217,viande,food_drink,false,ifdc
+218,courir,action_words,false,ifdc
+219,docteur,people,false,ifdc
+220,laver,action_words,false,ifdc
+221,clown,people,false,ifdc
+222,cassette,household,false,ifdc
+223,ici,prepositions,false,ifdc
+224,chanter,action_words,false,ifdc
+225,dur,descriptive_words,false,ifdc
+226,joli,descriptive_words,false,ifdc
+227,bâton,outside,false,ifdc
+228,brosse,household,false,ifdc
+229,copain,people,false,ifdc
+230,copine,people,false,ifdc
+231,âne,animals,false,ifdc
+232,école,places,false,ifdc
+233,écrire,action_words,false,ifdc
+234,serviette,household,false,ifdc
+235,pelle,outside,false,ifdc
+236,frites,food_drink,false,ifdc
+237,arbre,outside,false,ifdc
+238,douce,descriptive_words,false,ifdc
+239,doux,descriptive_words,false,ifdc
+240,souffler,action_words,false,ifdc
+241,robe,clothing,false,ifdc
+242,coca,food_drink,false,ifdc
+243,hibou,animals,false,ifdc
+244,lourd,descriptive_words,false,ifdc
+245,lourde,descriptive_words,false,ifdc
+246,mouillé,descriptive_words,false,ifdc
+247,douche,furniture_rooms,false,ifdc
+248,café,food_drink,false,ifdc
+249,ouvrir,action_words,false,ifdc
+250,langue,body_parts,false,ifdc
+251,glace,food_drink,false,ifdc
+252,bouteille,household,false,ifdc
+253,marcher,action_words,false,ifdc
+254,bol,household,false,ifdc
+255,crocodile,animals,false,ifdc
+256,un autre,quantifiers,false,ifdc
+257,ciel,outside,false,ifdc
+258,tartine,food_drink,false,ifdc
+259,avoir faim,descriptive_words,false,ifdc
+260,confiture,food_drink,false,ifdc
+261,jeu,toys,false,ifdc
+262,voir,action_words,false,ifdc
+263,qui,question_words,false,ifdc
+264,mettre,action_words,false,ifdc
+265,est,helping_verbs,false,ifdc
+266,collants,clothing,false,ifdc
+267,petits pots,food_drink,false,ifdc
+268,piscine,outside,false,ifdc
+269,petit,descriptive_words,false,ifdc
+270,petite,descriptive_words,false,ifdc
+271,sauter,action_words,false,ifdc
+272,mouchoir,household,false,ifdc
+273,lire,action_words,false,ifdc
+274,pousser,action_words,false,ifdc
+275,grenouille,animals,false,ifdc
+276,orange,food_drink,false,ifdc
+277,baignoire,furniture_rooms,false,ifdc
+278,canapé,furniture_rooms,false,ifdc
+279,haricot,food_drink,false,ifdc
+280,herbe,outside,false,ifdc
+281,frigo,furniture_rooms,false,ifdc
+282,peigne,household,false,ifdc
+283,montre,household,false,ifdc
+284,menton,body_parts,false,ifdc
+285,tigre,animals,false,ifdc
+286,ne fais pas,games_routines,false,ifdc
+287,chèvre,animals,false,ifdc
+288,sel,food_drink,false,ifdc
+289,genou,body_parts,false,ifdc
+290,escalier,furniture_rooms,false,ifdc
+291,girafe,animals,false,ifdc
+292,grand,descriptive_words,false,ifdc
+293,grande,descriptive_words,false,ifdc
+294,rouge,descriptive_words,false,ifdc
+295,purée,food_drink,false,ifdc
+296,salle de bain,furniture_rooms,false,ifdc
+297,écouter,action_words,false,ifdc
+298,seau,household,false,ifdc
+299,pomme de terre,food_drink,false,ifdc
+300,en haut,prepositions,false,ifdc
+301,propre,descriptive_words,false,ifdc
+302,jeter,action_words,false,ifdc
+303,fait,helping_verbs,false,ifdc
+304,enfant,people,false,ifdc
+305,four,furniture_rooms,false,ifdc
+306,tenir,action_words,false,ifdc
+307,attendre,action_words,false,ifdc
+308,écharpe,clothing,false,ifdc
+309,raisin,food_drink,false,ifdc
+310,veste,clothing,false,ifdc
+311,cube,toys,false,ifdc
+312,peux,helping_verbs,false,ifdc
+313,alors,connecting_words,false,ifdc
+314,mais,connecting_words,false,ifdc
+315,beaucoup,quantifiers,false,ifdc
+316,dessiner,action_words,false,ifdc
+317,nuit,time_words,false,ifdc
+318,pouce,body_parts,false,ifdc
+319,taper,action_words,false,ifdc
+320,balançoire,outside,false,ifdc
+321,vite,descriptive_words,false,ifdc
+322,la,quantifiers,false,ifdc
+323,le,quantifiers,false,ifdc
+324,les,quantifiers,false,ifdc
+325,essuyer,action_words,false,ifdc
+326,bien,descriptive_words,false,ifdc
+327,fatigué,descriptive_words,false,ifdc
+328,bulles,toys,false,ifdc
+329,parc,places,false,ifdc
+330,ma,pronouns,false,ifdc
+331,magasin,places,false,ifdc
+332,mes,pronouns,false,ifdc
+333,mon,pronouns,false,ifdc
+334,pompier,people,false,ifdc
+335,nombril,body_parts,false,ifdc
+336,prendre,action_words,false,ifdc
+337,crèche,places,false,ifdc
+338,bébé chien,animals,false,ifdc
+339,pierre,outside,false,ifdc
+340,vouloir,helping_verbs,false,ifdc
+341,si,connecting_words,false,ifdc
+342,faire,action_words,false,ifdc
+343,animal,animals,false,ifdc
+344,zézette,body_parts,false,ifdc
+345,top là,games_routines,false,ifdc
+346,travail,places,false,ifdc
+347,poulet,food_drink,false,ifdc
+348,bleu,descriptive_words,false,ifdc
+349,étoile,outside,false,ifdc
+350,médicaments,household,false,ifdc
+351,finir,action_words,false,ifdc
+352,feuille,household,false,ifdc
+353,fenêtre,furniture_rooms,false,ifdc
+354,un,quantifiers,false,ifdc
+355,une,quantifiers,false,ifdc
+356,jardin,outside,false,ifdc
+357,couverture,household,false,ifdc
+358,chez,prepositions,false,ifdc
+359,sieste,games_routines,false,ifdc
+360,derrière,prepositions,false,ifdc
+361,pizza,food_drink,false,ifdc
+362,histoire,toys,false,ifdc
+363,lampe,household,false,ifdc
+364,wc,furniture_rooms,false,ifdc
+365,abeille,animals,false,ifdc
+366,bus,vehicles,false,ifdc
+367,bébé chat,animals,false,ifdc
+368,salopette,clothing,false,ifdc
+369,goutter,action_words,false,ifdc
+370,aider,action_words,false,ifdc
+371,tiroir,furniture_rooms,false,ifdc
+372,entendre,action_words,false,ifdc
+373,conduire,action_words,false,ifdc
+374,petite bête,animals,false,ifdc
+375,va sur le pot,games_routines,false,ifdc
+376,autre,quantifiers,false,ifdc
+377,télécommande,household,false,ifdc
+378,avoir sommeil,descriptive_words,false,ifdc
+379,ne pas,helping_verbs,false,ifdc
+380,kiwi,food_drink,false,ifdc
+381,clémentine,food_drink,false,ifdc
+382,boisson,food_drink,false,ifdc
+383,nuage,outside,false,ifdc
+384,gentil,descriptive_words,false,ifdc
+385,gentille,descriptive_words,false,ifdc
+386,un peu,quantifiers,false,ifdc
+387,arrêter,action_words,false,ifdc
+388,méchant,descriptive_words,false,ifdc
+389,méchante,descriptive_words,false,ifdc
+390,sirop,household,false,ifdc
+391,coussins,household,false,ifdc
+392,arrosoir,outside,false,ifdc
+393,garage,furniture_rooms,false,ifdc
+394,faire du vélo,action_words,false,ifdc
+395,aimer,action_words,false,ifdc
+396,mordre,action_words,false,ifdc
+397,figure,body_parts,false,ifdc
+398,visage,body_parts,false,ifdc
+399,avec,prepositions,false,ifdc
+400,vert,descriptive_words,false,ifdc
+401,verte,descriptive_words,false,ifdc
+402,chemise,clothing,false,ifdc
+403,fauteuil,furniture_rooms,false,ifdc
+404,hélicoptère,vehicles,false,ifdc
+405,petits pois,food_drink,false,ifdc
+406,apporter,action_words,false,ifdc
+407,loin,prepositions,false,ifdc
+408,a fait,helping_verbs,false,ifdc
+409,à côté de,prepositions,false,ifdc
+410,attraper,action_words,false,ifdc
+411,basket,clothing,false,ifdc
+412,chips,food_drink,false,ifdc
+413,panier,household,false,ifdc
+414,de,prepositions,false,ifdc
+415,haut,descriptive_words,false,ifdc
+416,haute,descriptive_words,false,ifdc
+417,se cogner,action_words,false,ifdc
+418,noir,descriptive_words,false,ifdc
+419,machine à laver,furniture_rooms,false,ifdc
+420,trouver,action_words,false,ifdc
+421,melon,food_drink,false,ifdc
+422,écureuil,animals,false,ifdc
+423,déchirer,action_words,false,ifdc
+424,lavabo,furniture_rooms,false,ifdc
+425,je vais t'attraper,games_routines,false,ifdc
+426,être debout,action_words,false,ifdc
+427,sécher,action_words,false,ifdc
+428,oreiller,household,false,ifdc
+429,zèbre,animals,false,ifdc
+430,coincé,descriptive_words,false,ifdc
+431,déjeuner,games_routines,false,ifdc
+432,plante,household,false,ifdc
+433,tourne-toi,games_routines,false,ifdc
+434,frapper à la porte,action_words,false,ifdc
+435,vide,descriptive_words,false,ifdc
+436,dindon,animals,false,ifdc
+437,prendre dans ses bras,action_words,false,ifdc
+438,avoir besoin de,helping_verbs,false,ifdc
+439,avoir à faire,helping_verbs,false,ifdc
+440,couper,action_words,false,ifdc
+441,fourmi,animals,false,ifdc
+442,jaune,descriptive_words,false,ifdc
+443,sur,prepositions,false,ifdc
+444,aussi,quantifiers,false,ifdc
+445,après,time_words,false,ifdc
+446,jus de fruit,food_drink,false,ifdc
+447,de la,quantifiers,false,ifdc
+448,des,quantifiers,false,ifdc
+449,du,quantifiers,false,ifdc
+450,parler,action_words,false,ifdc
+451,tee-shirt,clothing,false,ifdc
+452,vilain,descriptive_words,false,ifdc
+453,vilaine,descriptive_words,false,ifdc
+454,nager,action_words,false,ifdc
+455,route,outside,false,ifdc
+456,rue,outside,false,ifdc
+457,tous,quantifiers,false,ifdc
+458,tout,quantifiers,false,ifdc
+459,content,descriptive_words,false,ifdc
+460,contente,descriptive_words,false,ifdc
+461,pourquoi,question_words,false,ifdc
+462,même,quantifiers,false,ifdc
+463,glisser,action_words,false,ifdc
+464,ramasser,action_words,false,ifdc
+465,nettoyer,action_words,false,ifdc
+466,avoir,action_words,false,ifdc
+467,puzzle,toys,false,ifdc
+468,quel,question_words,false,ifdc
+469,quelle,question_words,false,ifdc
+470,sec,descriptive_words,false,ifdc
+471,sèche,descriptive_words,false,ifdc
+472,frère,people,false,ifdc
+473,échelle,outside,false,ifdc
+474,acheter,action_words,false,ifdc
+475,ce soir,time_words,false,ifdc
+476,chatouiller,action_words,false,ifdc
+477,ceinture,clothing,false,ifdc
+478,biche,animals,false,ifdc
+479,petit déjeuner,games_routines,false,ifdc
+480,ferme,places,false,ifdc
+481,garderie,places,false,ifdc
+482,mignon,descriptive_words,false,ifdc
+483,mignonne,descriptive_words,false,ifdc
+484,secouer,action_words,false,ifdc
+485,baguette,food_drink,false,ifdc
+486,argent,household,false,ifdc
+487,vitamines,food_drink,false,ifdc
+488,moufles,clothing,false,ifdc
+489,renne,animals,false,ifdc
+490,cheville,body_parts,false,ifdc
+491,blessé,descriptive_words,false,ifdc
+492,tendre,descriptive_words,false,ifdc
+493,esquimau,food_drink,false,ifdc
+494,détester,action_words,false,ifdc
+495,faire les courses,games_routines,false,ifdc
+496,et,connecting_words,false,ifdc
+497,tasse,household,false,ifdc
+498,balayer,action_words,false,ifdc
+499,pour,prepositions,false,ifdc
+500,toucher,action_words,false,ifdc
+501,travailler,action_words,false,ifdc
+502,il,pronouns,false,ifdc
+503,laisse-moi,helping_verbs,false,ifdc
+504,blanc,descriptive_words,false,ifdc
+505,blanche,descriptive_words,false,ifdc
+506,sa,pronouns,false,ifdc
+507,sous,prepositions,false,ifdc
+508,sœur,people,false,ifdc
+509,feutre,toys,false,ifdc
+510,salon,furniture_rooms,false,ifdc
+511,je,pronouns,false,ifdc
+512,se réveiller,action_words,false,ifdc
+513,montrer,action_words,false,ifdc
+514,lèvre,body_parts,false,ifdc
+515,son,pronouns,false,ifdc
+516,colle,toys,false,ifdc
+517,plein,descriptive_words,false,ifdc
+518,pleine,descriptive_words,false,ifdc
+519,tirer,action_words,false,ifdc
+520,jour,time_words,false,ifdc
+521,pingouin,animals,false,ifdc
+522,chaise haute,furniture_rooms,false,ifdc
+523,flan,food_drink,false,ifdc
+524,tuyau,outside,false,ifdc
+525,radio,household,false,ifdc
+526,jeans,clothing,false,ifdc
+527,marron,descriptive_words,false,ifdc
+528,collant,descriptive_words,false,ifdc
+529,collante,descriptive_words,false,ifdc
+530,tondeuse à gazon,outside,false,ifdc
+531,oie,animals,false,ifdc
+532,appareil photo,household,false,ifdc
+533,raquette,toys,false,ifdc
+534,mayonnaise,food_drink,false,ifdc
+535,évier,furniture_rooms,false,ifdc
+536,cœur,body_parts,false,ifdc
+537,au dessus de,prepositions,false,ifdc
+538,cirque,places,false,ifdc
+539,craie,toys,false,ifdc
+540,mieux,descriptive_words,false,ifdc
+541,courir après,action_words,false,ifdc
+542,thon,food_drink,false,ifdc
+543,ce petit cochon,games_routines,false,ifdc
+544,dernier,descriptive_words,false,ifdc
+545,dernière,descriptive_words,false,ifdc
+546,dîner,games_routines,false,ifdc
+547,endormi,descriptive_words,false,ifdc
+548,ses,pronouns,false,ifdc
+549,zoo,places,false,ifdc
+550,partager,action_words,false,ifdc
+551,éclabousser,action_words,false,ifdc
+552,église,places,false,ifdc
+553,hier,time_words,false,ifdc
+554,cornflakes,food_drink,false,ifdc
+555,faire semblant,action_words,false,ifdc
+556,cinéma,places,false,ifdc
+557,aucun,quantifiers,false,ifdc
+558,aucune,quantifiers,false,ifdc
+559,aller bien avec,action_words,false,ifdc
+560,nourrir,action_words,false,ifdc
+561,devoir faire,helping_verbs,false,ifdc
+562,malade,descriptive_words,false,ifdc
+563,short,clothing,false,ifdc
+564,camion de pompier,vehicles,false,ifdc
+565,demain,time_words,false,ifdc
+566,céréales,food_drink,false,ifdc
+567,marteau,household,false,ifdc
+568,faire de la peinture,action_words,false,ifdc
+569,réparer,action_words,false,ifdc
+570,trottoir,outside,false,ifdc
+571,elle,pronouns,false,ifdc
+572,pâte à modeler,toys,false,ifdc
+573,vanille,food_drink,false,ifdc
+574,toit,outside,false,ifdc
+575,maintenant,time_words,false,ifdc
+576,banc,furniture_rooms,false,ifdc
+577,fête,places,false,ifdc
+578,personne,people,false,ifdc
+579,balancer,action_words,false,ifdc
+580,aimer bien,action_words,false,ifdc
+581,se dépêcher,action_words,false,ifdc
+582,gens,people,false,ifdc
+583,folle,descriptive_words,false,ifdc
+584,fou,descriptive_words,false,ifdc
+585,maïs,food_drink,false,ifdc
+586,forêt,places,false,ifdc
+587,parce que,connecting_words,false,ifdc
+588,cour,places,false,ifdc
+589,gâteaux apéro,food_drink,false,ifdc
+590,on,pronouns,false,ifdc
+591,chewing-gum,food_drink,false,ifdc
+592,facteur,people,false,ifdc
+593,poney,animals,false,ifdc
+594,porte-monnaie,household,false,ifdc
+595,sont,helping_verbs,false,ifdc
+596,cave,furniture_rooms,false,ifdc
+597,sourire,action_words,false,ifdc
+598,nutella,food_drink,false,ifdc
+599,drapeau,outside,false,ifdc
+600,perles,clothing,false,ifdc
+601,bac à sable,outside,false,ifdc
+602,plat,household,false,ifdc
+603,cuisiner,action_words,false,ifdc
+604,spaghetti,food_drink,false,ifdc
+605,verser,action_words,false,ifdc
+606,clou,household,false,ifdc
+607,doigt de pieds,body_parts,false,ifdc
+608,serviette de table,household,false,ifdc
+609,agneau,animals,false,ifdc
+610,dégoûtant,descriptive_words,false,ifdc
+611,dégoûtante,descriptive_words,false,ifdc
+612,entrée,furniture_rooms,false,ifdc
+613,premier,descriptive_words,false,ifdc
+614,première,descriptive_words,false,ifdc
+615,serpillère,household,false,ifdc
+616,raisins secs,food_drink,false,ifdc
+617,par-dessus,prepositions,false,ifdc
+618,pièce,furniture_rooms,false,ifdc
+619,construire,action_words,false,ifdc
+620,tricycle,vehicles,false,ifdc
+621,ces,pronouns,false,ifdc
+622,horloge,household,false,ifdc
+623,être,helping_verbs,false,ifdc
+624,limonade,food_drink,false,ifdc
+625,autour de,prepositions,false,ifdc
+626,penser,action_words,false,ifdc
+627,trotteur,household,false,ifdc
+628,faire du patin,action_words,false,ifdc
+629,étendage,furniture_rooms,false,ifdc
+630,bruyant,descriptive_words,false,ifdc
+631,bruyante,descriptive_words,false,ifdc
+632,coup de fil,games_routines,false,ifdc
+633,nourriture,food_drink,false,ifdc
+634,chaque,quantifiers,false,ifdc
+635,sombre,descriptive_words,false,ifdc
+636,camping,places,false,ifdc
+637,recevoir,action_words,false,ifdc
+638,bretzel,food_drink,false,ifdc
+639,haricots verts,food_drink,false,ifdc
+640,crêpe,food_drink,false,ifdc
+641,plage,places,false,ifdc
+642,bonhomme de neige,outside,false,ifdc
+643,dire,action_words,false,ifdc
+644,rester,action_words,false,ifdc
+645,sauce,food_drink,false,ifdc
+646,être réveillé,descriptive_words,false,ifdc
+647,glaçon,food_drink,false,ifdc
+648,triste,descriptive_words,false,ifdc
+649,fort,descriptive_words,false,ifdc
+650,forte,descriptive_words,false,ifdc
+651,matin,time_words,false,ifdc
+652,tu,pronouns,false,ifdc
+653,vous,pronouns,false,ifdc
+654,lui,pronouns,false,ifdc
+655,renverser,action_words,false,ifdc
+656,police,people,false,ifdc
+657,suis,helping_verbs,false,ifdc
+658,grimper,action_words,false,ifdc
+659,lécher,action_words,false,ifdc
+660,madeleine,food_drink,false,ifdc
+661,ta,pronouns,false,ifdc
+662,ton,pronouns,false,ifdc
+663,votre,pronouns,false,ifdc
+664,aujourd'hui,time_words,false,ifdc
+665,couvrir,action_words,false,ifdc
+666,campagne,places,false,ifdc
+667,pique-nique,places,false,ifdc
+668,donner un coup,action_words,false,ifdc
+669,heure,time_words,false,ifdc
+670,elles,pronouns,false,ifdc
+671,ils,pronouns,false,ifdc
+672,neuf,descriptive_words,false,ifdc
+673,neuve,descriptive_words,false,ifdc
+674,comment,question_words,false,ifdc
+675,nous,pronouns,false,ifdc
+676,quand,question_words,false,ifdc
+677,tranquille,descriptive_words,false,ifdc
+678,vieille,descriptive_words,false,ifdc
+679,vieux,descriptive_words,false,ifdc
+680,noisettes,food_drink,false,ifdc
+681,maître,people,false,ifdc
+682,maîtresse,people,false,ifdc
+683,sweat,clothing,false,ifdc
+684,essayer de,helping_verbs,false,ifdc
+685,long,descriptive_words,false,ifdc
+686,longue,descriptive_words,false,ifdc
+687,arracher,action_words,false,ifdc
+688,cuisinière,furniture_rooms,false,ifdc
+689,avant,time_words,false,ifdc
+690,vers,prepositions,false,ifdc
+691,sandwich,food_drink,false,ifdc
+692,eux,pronouns,false,ifdc
+693,courge,food_drink,false,ifdc
+694,près de,prepositions,false,ifdc
+695,berceau,furniture_rooms,false,ifdc
+696,était,helping_verbs,false,ifdc
+697,rocher,outside,false,ifdc
+698,terrain de jeux,places,false,ifdc
+699,notre,pronouns,false,ifdc
+700,traineau,vehicles,false,ifdc
+701,lent,descriptive_words,false,ifdc
+702,lente,descriptive_words,false,ifdc
+703,plateau,household,false,ifdc
+704,grenouillère,clothing,false,ifdc
+705,centre-ville,places,false,ifdc
+706,donc,connecting_words,false,ifdc
+707,leur,pronouns,false,ifdc
+708,au loin,prepositions,false,ifdc
+709,combinaison de ski,clothing,false,ifdc
+710,infirmière,people,false,ifdc
+711,à l'intérieur de,prepositions,false,ifdc
+712,déposer,action_words,false,ifdc
+713,pop-corn,food_drink,false,ifdc
+714,ceux,pronouns,false,ifdc
+715,ordures,household,false,ifdc
+716,souhaiter,action_words,false,ifdc
+717,station-service,places,false,ifdc
+718,toi-même,pronouns,false,ifdc
+719,hamburger,food_drink,false,ifdc
+720,pourrait,helping_verbs,false,ifdc
+721,minuscule,descriptive_words,false,ifdc
+722,beignet,food_drink,false,ifdc
+723,moi-même,pronouns,false,ifdc
+724,au sommet de,prepositions,false,ifdc
+725,venteux,descriptive_words,false,ifdc
+726,au sujet de,prepositions,false,ifdc
+727,doudou,toys,false,abcome
+728,tétine,household,false,abcome
+729,dodo,games_routines,false,abcome
+730,bisou,games_routines,false,abcome
+731,câlin,games_routines,false,abcome
+732,papi,people,false,abcome
+733,mamie,people,false,abcome
+734,tata,people,false,abcome
+735,tonton,people,false,abcome
+736,larme,body_parts,false,abcome
