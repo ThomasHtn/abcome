@@ -19,7 +19,11 @@ import {
   RECORDING_MAX_BYTES,
   RECORDING_MAX_DURATION_MS,
 } from '@core/recordings/recording.constants';
-import { formatRecordingClock } from '@core/recordings/recording.utils';
+import {
+  formatRecordingClock,
+  formatTenthsClock,
+  waveformLevels,
+} from '@core/recordings/recording.utils';
 import { quote } from '@core/text/text.utils';
 import { CATEGORY_LABELS } from '@core/words/word.constants';
 import { Pronunciation, PronunciationRequest, Word } from '@core/words/word.model';
@@ -48,21 +52,38 @@ import { WordChoice } from '@shared/word-picker/word-picker.model';
 import { AudioRecorder } from './audio-recorder';
 import { RecorderError } from './recorder-error';
 import { RecordingClip } from './recording-clip/recording-clip';
-import { LEVEL_BAR_COUNT, MIN_KEEP_MS, RECORDER_ERROR_MESSAGES } from './recording-new.constants';
-import { PendingStage, RecordedClip, RecordingPhase, SaveOutcome } from './recording-new.model';
 import {
+  LEVEL_BAR_COUNT,
+  MIN_KEEP_MS,
+  RECORDER_ERROR_MESSAGES,
+  TRIM_BAR_COUNT,
+} from './recording-new.constants';
+import {
+  ClockReading,
+  DecodedClip,
+  PendingStage,
+  RecordedClip,
+  RecordingPhase,
+  SaveOutcome,
+  TrimRange,
+} from './recording-new.model';
+import {
+  decodeClip,
   doneCopy,
+  isWholeClip,
   liveBars,
   recordingInstruction,
   recordingTitle,
   saveButtonText,
   stageOptions,
   summarizeLevels,
+  trimClip,
 } from './recording-new.utils';
+import { RecordingTrim } from './recording-trim/recording-trim';
 
 /**
- * Record-a-sound screen: record up to 15 s, listen and retry, pick the word, then file the sound under
- * a stage. An existing word offers its stages or a new one; a new word first needs its first stage.
+ * Record-a-sound screen: record up to 15 s, listen, trim and retry, pick the word, then file the sound
+ * under a stage. An existing word offers its stages or a new one; a new word first needs its first stage.
  */
 @Component({
   selector: 'app-recording-new-page',
@@ -81,6 +102,7 @@ import {
     PageHeader,
     PronunciationForm,
     RecordingClip,
+    RecordingTrim,
     StatusDot,
     WordPicker,
   ],
@@ -140,7 +162,22 @@ export class RecordingNewPage {
   protected readonly error = signal<string | null>(null);
 
   /**
-   * The recorded clip, `null` before recording.
+   * The clip as recorded, kept whole so a trim can always be undone; `null` before recording.
+   */
+  private readonly recorded = signal<RecordedClip | null>(null);
+
+  /**
+   * The recording decoded for trimming, `null` until decoded or where the browser cannot.
+   */
+  protected readonly decoded = signal<DecodedClip | null>(null);
+
+  /**
+   * Part of the recording kept, `null` while it cannot be trimmed.
+   */
+  protected readonly trim = signal<TrimRange | null>(null);
+
+  /**
+   * The clip to keep: the recording, or its trimmed part; `null` before recording.
    */
   protected readonly clip = signal<RecordedClip | null>(null);
 
@@ -158,6 +195,36 @@ export class RecordingNewPage {
    * Whether the clip is playing on the listen step, to darken its bars.
    */
   protected readonly playing = signal(false);
+
+  /**
+   * Playback position in the clip, for the trim editor's playback line.
+   */
+  protected readonly positionMs = signal(0);
+
+  /**
+   * Whether the handles are offered: the recording is decoded and longer than a keepable sound.
+   */
+  protected readonly canTrim = computed(() => {
+    const decoded = this.decoded();
+    return decoded !== null && this.trim() !== null && decoded.durationMs > MIN_KEEP_MS;
+  });
+
+  /**
+   * Whether the kept part is shorter than the recording, which offers to undo the cut.
+   */
+  protected readonly trimmed = computed(() => {
+    const trim = this.trim();
+    const decoded = this.decoded();
+    return trim !== null && decoded !== null && !isWholeClip(trim, decoded.durationMs);
+  });
+
+  /**
+   * Waveform of the whole recording under the handles, finer than the live one.
+   */
+  protected readonly trimLevels = computed(() => {
+    const decoded = this.decoded();
+    return decoded ? waveformLevels(decoded.samples, TRIM_BAR_COUNT) : [];
+  });
 
   /**
    * Word the sound belongs to, `null` until chosen; `word` is set for a word of the notebook.
@@ -231,7 +298,7 @@ export class RecordingNewPage {
    * Lapinou's instruction, or the microphone failure.
    */
   protected readonly instruction = computed(
-    () => this.error() ?? recordingInstruction(this.phase()),
+    () => this.error() ?? recordingInstruction(this.phase(), this.canTrim()),
   );
 
   /**
@@ -269,16 +336,18 @@ export class RecordingNewPage {
   protected readonly clipBars = computed(() => summarizeLevels(this.clip()?.levels ?? []));
 
   /**
-   * Clock under the waveform: elapsed out of 15 s while recording, the length afterwards.
+   * Clock above the waveform: elapsed out of 15 s while recording, then the kept length to the tenth,
+   * out of the whole recording once trimmed.
    */
-  protected readonly clock = computed(() => {
+  protected readonly clock = computed<ClockReading>(() => {
+    const limit = formatRecordingClock(RECORDING_MAX_DURATION_MS);
     switch (this.phase()) {
       case 'recording':
-        return `${formatRecordingClock(this.recorder.elapsedMs())} / ${formatRecordingClock(RECORDING_MAX_DURATION_MS)}`;
+        return { value: formatRecordingClock(this.recorder.elapsedMs()), total: limit };
       case 'review':
-        return formatRecordingClock(this.clip()?.durationMs ?? 0);
+        return this.reviewClock();
       default:
-        return formatRecordingClock(0);
+        return { value: formatRecordingClock(0), total: limit };
     }
   });
 
@@ -317,7 +386,7 @@ export class RecordingNewPage {
    */
   protected async startRecording(): Promise<void> {
     this.error.set(null);
-    this.setClip(null);
+    this.forgetRecording();
     this.phase.set('recording');
     try {
       const clip = await this.recorder.record();
@@ -325,8 +394,10 @@ export class RecordingNewPage {
         this.fail('Ce son est trop lourd. Recommence un peu plus court.');
         return;
       }
+      this.recorded.set(clip);
       this.setClip(clip);
       this.phase.set('review');
+      void this.prepareTrim(clip);
     } catch (error) {
       this.fail(
         error instanceof RecorderError
@@ -341,6 +412,30 @@ export class RecordingNewPage {
    */
   protected stopRecording(): void {
     this.recorder.stop();
+  }
+
+  /**
+   * Keeps the part between the handles as the clip to listen to and save; the whole recording is
+   * kept untouched, in its own format.
+   */
+  protected settleTrim(range: TrimRange): void {
+    const recorded = this.recorded();
+    const decoded = this.decoded();
+    if (!recorded || !decoded) {
+      return;
+    }
+    this.setClip(isWholeClip(range, decoded.durationMs) ? recorded : trimClip(decoded, range));
+  }
+
+  /**
+   * Undoes the cut: the handles go back to the ends and the whole recording is kept.
+   */
+  protected undoTrim(): void {
+    const decoded = this.decoded();
+    if (decoded) {
+      this.trim.set({ startMs: 0, endMs: decoded.durationMs });
+    }
+    this.setClip(this.recorded());
   }
 
   /**
@@ -458,7 +553,7 @@ export class RecordingNewPage {
   protected another(): void {
     this.lastWordId.set(this.outcome()?.wordId ?? null);
     this.pending = null;
-    this.setClip(null);
+    this.forgetRecording();
     this.target.set(null);
     this.query.set('');
     this.outcome.set(null);
@@ -536,6 +631,43 @@ export class RecordingNewPage {
   private fail(message: string): void {
     this.error.set(message);
     this.phase.set('ready');
+  }
+
+  /**
+   * Decodes a fresh recording for the handles, unless another one was recorded meanwhile.
+   */
+  private async prepareTrim(clip: RecordedClip): Promise<void> {
+    const decoded = await decodeClip(clip.blob);
+    if (!decoded || this.recorded() !== clip) {
+      return;
+    }
+    this.decoded.set(decoded);
+    this.trim.set({ startMs: 0, endMs: decoded.durationMs });
+  }
+
+  /**
+   * Clock of the listen step: the kept length, and the whole length once trimmed.
+   */
+  private reviewClock(): ClockReading {
+    const trim = this.trim();
+    const decoded = this.decoded();
+    if (!trim || !decoded) {
+      return { value: formatTenthsClock(this.clip()?.durationMs ?? 0), total: null };
+    }
+    return {
+      value: formatTenthsClock(trim.endMs - trim.startMs),
+      total: this.trimmed() ? formatTenthsClock(decoded.durationMs) : null,
+    };
+  }
+
+  /**
+   * Drops the recording, its decoding and its trim, before recording again.
+   */
+  private forgetRecording(): void {
+    this.recorded.set(null);
+    this.decoded.set(null);
+    this.trim.set(null);
+    this.setClip(null);
   }
 
   /**

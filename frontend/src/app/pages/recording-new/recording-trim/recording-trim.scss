@@ -1,0 +1,136 @@
+/* Trim editor: lavender frame over the waveform, a thick handle on each side, the cut parts dimmed. */
+
+@use 'tools' as *;
+
+/* Fills the waveform card. */
+:host {
+  display: block;
+  block-size: 100%;
+}
+
+/* Strip the handles are placed on, the bars centred in its height. */
+.recording-trim {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  block-size: 100%;
+  user-select: none;
+}
+
+/* A cut part: the card's white laid over the bars, so they fade without disappearing. */
+.recording-trim__shade {
+  position: absolute;
+  inset-block: 0;
+  background-color: tint(surface, 72%);
+  pointer-events: none;
+}
+
+/* Cut start. */
+.recording-trim__shade--start {
+  inset-inline-start: 0;
+}
+
+/* Cut end. */
+.recording-trim__shade--end {
+  inset-inline-end: 0;
+}
+
+/* Kept part: the top and bottom of the frame, joining the two handles. */
+.recording-trim__window {
+  position: absolute;
+  inset-block: 0;
+  border-block: 3px solid var(--color-lavender-700);
+  pointer-events: none;
+}
+
+/* Playback line. */
+.recording-trim__playhead {
+  position: absolute;
+  inset-block: 0.5rem;
+  inline-size: 2px;
+  border-radius: 1px;
+  background-color: var(--color-ink);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* A handle: a finger-wide grab zone around its visible bar, placed on its edge of the kept part. */
+.recording-trim__handle {
+  position: absolute;
+  inset-block: 0;
+  display: flex;
+  inline-size: 2.75rem;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+/* Start handle: its bar sits just before the kept part, its grab zone overlapping it a little. */
+.recording-trim__handle--start {
+  justify-content: flex-end;
+  padding-inline-end: 0.5rem;
+  transform: translateX(calc(-100% + 0.5rem));
+}
+
+/* End handle: its bar sits just after the kept part, its grab zone overlapping it a little. */
+.recording-trim__handle--end {
+  justify-content: flex-start;
+  padding-inline-start: 0.5rem;
+  transform: translateX(-0.5rem);
+}
+
+/* Keyboard focus ring goes around the visible bar, not the wide grab zone. */
+.recording-trim__handle:focus-visible {
+  outline: none;
+}
+
+/* The visible bar of a handle. */
+.recording-trim__handle::before {
+  content: '';
+  flex: none;
+  inline-size: 0.875rem;
+  background-color: var(--color-lavender-700);
+}
+
+/* Rounded on the outside, square where it meets the frame. */
+.recording-trim__handle--start::before {
+  border-radius: 0.625rem 0 0 0.625rem;
+}
+
+/* Rounded on the outside, square where it meets the frame. */
+.recording-trim__handle--end::before {
+  border-radius: 0 0.625rem 0.625rem 0;
+}
+
+/* Focused handle. */
+.recording-trim__handle:focus-visible::before {
+  outline: 3px solid var(--color-lavender-400);
+  outline-offset: 2px;
+}
+
+/* White grip line in the middle of the bar. */
+.recording-trim__handle::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inline-size: 2px;
+  block-size: 1.5rem;
+  border-radius: 1px;
+  background-color: var(--color-surface);
+  transform: translateY(-50%);
+}
+
+/* Grip of the start handle, centred in its bar. */
+.recording-trim__handle--start::after {
+  inset-inline-end: calc(0.9375rem - 1px);
+}
+
+/* Grip of the end handle, centred in its bar. */
+.recording-trim__handle--end::after {
+  inset-inline-start: calc(0.9375rem - 1px);
+}
+
+/* Held handle: a longer grip, so the finger sees it caught. */
+.recording-trim__handle--held::after {
+  block-size: 2.25rem;
+}

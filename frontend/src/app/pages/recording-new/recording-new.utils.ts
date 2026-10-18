@@ -1,16 +1,22 @@
 import { formatLongDate, formatShortDateWithYear } from '@core/date/date.utils';
+import { TRIM_SAMPLE_RATE } from '@core/recordings/recording.constants';
+import { encodeWav, waveformLevels } from '@core/recordings/recording.utils';
 import { quote } from '@core/text/text.utils';
 import { STATUS_LABELS } from '@core/words/word.constants';
 import { Word } from '@core/words/word.model';
 import { sortPronunciations } from '@core/words/word.utils';
 
-import { LEVEL_BAR_COUNT, LEVEL_GAIN } from './recording-new.constants';
+import { LEVEL_BAR_COUNT, LEVEL_GAIN, MIN_KEEP_MS, TRIM_FADE_MS } from './recording-new.constants';
 import {
+  DecodedClip,
   DoneCopy,
+  RecordedClip,
   RecorderErrorKind,
   RecordingPhase,
   SaveOutcome,
   StageOption,
+  TrimEdge,
+  TrimRange,
 } from './recording-new.model';
 
 /**
@@ -71,12 +77,14 @@ export function microphoneErrorKind(error: unknown): RecorderErrorKind {
 /**
  * Lapinou's instruction for each recording step.
  */
-export function recordingInstruction(phase: RecordingPhase): string {
+export function recordingInstruction(phase: RecordingPhase, canTrim: boolean): string {
   switch (phase) {
     case 'recording':
       return "J'écoute… Touche le carré rouge quand il a fini.";
     case 'review':
-      return 'Écoute le son. Pas réussi ? Recommence autant que tu veux.';
+      return canTrim
+        ? 'Écoute le son. Glisse les poignées pour couper le début ou la fin.'
+        : 'Écoute le son. Pas réussi ? Recommence autant que tu veux.';
     default:
       return 'Prêt ? Touche le micro quand Côme commence à parler.';
   }
@@ -151,4 +159,89 @@ export function stageOptions(word: Word): StageOption[] {
       };
     })
     .reverse();
+}
+
+/**
+ * Decodes a fresh recording to mono samples so it can be trimmed; `null` where the browser cannot.
+ */
+export async function decodeClip(blob: Blob): Promise<DecodedClip | null> {
+  if (typeof OfflineAudioContext === 'undefined') {
+    return null;
+  }
+  try {
+    const context = new OfflineAudioContext(1, 1, TRIM_SAMPLE_RATE);
+    const audio = await context.decodeAudioData(await blob.arrayBuffer());
+    return {
+      samples: audio.getChannelData(0),
+      sampleRate: audio.sampleRate,
+      durationMs: audio.duration * 1000,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The kept part with one edge moved to `ms`, never shorter than a keepable sound nor past the clip,
+ * rounded to the hundredth of a second.
+ */
+export function moveTrimEdge(
+  range: TrimRange,
+  edge: TrimEdge,
+  ms: number,
+  durationMs: number,
+): TrimRange {
+  const rounded = Math.round(ms / 10) * 10;
+  return edge === 'start'
+    ? { ...range, startMs: clamp(rounded, 0, range.endMs - MIN_KEEP_MS) }
+    : { ...range, endMs: clamp(rounded, range.startMs + MIN_KEEP_MS, durationMs) };
+}
+
+/**
+ * Whether the kept part is the whole clip, so the recording can be sent untouched.
+ */
+export function isWholeClip(range: TrimRange, durationMs: number): boolean {
+  return range.startMs <= 0 && range.endMs >= durationMs;
+}
+
+/**
+ * The kept part as a new WAV clip, faded in and out at the cuts, with its own waveform.
+ */
+export function trimClip(decoded: DecodedClip, range: TrimRange): RecordedClip {
+  const toSample = (ms: number) => Math.round((ms / 1000) * decoded.sampleRate);
+  const samples = decoded.samples.slice(toSample(range.startMs), toSample(range.endMs));
+  fadeEdges(samples, toSample(TRIM_FADE_MS));
+  return {
+    blob: encodeWav(samples, decoded.sampleRate),
+    durationMs: Math.round(range.endMs - range.startMs),
+    levels: waveformLevels(samples, LEVEL_BAR_COUNT),
+  };
+}
+
+/**
+ * Ramps the first and last `length` samples from silence, in place.
+ */
+function fadeEdges(samples: Float32Array, length: number): void {
+  const ramp = Math.min(length, Math.floor(samples.length / 2));
+  for (let index = 0; index < ramp; index++) {
+    const gain = index / ramp;
+    samples[index] *= gain;
+    samples[samples.length - 1 - index] *= gain;
+  }
+}
+
+/**
+ * `value` kept between `min` and `max`.
+ */
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+/**
+ * A handle's position read aloud ("1,4 seconde", "2 secondes"), to the tenth.
+ */
+export function spokenSeconds(ms: number): string {
+  const seconds = Math.round(ms / 100) / 10;
+  const text = seconds.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+  return `${text} ${seconds < 2 ? 'seconde' : 'secondes'}`;
 }

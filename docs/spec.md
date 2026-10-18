@@ -41,7 +41,7 @@ Every rule is mandatory. Any change goes through this section first.
 
 - Every `/api/**` route needs a session except login, session check and health. Deny by default.
 - CSRF on: Spring Security cookie token, read by Angular's `HttpClient`.
-- Inputs validated with Bean Validation. Audio uploads checked for size (2 MB), MIME type (`audio/webm`, `audio/mp4`) and duration (15 s).
+- Inputs validated with Bean Validation. Audio uploads checked for size (2 MB), MIME type (`audio/webm`, `audio/mp4`, `audio/wav`) and duration (15 s).
 - Errors go through `GlobalExceptionHandler`: no stack trace, SQL or internal detail.
 - Swagger UI off in production (`API_DOCS_ENABLED=false`).
 
@@ -100,7 +100,8 @@ The same page for both; its wording names a word or a sentence.
 
 ### 5. Record a sound (Son)
 
-- Record up to 15 s, play back, retry or keep.
+- Record up to 15 s, play back, retry or keep. The clock sits above the waveform: elapsed out of 15 s while recording, then the kept length to the tenth.
+- Trim before keeping: two handles on the waveform cut the start and the end (at least 0.5 s kept), the cut parts dimmed; playback plays the kept part only, and "Annuler la coupe" restores the whole sound. A trimmed sound is cut in the browser and sent as WAV (mono, 22 050 Hz, 16 bit); an untouched one is sent as recorded. Where the browser cannot decode its own recording, the handles are not offered.
 - Pick the word or sentence: an existing one (or `?mot=`) then offers its stages, newest first, or "Il le dit autrement" to note a new stage that receives the sound; a new word also needs its first stage, which receives the sound.
 - "Enregistrer un autre son" records several in a row.
 
@@ -108,7 +109,7 @@ The same page for both; its wording names a word or a sentence.
 
 - **word** (a notebook entry): id, kind (`word` or `sentence`, never changes), label (a word 1 to 40 chars, what a sentence means 1 to 200), normalized_label (lower case, no accents, never empty; unique among words only, two sentences may mean the same), category (`custom` for a sentence), created_at.
 - **pronunciation** (stage): id, word_id (cascade delete), spoken (1 to 60 chars for a word, 200 for a sentence), status, date (not in the future), created_at.
-- **recording**: id, word_id (cascade delete, indexed), pronunciation_id (the stage it is filed under, indexed; no cascade, a deleted stage hands its sounds to a neighbour), data (`bytea`, loaded only on playback), mime_type, size_bytes, duration_ms (300 to 15 000), created_at.
+- **recording**: id, word_id (cascade delete, indexed), pronunciation_id (the stage it is filed under, indexed; no cascade, a deleted stage hands its sounds to a neighbour), data (`bytea`, loaded only on playback), mime_type (`audio/webm`, `audio/mp4` or `audio/wav`), size_bytes, duration_ms (300 to 15 000), created_at.
 - **dictionary_entry**: label (unique), category, frequent, acquisition_rank (unique), source (`ifdc` or `abcome`). Read-only, seeded from `docs/dictionary/dictionary.csv` (736 words).
 - Spring Session JDBC tables.
 
@@ -138,7 +139,7 @@ JSON under `/api`, same origin. Dates `yyyy-MM-dd`, enums in lower case. Errors 
 | `POST /api/words/{id}/pronunciations`                  | `{spoken, status, date}`                                          | `201 Pronunciation`                                                   | `400`, `404`                                                        |
 | `PUT /api/pronunciations/{id}`                         | `{spoken, status, date}`                                          | `200 Pronunciation`                                                   | `400`, `404`                                                        |
 | `DELETE /api/pronunciations/{id}`                      |                                                                   | `204`                                                                 | `404`, `409 LAST_PRONUNCIATION`                                     |
-| `POST /api/pronunciations/{id}/recordings?durationMs=` | raw audio, `audio/webm` or `audio/mp4` (codec parameters allowed) | `201 Recording` + `Location`                                          | `400`, `404`, `413 PAYLOAD_TOO_LARGE`, `415 UNSUPPORTED_MEDIA_TYPE` |
+| `POST /api/pronunciations/{id}/recordings?durationMs=` | raw audio, `audio/webm`, `audio/mp4` or `audio/wav` (codec parameters allowed) | `201 Recording` + `Location`                                          | `400`, `404`, `413 PAYLOAD_TOO_LARGE`, `415 UNSUPPORTED_MEDIA_TYPE` |
 | `GET /api/recordings/{id}`                             |                                                                   | `200` audio (`206` for `Range`), cached 1 year, immutable             | `404`                                                               |
 | `PUT /api/recordings/{id}`                             | `{pronunciationId}`, a stage of the same word                     | `200 Recording`                                                       | `400` (stage unknown or of another word), `404`                     |
 | `DELETE /api/recordings/{id}`                          |                                                                   | `204`                                                                 | `404`                                                               |

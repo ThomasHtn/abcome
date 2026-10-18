@@ -35,9 +35,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class DefaultRecordingService implements RecordingService {
 
     /**
-     * Audio types the browsers record in: webm (Chrome, Firefox) and mp4 (Safari).
+     * Audio types the browsers record in, webm (Chrome, Firefox) and mp4 (Safari), plus wav for a trimmed sound.
      */
-    private static final Set<String> ACCEPTED_TYPES = Set.of("audio/webm", "audio/mp4");
+    private static final Set<String> ACCEPTED_TYPES = Set.of("audio/webm", "audio/mp4", "audio/wav");
 
     /**
      * Message of an unknown recording.
@@ -226,7 +226,7 @@ public class DefaultRecordingService implements RecordingService {
      * Reduces the content type to its accepted base type, dropping codec parameters.
      *
      * @param contentType upload content type
-     * @return {@code audio/webm} or {@code audio/mp4}
+     * @return {@code audio/webm}, {@code audio/mp4} or {@code audio/wav}
      */
     private static String acceptedMimeType(String contentType) {
         try {
@@ -238,7 +238,7 @@ public class DefaultRecordingService implements RecordingService {
         } catch (InvalidMediaTypeException exception) {
             // Unreadable type: refused below like any other.
         }
-        throw new UnsupportedMediaTypeException("A recording is audio/webm or audio/mp4.");
+        throw new UnsupportedMediaTypeException("A recording is audio/webm, audio/mp4 or audio/wav.");
     }
 
     /**

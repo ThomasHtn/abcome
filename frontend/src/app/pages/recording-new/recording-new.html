@@ -175,15 +175,43 @@
     <div class="recording-new recording-new--record enter flex flex-1 flex-col gap-4.5">
       <app-mascot-bubble live [size]="56">{{ instruction() }}</app-mascot-bubble>
 
-      <!-- Waveform and clock. -->
-      <div class="recording-new__wave flex flex-col items-center justify-center gap-2.5">
-        <app-level-bars class="self-stretch" [levels]="bars()" [tone]="waveTone()" />
-        <span
-          class="recording-new__clock"
-          [class.recording-new__clock--live]="phase() === 'recording'"
+      <!-- Clock and waveform, read together. -->
+      <div class="flex flex-col gap-2">
+        <!-- Clock above the waveform, with the way back to the whole sound once trimmed. -->
+        <div
+          class="recording-new__readout flex flex-wrap items-center justify-between gap-x-3 gap-y-2"
         >
-          {{ clock() }}
-        </span>
+          <p
+            class="recording-new__clock"
+            [class.recording-new__clock--live]="phase() === 'recording'"
+          >
+            {{ clock().value }}
+            @if (clock().total; as total) {
+              <span class="recording-new__clock-total">/ {{ total }}</span>
+            }
+          </p>
+          @if (phase() === 'review' && trimmed()) {
+            <button app-button type="button" variant="outline" size="sm" (click)="undoTrim()">
+              Annuler la coupe
+            </button>
+          }
+        </div>
+
+        <!-- Waveform card: live bars while recording, the trim handles once recorded. -->
+        <div class="recording-new__wave">
+          @if (phase() === 'review' && canTrim() && trim(); as range) {
+            <app-recording-trim
+              [levels]="trimLevels()"
+              [durationMs]="decoded()?.durationMs ?? 0"
+              [positionMs]="playing() ? positionMs() : null"
+              [range]="range"
+              (rangeChange)="trim.set($event)"
+              (settled)="settleTrim($event)"
+            />
+          } @else {
+            <app-level-bars [levels]="bars()" [tone]="waveTone()" />
+          }
+        </div>
       </div>
 
       <!-- Controls of the step. -->
@@ -227,6 +255,7 @@
                   label="Écouter le son"
                   [src]="clipUrl() ?? ''"
                   (playingChange)="playing.set($event)"
+                  (positionChange)="positionMs.set($event)"
                 />
                 <span class="recording-new__side-label" aria-hidden="true">
                   {{ playing() ? 'Arrêter' : 'Écouter' }}

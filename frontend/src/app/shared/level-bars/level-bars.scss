@@ -22,6 +22,11 @@
   overflow: hidden;
 }
 
+/* Bars from edge to edge, so their positions follow time. */
+.level-bars--spread {
+  justify-content: space-between;
+}
+
 /* One bar; heights follow the voice smoothly. */
 .level-bars__bar {
   flex: none;

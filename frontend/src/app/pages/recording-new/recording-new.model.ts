@@ -117,3 +117,78 @@ export interface DoneCopy {
    */
   text: string;
 }
+
+/**
+ * Part of the recording kept, in ms from its start.
+ */
+export interface TrimRange {
+  /**
+   * Where the kept part starts.
+   */
+  startMs: number;
+
+  /**
+   * Where it ends.
+   */
+  endMs: number;
+}
+
+/**
+ * Edge of the kept part moved by a handle.
+ */
+export type TrimEdge = 'start' | 'end';
+
+/**
+ * A recording decoded by the browser, so it can be trimmed.
+ */
+export interface DecodedClip {
+  /**
+   * Mono samples, -1 to 1.
+   */
+  samples: Float32Array;
+
+  /**
+   * Their rate, in Hz.
+   */
+  sampleRate: number;
+
+  /**
+   * Length of the decoded audio, the scale of the handles.
+   */
+  durationMs: number;
+}
+
+/**
+ * Clock above the waveform.
+ */
+export interface ClockReading {
+  /**
+   * Time shown big: elapsed while recording, the kept length afterwards.
+   */
+  value: string;
+
+  /**
+   * What it is counted against, `null` when nothing is cut.
+   */
+  total: string | null;
+}
+
+/**
+ * A trim handle held by the pointer.
+ */
+export interface TrimGrab {
+  /**
+   * Which handle.
+   */
+  edge: TrimEdge;
+
+  /**
+   * How far from its edge it was caught, so it does not jump under the finger.
+   */
+  offsetPx: number;
+
+  /**
+   * The kept part before the drag, so a tap without a move changes nothing.
+   */
+  from: TrimRange;
+}

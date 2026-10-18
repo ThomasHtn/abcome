@@ -31,15 +31,19 @@ describe('RecordingNewPage', () => {
   };
   let record: ReturnType<typeof vi.fn>;
   let uploads: [number, number][];
+  let uploadedTypes: string[];
   let created: CreateWordRequest[];
   let addedStages: PronunciationRequest[];
   let words: ReturnType<typeof signal<Word[]>>;
+
+  afterEach(() => vi.unstubAllGlobals());
 
   beforeEach(() => {
     URL.createObjectURL = vi.fn(() => 'blob:clip');
     URL.revokeObjectURL = vi.fn();
     record = vi.fn().mockResolvedValue(clip);
     uploads = [];
+    uploadedTypes = [];
     created = [];
     addedStages = [];
     words = signal<Word[]>([lapin]);
@@ -66,8 +70,9 @@ describe('RecordingNewPage', () => {
               words.update((list) => upsertPronunciation(list, stage));
               return Promise.resolve(stage);
             },
-            addRecording: (pronunciationId: number, _audio: Blob, durationMs: number) => {
+            addRecording: (pronunciationId: number, audio: Blob, durationMs: number) => {
               uploads.push([pronunciationId, durationMs]);
+              uploadedTypes.push(audio.type);
               const wordId = pronunciationId === 20 ? 2 : 1;
               const recording = aRecording({
                 id: 100 + uploads.length,
@@ -111,6 +116,26 @@ describe('RecordingNewPage', () => {
   }
 
   /**
+   * Lets the browser decode any recording, as 2.4 s of a steady tone at 1 kHz, so it can be trimmed.
+   */
+  function stubDecoder(): void {
+    vi.stubGlobal(
+      'OfflineAudioContext',
+      class {
+        /**
+         * Decodes any bytes to the tone.
+         */
+        public decodeAudioData = () =>
+          Promise.resolve({
+            getChannelData: () => new Float32Array(2400).fill(0.5),
+            sampleRate: 1000,
+            duration: 2.4,
+          });
+      },
+    );
+  }
+
+  /**
    * Clicks the button named `label`, then lets the screen settle.
    */
   async function press(fixture: ComponentFixture<RecordingNewPage>, label: string): Promise<void> {
@@ -134,6 +159,44 @@ describe('RecordingNewPage', () => {
     expect(element.querySelector('[aria-label="Garder ce son"]')).not.toBeNull();
     expect(element.querySelector('[aria-label="Écouter le son"]')).not.toBeNull();
     expect(element.textContent).toContain('0:02');
+  });
+
+  it('trims the start of the sound and files the kept part as WAV', async () => {
+    stubDecoder();
+    const fixture = render('1');
+    const element = fixture.nativeElement as HTMLElement;
+
+    await press(fixture, "Commencer l'enregistrement");
+    expect(element.textContent).toContain('Glisse les poignées');
+    const start = element.querySelector<HTMLElement>('[aria-label="Début du son gardé"]');
+    start?.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageUp' }));
+    await fixture.whenStable();
+    expect(element.textContent).toContain('0:01,4');
+    expect(element.textContent).toContain('/ 0:02,4');
+
+    await press(fixture, 'Garder ce son');
+    await press(fixture, 'apin');
+
+    expect(uploads).toEqual([[11, 1400]]);
+    expect(uploadedTypes).toEqual(['audio/wav']);
+  });
+
+  it('undoes the cut, back to the sound as recorded', async () => {
+    stubDecoder();
+    const fixture = render('1');
+    const element = fixture.nativeElement as HTMLElement;
+
+    await press(fixture, "Commencer l'enregistrement");
+    const end = element.querySelector<HTMLElement>('[aria-label="Fin du son gardé"]');
+    end?.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown' }));
+    await fixture.whenStable();
+    await press(fixture, 'Annuler la coupe');
+    expect(element.textContent).not.toContain('Annuler la coupe');
+    await press(fixture, 'Garder ce son');
+    await press(fixture, 'apin');
+
+    expect(uploads).toEqual([[11, 2400]]);
+    expect(uploadedTypes).toEqual(['audio/webm']);
   });
 
   it('explains a refused microphone', async () => {

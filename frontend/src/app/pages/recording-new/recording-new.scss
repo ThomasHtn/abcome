@@ -1,4 +1,4 @@
-/* Record screen: waveform card, round controls, word target card, stage choice, effect note, closing screen. */
+/* Record screen: clock, waveform card with its trim handles, round controls, word target card, stage choice, effect note, closing screen. */
 
 @use 'tools' as *;
 
@@ -27,21 +27,45 @@
   padding-block-end: calc(2rem + var(--layout-safe-bottom));
 }
 
-/* White card holding the waveform and the clock. */
-.recording-new__wave {
-  block-size: 9.375rem;
-  border-radius: var(--radius-block);
-  padding: 0 1.125rem;
-  background-color: var(--color-surface);
-  box-shadow: var(--shadow-card);
+/* Row of the clock and "Annuler la coupe", as tall with or without the button so nothing jumps; measured below. */
+.recording-new__readout {
+  container-type: inline-size;
+  min-block-size: 2.5rem;
+  padding-inline: 0.25rem;
 }
 
-/* Clock under the bars. */
+/* Clock above the waveform, read like a track counter. */
 .recording-new__clock {
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+/* Length it is counted against: the 15 s cap, or the whole sound once trimmed. */
+.recording-new__clock-total {
+  color: var(--color-text-muted);
+  font-size: 1.0625rem;
+}
+
+/* Too narrow for the clock, its total and the button on one row (small phone, zoom): the total goes. */
+@container (width < 20rem) {
+  .recording-new__clock-total {
+    display: none;
+  }
+}
+
+/* White card holding the waveform, the bars centred; its sides leave room for the trim handles' grab zones. */
+.recording-new__wave {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  block-size: 7.5rem;
+  border-radius: var(--radius-block);
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
 }
 
 /* Red while recording. */
@@ -177,6 +201,11 @@
 @media (450px < height <= 700px) {
   .recording-new__wave {
     block-size: 6.5rem;
+    padding-block: 0.5rem;
+  }
+
+  .recording-new__clock {
+    font-size: 1.5rem;
   }
 
   .recording-new__mic,

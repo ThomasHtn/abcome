@@ -69,12 +69,13 @@ public class RecordingController {
      * @param body        raw audio body
      * @return the stored sound, without its bytes, and its playback URL
      */
-    @PostMapping(value = "/api/pronunciations/{id}/recordings", consumes = {"audio/webm", "audio/mp4"})
+    @PostMapping(value = "/api/pronunciations/{id}/recordings", consumes = {"audio/webm", "audio/mp4", "audio/wav"})
     @Operation(
         summary = "Add a sound to a pronunciation stage",
         requestBody = @RequestBody(content = {
             @Content(mediaType = "audio/webm", schema = @Schema(type = "string", format = "binary")),
-            @Content(mediaType = "audio/mp4", schema = @Schema(type = "string", format = "binary"))
+            @Content(mediaType = "audio/mp4", schema = @Schema(type = "string", format = "binary")),
+            @Content(mediaType = "audio/wav", schema = @Schema(type = "string", format = "binary"))
         })
     )
     @ApiResponse(responseCode = "201", description = "The stored sound; Location is its playback URL.")
@@ -84,7 +85,7 @@ public class RecordingController {
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     @ApiResponse(responseCode = "413", description = "PAYLOAD_TOO_LARGE: above 2 MB.",
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    @ApiResponse(responseCode = "415", description = "UNSUPPORTED_MEDIA_TYPE: not audio/webm or audio/mp4.",
+    @ApiResponse(responseCode = "415", description = "UNSUPPORTED_MEDIA_TYPE: not audio/webm, audio/mp4 or audio/wav.",
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     public ResponseEntity<RecordingResponse> add(
         @PathVariable Long id,

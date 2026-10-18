@@ -1,5 +1,6 @@
 import {
   afterNextRender,
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -58,6 +59,11 @@ export class LevelBars {
    * `lg` main waveform, `sm` the strip next to a play button.
    */
   public readonly size = input<'lg' | 'sm'>('lg');
+
+  /**
+   * Spreads the bars over the whole width, so a time maps to a position (the trim handles).
+   */
+  public readonly spread = input(false, { transform: booleanAttribute });
 
   /**
    * Share of the sound already played, 0 to 1, drawn as darker bars sweeping across.

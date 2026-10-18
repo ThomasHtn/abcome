@@ -13,7 +13,7 @@ import java.time.Instant;
  * @param id              recording identifier
  * @param wordId          word it belongs to
  * @param pronunciationId stage it is filed under
- * @param mimeType        audio type, {@code audio/webm} or {@code audio/mp4}
+ * @param mimeType        audio type, {@code audio/webm}, {@code audio/mp4} or {@code audio/wav}
  * @param durationMs      length measured by the browser
  * @param createdAt       instant it was recorded
  */

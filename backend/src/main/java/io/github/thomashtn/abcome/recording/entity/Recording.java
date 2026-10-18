@@ -50,7 +50,7 @@ public class Recording {
     private byte[] data;
 
     /**
-     * Audio type without codec parameters: {@code audio/webm} or {@code audio/mp4}.
+     * Audio type without codec parameters: {@code audio/webm}, {@code audio/mp4} or {@code audio/wav}.
      */
     @Column(name = "mime_type", nullable = false, updatable = false)
     private String mimeType;

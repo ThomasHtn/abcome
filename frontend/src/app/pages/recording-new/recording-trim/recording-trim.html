@@ -1,0 +1,69 @@
+<!-- The strip: bars spread edge to edge, so a handle's position is a time. -->
+<div #track class="recording-trim" [class.recording-trim--held]="dragging() !== null">
+  <app-level-bars spread tone="clip" [levels]="levels()" [progress]="progress()" />
+
+  <!-- Cut parts, dimmed; the window between them is what is kept. -->
+  <span
+    class="recording-trim__shade recording-trim__shade--start"
+    aria-hidden="true"
+    [style.inline-size.%]="startPercent()"
+  ></span>
+  <span
+    class="recording-trim__shade recording-trim__shade--end"
+    aria-hidden="true"
+    [style.inline-size.%]="100 - endPercent()"
+  ></span>
+  <span
+    class="recording-trim__window"
+    aria-hidden="true"
+    [style.inset-inline-start.%]="startPercent()"
+    [style.inset-inline-end.%]="100 - endPercent()"
+  ></span>
+
+  @if (playheadPercent() !== null) {
+    <!-- Where playback is, inside the kept part. -->
+    <span
+      class="recording-trim__playhead"
+      aria-hidden="true"
+      [style.inset-inline-start.%]="playheadPercent()"
+    ></span>
+  }
+
+  <!-- Start handle: a slider for keyboards and screen readers. -->
+  <span
+    class="recording-trim__handle recording-trim__handle--start"
+    role="slider"
+    tabindex="0"
+    aria-label="Début du son gardé"
+    aria-valuemin="0"
+    [attr.aria-valuemax]="range().endMs"
+    [attr.aria-valuenow]="range().startMs"
+    [attr.aria-valuetext]="valueTexts().start"
+    [class.recording-trim__handle--held]="dragging() === 'start'"
+    [style.inset-inline-start.%]="startPercent()"
+    (pointerdown)="grab('start', $event)"
+    (pointermove)="drag($event)"
+    (pointerup)="release()"
+    (pointercancel)="release()"
+    (keydown)="nudge('start', $event)"
+  ></span>
+
+  <!-- End handle. -->
+  <span
+    class="recording-trim__handle recording-trim__handle--end"
+    role="slider"
+    tabindex="0"
+    aria-label="Fin du son gardé"
+    [attr.aria-valuemin]="range().startMs"
+    [attr.aria-valuemax]="durationMs()"
+    [attr.aria-valuenow]="range().endMs"
+    [attr.aria-valuetext]="valueTexts().end"
+    [class.recording-trim__handle--held]="dragging() === 'end'"
+    [style.inset-inline-start.%]="endPercent()"
+    (pointerdown)="grab('end', $event)"
+    (pointermove)="drag($event)"
+    (pointerup)="release()"
+    (pointercancel)="release()"
+    (keydown)="nudge('end', $event)"
+  ></span>
+</div>

@@ -252,7 +252,21 @@ class RecordingApiTest extends NotebookApiTest {
     }
 
     @Test
-    @DisplayName("Refuses a type other than webm or mp4 audio with 415 UNSUPPORTED_MEDIA_TYPE")
+    @DisplayName("Adds a sound trimmed in the browser as WAV and serves it back as WAV")
+    void addsTrimmedWavSound() throws Exception {
+        long recordingId = idOf(upload(stageId, "audio/wav", 800, SOUND)
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.mimeType").value("audio/wav"))
+            .andExpect(jsonPath("$.durationMs").value(800)));
+
+        mockMvc().perform(get("/api/recordings/" + recordingId).cookie(session()))
+            .andExpect(status().isOk())
+            .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "audio/wav"))
+            .andExpect(content().bytes(SOUND));
+    }
+
+    @Test
+    @DisplayName("Refuses a type other than webm, mp4 or wav audio with 415 UNSUPPORTED_MEDIA_TYPE")
     void refusesOtherType() throws Exception {
         upload(stageId, "audio/ogg", 1000, SOUND)
             .andExpect(status().isUnsupportedMediaType())

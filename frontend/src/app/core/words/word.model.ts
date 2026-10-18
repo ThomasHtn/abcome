@@ -87,7 +87,7 @@ export interface Recording {
   pronunciationId: number;
 
   /**
-   * Audio type, `audio/webm` or `audio/mp4`.
+   * Audio type, `audio/webm` or `audio/mp4` as recorded, `audio/wav` once trimmed.
    */
   mimeType: string;
 

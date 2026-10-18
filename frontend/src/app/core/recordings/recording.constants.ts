@@ -26,3 +26,13 @@ export const WAVEFORM_BAR_COUNT = 48;
  * Rate the audio is decoded at for its waveform: enough for loudness, cheap to scan, accepted by Safari.
  */
 export const WAVEFORM_SAMPLE_RATE = 22_050;
+
+/**
+ * Type of a sound trimmed in the browser, which can decode a recording but not re-encode webm or mp4.
+ */
+export const TRIMMED_MIME_TYPE = 'audio/wav';
+
+/**
+ * Rate a recording is decoded and trimmed at: clear for a child's voice, 15 s of WAV stay under 700 KB.
+ */
+export const TRIM_SAMPLE_RATE = 22_050;
