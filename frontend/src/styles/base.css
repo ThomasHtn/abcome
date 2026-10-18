@@ -67,6 +67,37 @@
     color: var(--color-ink);
   }
 
+  /* Thin salmon scrollbars on a clear track, for every scroll area; phones keep their overlay ones. */
+  html {
+    scrollbar-color: var(--color-salmon-300) transparent;
+  }
+
+  * {
+    scrollbar-width: thin;
+  }
+
+  /* Safari ignores the standard properties above: the same look through its own pseudo-elements. */
+  ::-webkit-scrollbar {
+    inline-size: 0.625rem;
+    block-size: 0.625rem;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  /* Rounded thumb, inset from the edge by a clear border. */
+  ::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: var(--radius-pill);
+    background-clip: padding-box;
+    background-color: var(--color-salmon-300);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-salmon-400);
+  }
+
   /* Users who ask for less motion get none; SVG assets honour the same query inside their file. */
   @media (prefers-reduced-motion: reduce) {
     *,
