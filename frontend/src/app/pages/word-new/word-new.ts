@@ -36,7 +36,8 @@ import { QuotePipe } from '@shared/quote/quote.pipe';
 import { WordPicker } from '@shared/word-picker/word-picker';
 import { WordChoice } from '@shared/word-picker/word-picker.model';
 
-import { initialOf, wordNewQuestion } from './word-new.utils';
+import { CATEGORY_ICONS } from './word-new.constants';
+import { wordNewQuestion } from './word-new.utils';
 
 /**
  * Add-word screen: find the word in the dictionary (or type a new one), note how Côme said it and
@@ -145,14 +146,14 @@ export class WordNewPage {
   protected readonly question = computed(() => wordNewQuestion(this.choice()));
 
   /**
-   * Letter on the chosen word's tile.
-   */
-  protected readonly initial = computed(() => initialOf(this.choice()?.label ?? ''));
-
-  /**
    * French category names.
    */
   protected readonly categoryLabels = CATEGORY_LABELS;
+
+  /**
+   * Icon of each category, on the chosen word's tile.
+   */
+  protected readonly categoryIcons = CATEGORY_ICONS;
 
   /**
    * Takes the picked word and starts a fresh first stage.

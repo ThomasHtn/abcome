@@ -37,4 +37,15 @@ describe('TextField', () => {
     );
     expect(element.textContent).not.toContain('Une aide');
   });
+
+  it('marks a field to fill with an asterisk and as required', () => {
+    const fixture = TestBed.createComponent(TextField);
+    fixture.componentRef.setInput('label', 'Comment Côme le dit');
+    fixture.componentRef.setInput('required', true);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('label .text-field__required')?.textContent).toBe('*');
+    expect(element.querySelector('input')?.required).toBe(true);
+  });
 });

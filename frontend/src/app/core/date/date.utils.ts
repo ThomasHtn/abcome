@@ -1,4 +1,4 @@
-import { FAMILY_TIME_ZONE, LONG_MONTHS, SHORT_MONTHS } from './date.constants';
+import { DAY_MS, FAMILY_TIME_ZONE, LONG_MONTHS, SHORT_MONTHS, WEEKDAYS } from './date.constants';
 import { DayAndMonth } from './date.model';
 
 /**
@@ -47,4 +47,22 @@ export function formatLongDate(iso: string): string {
 export function dayAndMonth(iso: string): DayAndMonth {
   const [, month, day] = parts(iso);
   return { day: String(day), month: SHORT_MONTHS[month - 1].replace('.', '') };
+}
+
+/**
+ * "samedi 18 octobre", for the date field; the year is added when it is not `currentYear`.
+ */
+export function formatWeekdayDate(iso: string, currentYear?: number): string {
+  const [year, month, day] = parts(iso);
+  const weekday = WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()];
+  const date = `${weekday} ${day} ${LONG_MONTHS[month - 1]}`;
+  return currentYear === undefined || year === currentYear ? date : `${date} ${year}`;
+}
+
+/**
+ * The ISO date `days` later (or earlier when negative), counted in UTC so no time zone shift applies.
+ */
+export function addDays(iso: string, days: number): string {
+  const [year, month, day] = parts(iso);
+  return new Date(Date.UTC(year, month - 1, day) + days * DAY_MS).toISOString().slice(0, 10);
 }

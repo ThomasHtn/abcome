@@ -42,9 +42,9 @@ export class TextField {
   public readonly error = input<string | null>(null);
 
   /**
-   * Adds "(facultatif)" after the label.
+   * Must be filled to save: a salmon asterisk after the label, and `required` for screen readers.
    */
-  public readonly optional = input(false, { transform: booleanAttribute });
+  public readonly required = input(false, { transform: booleanAttribute });
 
   /**
    * Several lines (a sentence) instead of one.

@@ -1,6 +1,7 @@
 <div class="flex flex-col gap-4.5">
   <!-- What Côme said, written big. -->
   <app-text-field
+    required
     [label]="spokenLabel()"
     [placeholder]="spokenPlaceholder()"
     [maxLength]="spokenMaxLength()"
@@ -14,7 +15,6 @@
   <!-- When it was said. -->
   <app-date-field
     [label]="dateLabel()"
-    [hint]="dateHint()"
     [value]="draft().date"
     (valueChange)="update({ date: $event })"
   />

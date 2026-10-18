@@ -1,4 +1,4 @@
-/* Date field: dashed salmon box, salmon calendar and date, like the mockup's "Aujourd'hui" chip. */
+/* Date field: salmon box reading the day in words, calendar in a white disc, bordered like the text fields. */
 
 @use 'tools' as *;
 
@@ -9,14 +9,33 @@
   font-weight: 600;
 }
 
-/* Dashed box, tinted salmon. */
+/* Box tinted salmon, bordered like the text fields; it holds the invisible input. */
 .date-field__box {
   box-sizing: border-box;
-  min-block-size: 3.375rem;
-  border: 2px dashed var(--color-salmon-300);
+  min-block-size: 3.875rem;
+  border: 2px solid var(--color-salmon-200);
   border-radius: var(--radius-card);
-  padding-inline: 1rem;
+  padding: 0.5rem 0.875rem 0.5rem 0.625rem;
   background-color: var(--color-salmon-50);
+  color: var(--color-salmon-700);
+
+  @include motion {
+    transition:
+      background-color var(--duration-press),
+      transform var(--duration-press) var(--ease-pop);
+  }
+
+  /* Pointers that hover see the box answer. */
+  @include hover {
+    background-color: var(--color-salmon-100);
+  }
+}
+
+/* Squashes under the finger, like the buttons. */
+.date-field__box:active {
+  @include motion {
+    transform: scale(0.98);
+  }
 }
 
 /* Focus shows on the whole box. */
@@ -25,32 +44,71 @@
   outline-offset: 2px;
 }
 
-/* Calendar icon. */
-.date-field__icon {
-  flex: none;
-  color: var(--color-salmon-700);
-}
-
-/* Borderless native input, bold salmon text. */
-.date-field__input {
-  border: 0;
-  background: transparent;
-  color: var(--color-salmon-700);
-  font-size: var(--text-body);
-  font-weight: 800;
-  outline: none;
-}
-
-/* Invalid day: the dashes turn danger red. */
+/* Invalid day: the border turns danger red. */
 .date-field__box--invalid {
   border-color: var(--color-danger);
 }
 
-/* Help line. */
-.date-field__hint {
+/* White disc holding the calendar, as the "+" of the save buttons. */
+.date-field__badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-chip);
+}
+
+/* The day, big: "Aujourd'hui", "Hier", or its weekday and date. */
+.date-field__title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+/* No day yet: the invitation reads muted. */
+.date-field__box--empty .date-field__title {
+  color: var(--color-text-muted);
+}
+
+/* The full date under a relative day. */
+.date-field__detail {
   color: var(--color-text-muted);
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+/* Says the box opens something. */
+.date-field__chevron {
+  flex: none;
+}
+
+/* The native input, invisible over the whole box so any tap reaches it; 16px text so iOS does not zoom on focus. */
+.date-field__input {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  border: 0;
+  padding: 0;
+  opacity: 0;
+  font-size: 1rem;
+  cursor: pointer;
+  appearance: none;
+}
+
+/* Chrome's own calendar button spreads over the input, so a click anywhere opens the picker even without `showPicker`. */
+.date-field__input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  inline-size: auto;
+  block-size: auto;
+  cursor: pointer;
 }
 
 /* Error line, under the box. */

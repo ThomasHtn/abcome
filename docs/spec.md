@@ -64,6 +64,8 @@ Each status has a color, an icon and a label. Lists draw it as a small colored d
 
 ## Screens
 
+A text field that must be filled to save (what Côme says, what a sentence means) has a salmon asterisk after its label and is marked required for screen readers.
+
 ### 1. Login (Connexion)
 
 - Password field with show/hide toggle; error and shake on a wrong password.
@@ -85,6 +87,7 @@ Each status has a color, an icon and a label. Lists draw it as a small colored d
 - Search the dictionary: prefix matches first, then contains matches; words already said are flagged.
 - "Mots fréquents à cet âge": the first 8 `frequent` words not said yet.
 - A word outside the dictionary can be added (category "mot perso").
+- The chosen word is shown with a picture of its category and its category name, with a way back to the search.
 - An existing word is never duplicated: link to its page to add a stage.
 - Form: spoken form, status, first-said date (today by default).
 

@@ -1,8 +1,10 @@
 import {
+  addDays,
   dayAndMonth,
   formatLongDate,
   formatShortDate,
   formatShortDateWithYear,
+  formatWeekdayDate,
   todayIso,
 } from './date.utils';
 
@@ -31,5 +33,17 @@ describe('French date formats', () => {
   it('splits the card tile into day and dot-less month', () => {
     expect(dayAndMonth('2026-09-06')).toEqual({ day: '6', month: 'sept' });
     expect(dayAndMonth('2026-08-30')).toEqual({ day: '30', month: 'août' });
+  });
+
+  it('prints the weekday form, with the year only when it is not the current one', () => {
+    expect(formatWeekdayDate('2026-10-18', 2026)).toBe('dimanche 18 octobre');
+    expect(formatWeekdayDate('2025-12-31', 2026)).toBe('mercredi 31 décembre 2025');
+  });
+});
+
+describe('addDays', () => {
+  it('steps across months and years', () => {
+    expect(addDays('2026-10-01', -1)).toBe('2026-09-30');
+    expect(addDays('2026-12-31', 1)).toBe('2027-01-01');
   });
 });

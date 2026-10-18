@@ -81,6 +81,17 @@ describe('WordNewPage', () => {
     expect(shortcuts.map((button) => button.textContent?.trim())).toEqual(['papa']);
   });
 
+  it('shows the picked word with the picture and the name of its category', async () => {
+    const fixture = render();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.word-picker__shortcut')?.click();
+    await fixture.whenStable();
+
+    const chosen = element.querySelector('.word-new__chosen');
+    expect(chosen?.querySelector('.word-new__tile use')?.getAttribute('href')).toContain('#users');
+    expect(chosen?.querySelector('.word-new__category')?.textContent).toBe('personnes');
+  });
+
   it('creates the picked word with its first stage, then opens its page', async () => {
     const fixture = render();
     const element = fixture.nativeElement as HTMLElement;

@@ -3,17 +3,18 @@ import { ChangeDetectionStrategy, Component, computed, input, model } from '@ang
 import { todayIso } from '@core/date/date.utils';
 import { Icon } from '@shared/icon/icon';
 
-import { dateFieldError } from './date-field.utils';
+import { dateDisplay, dateFieldError } from './date-field.utils';
 
 /**
- * Unique id per field, linking the input to its hint.
+ * Unique id per field, linking the input to its error.
  */
 let nextDateFieldId = 0;
 
 /**
- * Labelled date field on the native date picker, dashed salmon like the mockup. A cleared or future day
- * stays in `value` and shows its message under the field; the screen disables its save with
- * `dateFieldError(value)`. Usage: `<app-date-field label="Dit le" [(value)]="date" />`, `yyyy-MM-dd`.
+ * Labelled date field on the native date picker, a salmon box like the text fields: it reads the day
+ * as people say it ("Aujourd'hui", "Hier", "mercredi 16 septembre") and a tap anywhere opens the
+ * picker. A cleared or future day stays in `value` and shows its message under the field; the screen
+ * disables its save with `dateFieldError(value)`. Usage: `<app-date-field label="Dit le" [(value)]="date" />`, `yyyy-MM-dd`.
  */
 @Component({
   selector: 'app-date-field',
@@ -34,11 +35,6 @@ export class DateField {
   public readonly label = input.required<string>();
 
   /**
-   * Help line under the field.
-   */
-  public readonly hint = input<string | null>(null);
-
-  /**
    * Latest day allowed: today, since nothing is said in the future (the API refuses it too).
    */
   protected readonly max = todayIso();
@@ -54,6 +50,11 @@ export class DateField {
   public readonly invalid = computed(() => this.error() !== null);
 
   /**
+   * The day as shown in the box.
+   */
+  protected readonly display = computed(() => dateDisplay(this.value(), this.max));
+
+  /**
    * Id of the input.
    */
   protected readonly id = `date-field-${nextDateFieldId++}`;
@@ -66,10 +67,31 @@ export class DateField {
   }
 
   /**
-   * Ids describing the input: the error first, then the hint.
+   * Opens the system calendar from anywhere in the box; where the browser refuses, its own behaviour
+   * stays (iOS opens its wheel on the tap anyway).
+   */
+  protected openPicker(event: Event): void {
+    try {
+      (event.target as HTMLInputElement).showPicker();
+    } catch {
+      // No `showPicker` (older browser) or no user gesture: nothing more to do.
+    }
+  }
+
+  /**
+   * Enter and Space open the calendar, like a button; other keys edit the day as usual.
+   */
+  protected onKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.openPicker(event);
+    }
+  }
+
+  /**
+   * Id of the error line describing the input, `null` while the day is valid.
    */
   protected describedBy(): string | null {
-    const ids = [this.error() ? `${this.id}-error` : null, this.hint() ? `${this.id}-hint` : null];
-    return ids.filter((id) => id !== null).join(' ') || null;
+    return this.error() ? `${this.id}-error` : null;
   }
 }

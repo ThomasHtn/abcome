@@ -38,3 +38,21 @@ export const LONG_MONTHS: readonly string[] = [
   'novembre',
   'décembre',
 ];
+
+/**
+ * French weekday names, Sunday first like `Date.getUTCDay()`.
+ */
+export const WEEKDAYS: readonly string[] = [
+  'dimanche',
+  'lundi',
+  'mardi',
+  'mercredi',
+  'jeudi',
+  'vendredi',
+  'samedi',
+];
+
+/**
+ * One day in milliseconds, to step between calendar days in UTC.
+ */
+export const DAY_MS = 86_400_000;

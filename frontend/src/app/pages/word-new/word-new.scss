@@ -30,22 +30,6 @@
   flex: 1 1 4rem;
 }
 
-/* Salmon tile with the word's first letter. */
-.word-new__initial {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  inline-size: 3.25rem;
-  block-size: 3.25rem;
-  border-radius: 1.125rem;
-  background-color: var(--color-salmon-100);
-  color: var(--color-salmon-700);
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
 /* The word itself. */
 .word-new__label {
   font-family: var(--font-display);
@@ -55,11 +39,27 @@
   line-height: 1.2;
 }
 
-/* Its category. */
+/* Salmon tile with the picture of the word's category. */
+.word-new__tile {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 3.25rem;
+  block-size: 3.25rem;
+  border-radius: 1.125rem;
+  background-color: var(--color-salmon-100);
+  color: var(--color-salmon-700);
+}
+
+/* Its category, a lavender pill like in the search results. */
 .word-new__category {
-  color: var(--color-text-muted);
-  font-size: 0.8125rem;
-  font-weight: 700;
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.625rem;
+  background-color: var(--color-lavender-50);
+  color: var(--color-lavender-700);
+  font-size: 0.75rem;
+  font-weight: 800;
 }
 
 /* Lavender panel when Côme already says the word. */

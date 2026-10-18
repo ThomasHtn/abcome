@@ -9,12 +9,10 @@
   font-weight: 600;
 }
 
-/* "(facultatif)", quieter than the label. */
-.text-field__optional {
-  color: var(--color-text-muted);
-  font-family: var(--font-sans);
-  font-size: var(--text-meta);
-  font-weight: 700;
+/* Asterisk of a field that must be filled, in the salmon of the save button. */
+.text-field__required {
+  margin-inline-start: 0.125rem;
+  color: var(--color-salmon-700);
 }
 
 /* Control: what Côme says is written big, in the display face; fills the column, never wider. */
@@ -58,10 +56,12 @@
   border-color: var(--color-danger);
 }
 
-/* Placeholder dim but readable. */
+/* Placeholder dim but readable, in the body face like the search field's, so the example never reads as typed text. */
 .text-field__control::placeholder {
   color: var(--color-text-muted);
-  font-weight: 500;
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: 400;
 }
 
 /* Help line under the field. */

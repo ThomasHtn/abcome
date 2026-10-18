@@ -2,14 +2,35 @@
   <!-- Label of the day asked. -->
   <label class="date-field__label" [for]="id">{{ label() }}</label>
 
-  <!-- Dashed salmon box with a calendar icon around the native date input. -->
+  <!-- Dashed salmon box reading the day; the invisible native input covers it, so a tap opens the picker. -->
   <span
-    class="date-field__box flex items-center gap-2.5"
+    class="date-field__box relative flex items-center gap-3"
     [class.date-field__box--invalid]="invalid()"
+    [class.date-field__box--empty]="value() === ''"
   >
-    <svg class="date-field__icon" app-icon name="calendar-days" [size]="20" [strokeWidth]="2"></svg>
+    <span class="date-field__badge" aria-hidden="true">
+      <svg app-icon name="calendar-days" [size]="20" [strokeWidth]="2.2"></svg>
+    </span>
+
+    <!-- The day in words; the input carries it for screen readers. -->
+    <span class="flex min-w-0 flex-1 flex-col" aria-hidden="true">
+      <span class="date-field__title">{{ display().title }}</span>
+      @if (display().detail; as detail) {
+        <span class="date-field__detail">{{ detail }}</span>
+      }
+    </span>
+
+    <svg
+      class="date-field__chevron"
+      app-icon
+      name="chevron-right"
+      aria-hidden="true"
+      [size]="20"
+      [strokeWidth]="2.6"
+    ></svg>
+
     <input
-      class="date-field__input min-w-0 flex-1"
+      class="date-field__input"
       type="date"
       required
       [id]="id"
@@ -18,16 +39,13 @@
       [attr.aria-invalid]="invalid()"
       [attr.aria-describedby]="describedBy()"
       (change)="onChange($event)"
+      (click)="openPicker($event)"
+      (keydown)="onKeydown($event)"
     />
   </span>
 
   <!-- Why the day cannot be saved (empty or in the future). -->
   @if (error(); as message) {
     <span class="date-field__error" [id]="id + '-error'">{{ message }}</span>
-  }
-
-  <!-- Optional help ("Aujourd'hui par défaut..."). -->
-  @if (hint(); as message) {
-    <span class="date-field__hint" [id]="id + '-hint'">{{ message }}</span>
   }
 </div>

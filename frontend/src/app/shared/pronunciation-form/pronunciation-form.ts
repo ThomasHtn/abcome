@@ -42,11 +42,6 @@ export class PronunciationForm {
   public readonly dateLabel = input('Dit pour la première fois le');
 
   /**
-   * Help line under the day.
-   */
-  public readonly dateHint = input<string | null>(null);
-
-  /**
    * Word or sentence, whose spoken forms run longer.
    */
   public readonly kind = input<WordKind>('word');

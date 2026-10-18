@@ -8,8 +8,15 @@
     <div class="pop flex flex-col gap-4.5">
       <!-- The chosen word, with a way back to the search. -->
       <div class="word-new__chosen flex flex-wrap items-center gap-3.5">
-        <span class="word-new__initial" aria-hidden="true">{{ initial() }}</span>
-        <span class="word-new__chosen-text flex min-w-0 flex-col gap-0.5">
+        <span class="word-new__tile" aria-hidden="true">
+          <svg
+            app-icon
+            [name]="categoryIcons[chosen.category]"
+            [size]="26"
+            [strokeWidth]="2.2"
+          ></svg>
+        </span>
+        <span class="word-new__chosen-text flex min-w-0 flex-col items-start gap-1">
           <span class="word-new__label">{{ chosen.label }}</span>
           <span class="word-new__category">{{ categoryLabels[chosen.category] }}</span>
         </span>
@@ -30,10 +37,7 @@
         </div>
       } @else {
         <!-- First stage: how, how well and when. -->
-        <app-pronunciation-form
-          dateHint="Aujourd'hui par défaut, touche pour choisir une autre date."
-          [(draft)]="draft"
-        />
+        <app-pronunciation-form [(draft)]="draft" />
       }
     </div>
   } @else {

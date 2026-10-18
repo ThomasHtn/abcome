@@ -1,9 +1,9 @@
 <div class="text-field flex flex-col gap-2" [class.text-field--plain]="tone() === 'plain'">
-  <!-- Label, with "(facultatif)" for an optional field. -->
+  <!-- Label, with an asterisk when the field must be filled (the control says "requis" itself). -->
   <label class="text-field__label" [for]="id">
     {{ label() }}
-    @if (optional()) {
-      <span class="text-field__optional">(facultatif)</span>
+    @if (required()) {
+      <span class="text-field__required" aria-hidden="true">*</span>
     }
   </label>
 
@@ -13,6 +13,7 @@
       class="text-field__control text-field__control--multiline"
       rows="2"
       [id]="id"
+      [required]="required()"
       [value]="value()"
       [placeholder]="placeholder()"
       [attr.maxlength]="maxLength()"
@@ -25,6 +26,7 @@
       class="text-field__control"
       type="text"
       [id]="id"
+      [required]="required()"
       [value]="value()"
       [placeholder]="placeholder()"
       [attr.maxlength]="maxLength()"

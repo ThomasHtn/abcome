@@ -33,6 +33,19 @@ describe('DateField', () => {
     expect(input.max).toBe(todayIso());
   });
 
+  it('reads the day in words, today first', () => {
+    const fixture = render();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.date-field__title')?.textContent).toBe("Aujourd'hui");
+
+    fixture.componentInstance.value.set('2025-12-31');
+    fixture.detectChanges();
+
+    expect(element.querySelector('.date-field__title')?.textContent).toBe(
+      'mercredi 31 décembre 2025',
+    );
+  });
+
   it('takes a picked day without any message', () => {
     const fixture = render();
     const input = inputOf(fixture);
