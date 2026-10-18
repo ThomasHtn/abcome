@@ -1,6 +1,6 @@
 import { Resource } from '@angular/core';
 
-import { dayAndMonth, formatLongDate } from '@core/date/date.utils';
+import { dayAndMonth, formatLongDate, formatMonthYear } from '@core/date/date.utils';
 import { quote } from '@core/text/text.utils';
 import { STATUS_LABELS } from '@core/words/word.constants';
 import { Word } from '@core/words/word.model';
@@ -14,7 +14,14 @@ import {
 } from '@core/words/word.utils';
 
 import { SENTENCES_TAB_PARAM, SUMMARY_STATUS_ORDER } from './home.constants';
-import { HomeSummary, HomeTab, ListState, StatusFilter, WordCardView } from './home.model';
+import {
+  HomeSummary,
+  HomeTab,
+  ListState,
+  MonthGroup,
+  StatusFilter,
+  WordCardView,
+} from './home.model';
 
 /**
  * Tab named by `?onglet=`; anything but `phrases` means the words.
@@ -58,6 +65,25 @@ export function toWordCard(word: Word): WordCardView {
     month,
     ariaLabel: `${current.spoken}, pour ${word.label}, ${STATUS_LABELS[current.status]}, depuis le ${formatLongDate(first)}. Voir sa page`,
   };
+}
+
+/**
+ * The list cut into months of first-said date, in the order given (newest first), each titled and
+ * counted with `noun` ("mot", "phrase").
+ */
+export function groupByMonth(words: readonly Word[], noun: string): MonthGroup[] {
+  const groups: MonthGroup[] = [];
+  words.forEach((word, index) => {
+    const first = firstSaidDate(word);
+    const key = first.slice(0, 7);
+    let group = groups.at(-1);
+    if (group?.key !== key) {
+      group = { key, title: formatMonthYear(first), countText: '', cards: [], offset: index };
+      groups.push(group);
+    }
+    group.cards.push(toWordCard(word));
+  });
+  return groups.map((group) => ({ ...group, countText: countWithNoun(group.cards.length, noun) }));
 }
 
 /**

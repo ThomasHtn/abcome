@@ -135,13 +135,23 @@
       }
       @default {
         @if (tab() === 'words') {
-          <!-- Words, newest first. -->
-          @if (wordCards().length > 0) {
-            <ul class="home__list" aria-label="Mots de Côme">
-              @for (card of wordCards(); track card.id; let index = $index) {
-                <li><app-word-card [card]="card" [index]="index" /></li>
+          <!-- Words, newest first, under the month they were first said. -->
+          @if (wordMonths().length > 0) {
+            <div class="home__months">
+              @for (month of wordMonths(); track month.key) {
+                <section class="home__month" [attr.aria-labelledby]="'mots-' + month.key">
+                  <h2 class="home__month-head" [id]="'mots-' + month.key">
+                    <span class="home__month-title">{{ month.title }}</span>
+                    <span class="home__month-count">{{ month.countText }}</span>
+                  </h2>
+                  <ul class="home__list">
+                    @for (card of month.cards; track card.id; let index = $index) {
+                      <li><app-word-card [card]="card" [index]="month.offset + index" /></li>
+                    }
+                  </ul>
+                </section>
               }
-            </ul>
+            </div>
           } @else {
             <!-- Nothing to show: why, and a shortcut to add the searched word. -->
             <div class="home__message flex flex-col items-center gap-3">
@@ -160,13 +170,23 @@
             </div>
           }
         } @else {
-          <!-- Sentences, newest first; a tap opens the sentence's page. -->
-          @if (sentenceCards().length > 0) {
-            <ul class="home__list" aria-label="Phrases de Côme">
-              @for (card of sentenceCards(); track card.id; let index = $index) {
-                <li><app-word-card [card]="card" [index]="index" /></li>
+          <!-- Sentences, newest first, under the month they were first said; a tap opens the sentence's page. -->
+          @if (sentenceMonths().length > 0) {
+            <div class="home__months">
+              @for (month of sentenceMonths(); track month.key) {
+                <section class="home__month" [attr.aria-labelledby]="'phrases-' + month.key">
+                  <h2 class="home__month-head" [id]="'phrases-' + month.key">
+                    <span class="home__month-title">{{ month.title }}</span>
+                    <span class="home__month-count">{{ month.countText }}</span>
+                  </h2>
+                  <ul class="home__list">
+                    @for (card of month.cards; track card.id; let index = $index) {
+                      <li><app-word-card [card]="card" [index]="month.offset + index" /></li>
+                    }
+                  </ul>
+                </section>
               }
-            </ul>
+            </div>
           } @else {
             <p class="home__message home__message-text">{{ emptySentences() }}</p>
           }

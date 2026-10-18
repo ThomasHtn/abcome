@@ -4,6 +4,7 @@ import {
   countWithNoun,
   emptySentencesMessage,
   emptyWordsMessage,
+  groupByMonth,
   listState,
   sentencesSummary,
   tabFromParam,
@@ -229,5 +230,31 @@ describe('listState', () => {
   it('tells a failure from a first load', () => {
     expect(listState(resource(false, new Error('offline')))).toBe('error');
     expect(listState(resource(false))).toBe('loading');
+  });
+});
+
+describe('groupByMonth', () => {
+  it('cuts the newest-first list into titled and counted months, the stagger running on', () => {
+    const groups = groupByMonth([GATEAU, LAPIN, MAMAN], 'mot');
+
+    expect(
+      groups.map(({ key, title, countText, offset }) => [key, title, countText, offset]),
+    ).toEqual([
+      ['2026-10', 'Octobre 2026', '1 mot', 0],
+      ['2026-09', 'Septembre 2026', '1 mot', 1],
+      ['2026-08', 'Août 2026', '1 mot', 2],
+    ]);
+    expect(groups[1].cards.map((card) => card.label)).toEqual(['lapin']);
+  });
+
+  it('keeps the words of one month together and counts them', () => {
+    const [october] = groupByMonth([GATEAU, { ...GATEAU, id: 9, label: 'eau' }], 'mot');
+
+    expect(october.countText).toBe('2 mots');
+    expect(october.cards.map((card) => card.label)).toEqual(['gâteau', 'eau']);
+  });
+
+  it('gives no month for an empty list', () => {
+    expect(groupByMonth([], 'phrase')).toEqual([]);
   });
 });

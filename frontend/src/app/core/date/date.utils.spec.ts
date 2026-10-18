@@ -2,6 +2,7 @@ import {
   addDays,
   dayAndMonth,
   formatLongDate,
+  formatMonthYear,
   formatShortDate,
   formatShortDateWithYear,
   formatWeekdayDate,
@@ -24,6 +25,11 @@ describe('French date formats', () => {
 
   it('prints the short form with the year', () => {
     expect(formatShortDateWithYear('2026-10-17')).toBe('17 oct. 2026');
+  });
+
+  it('titles a month with its year', () => {
+    expect(formatMonthYear('2026-10-17')).toBe('Octobre 2026');
+    expect(formatMonthYear('2025-08-01')).toBe('Août 2025');
   });
 
   it('prints the long form', () => {

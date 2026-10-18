@@ -33,10 +33,10 @@ import { HomeTab, ListState, StatusFilter } from './home.model';
 import {
   emptySentencesMessage,
   emptyWordsMessage,
+  groupByMonth,
   listState,
   sentencesSummary,
   tabFromParam,
-  toWordCard,
   visibleWords,
   wordsSummary,
 } from './home.utils';
@@ -177,17 +177,17 @@ export class HomePage {
   );
 
   /**
-   * Word cards matching the search and filter.
+   * Word cards matching the search and filter, by month of first-said date.
    */
-  protected readonly wordCards = computed(() =>
-    visibleWords(this.words(), this.query(), this.filter()).map(toWordCard),
+  protected readonly wordMonths = computed(() =>
+    groupByMonth(visibleWords(this.words(), this.query(), this.filter()), 'mot'),
   );
 
   /**
-   * Sentence cards matching the search and filter.
+   * Sentence cards matching the search and filter, by month of first-said date.
    */
-  protected readonly sentenceCards = computed(() =>
-    visibleWords(this.sentences(), this.query(), this.filter()).map(toWordCard),
+  protected readonly sentenceMonths = computed(() =>
+    groupByMonth(visibleWords(this.sentences(), this.query(), this.filter()), 'phrase'),
   );
 
   /**

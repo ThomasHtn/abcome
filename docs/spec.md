@@ -76,6 +76,7 @@ A text field that must be filled to save (what Côme says, what a sentence means
 - Tabs "Mots" and "Phrases", built alike: a sentence is a notebook entry like a word, labelled by what Côme meant.
 - Header: total, last thing said, count per status, for the open tab.
 - Entries sorted by first-said date, newest first; filters by current status; search on the label and every spoken form, ignoring accents and case.
+- The list is cut into months of first-said date, each under its title ("Octobre 2026") and its count ("5 mots"); the title stays at the top of the screen while its month scrolls by.
 - The search hides behind a magnifier next to the tabs; opening it swaps the tabs for the field, closing it (cross or Escape) clears it. A search kept in the URL opens it.
 - An empty search offers to add the searched word.
 - Word and sentence card: first-said date, the word or what the sentence means as its title, "Côme dit « apin »" below with the spoken form in salmon, current status as a small dot at the end (the card's accessible name reads it).

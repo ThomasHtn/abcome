@@ -105,6 +105,41 @@
   list-style: none;
 }
 
+/* Months of the list, newest first, set apart from each other. */
+.home__months {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Month title and its count, held at the top while its cards scroll by; the cream hides them underneath. */
+.home__month-head {
+  position: sticky;
+  inset-block-start: var(--layout-safe-top);
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.5rem 0.25rem 0.375rem;
+  background-color: var(--color-background);
+}
+
+/* "Octobre 2026". */
+.home__month-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* "5 mots", quiet. */
+.home__month-count {
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  font-weight: 700;
+}
+
 /* A card fills its cell, so cards of a grid row share one height. */
 .home__list > li {
   display: grid;

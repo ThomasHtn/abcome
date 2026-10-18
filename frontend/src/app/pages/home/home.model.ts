@@ -114,3 +114,33 @@ export interface WordCardView {
  * Loading state of a list, so the template tells a slow network from an empty notebook.
  */
 export type ListState = 'loading' | 'error' | 'ready';
+
+/**
+ * Cards of one month of the list, under its title.
+ */
+export interface MonthGroup {
+  /**
+   * Month as `yyyy-MM`, to track the group.
+   */
+  key: string;
+
+  /**
+   * Its title ("Octobre 2026").
+   */
+  title: string;
+
+  /**
+   * How many entries it holds, with the noun ("5 mots").
+   */
+  countText: string;
+
+  /**
+   * Its cards, newest first.
+   */
+  cards: WordCardView[];
+
+  /**
+   * Position of its first card in the whole list, so the entrance stagger runs on across months.
+   */
+  offset: number;
+}

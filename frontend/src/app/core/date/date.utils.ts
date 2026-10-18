@@ -68,3 +68,12 @@ export function addDays(iso: string, days: number): string {
   const [year, month, day] = parts(iso);
   return new Date(Date.UTC(year, month - 1, day) + days * DAY_MS).toISOString().slice(0, 10);
 }
+
+/**
+ * "Octobre 2026", the title of a month in a list.
+ */
+export function formatMonthYear(iso: string): string {
+  const [year, month] = parts(iso);
+  const name = LONG_MONTHS[month - 1];
+  return `${name.charAt(0).toLocaleUpperCase('fr')}${name.slice(1)} ${year}`;
+}

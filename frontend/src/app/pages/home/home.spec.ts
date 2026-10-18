@@ -130,6 +130,21 @@ describe('HomePage', () => {
     expect(element.querySelectorAll('app-word-card')).toHaveLength(2);
   });
 
+  it('titles the list by month, newest first, each month holding its words', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+
+    const months = [...element.querySelectorAll('.home__month')].map((month) => [
+      month.querySelector('.home__month-title')?.textContent,
+      month.querySelector('.home__month-count')?.textContent,
+      month.querySelectorAll('app-word-card').length,
+    ]);
+    expect(months).toEqual([
+      ['Octobre 2026', '1 mot', 1],
+      ['Septembre 2026', '1 mot', 1],
+    ]);
+  });
+
   it('folds the search into a magnifier that swaps the tabs for the field', async () => {
     const fixture = await render();
     const element = fixture.nativeElement as HTMLElement;
