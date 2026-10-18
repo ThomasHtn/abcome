@@ -1,4 +1,3 @@
-import { Sentence } from '@core/sentences/sentence.model';
 import { PronunciationStatus } from '@core/words/word.model';
 
 /**
@@ -7,7 +6,7 @@ import { PronunciationStatus } from '@core/words/word.model';
 export type HomeTab = 'words' | 'sentences';
 
 /**
- * Status filter of the words tab; `all` shows every word.
+ * Status filter of the open tab; `all` shows every word or sentence.
  */
 export type StatusFilter = 'all' | PronunciationStatus;
 
@@ -41,7 +40,7 @@ export interface HomeSummary {
   latest: string | null;
 
   /**
-   * Words per current status, best first; `null` on the sentences tab or with no word yet.
+   * Words or sentences per current status, best first; `null` while the tab is empty.
    */
   statusCounts: readonly StatusCount[] | null;
 }
@@ -67,13 +66,18 @@ export interface StatusCount {
 }
 
 /**
- * One word card of the list, ready to render.
+ * One word or sentence card of the list, ready to render.
  */
 export interface WordCardView {
   /**
-   * Word identifier, for the link to its page.
+   * Entry identifier, to track the card.
    */
   id: number;
+
+  /**
+   * Its page: `/mots/7` for a word, `/phrases/7` for a sentence.
+   */
+  path: string;
 
   /**
    * The word itself ("lapin").
@@ -101,49 +105,9 @@ export interface WordCardView {
   month: string;
 
   /**
-   * Status of every stage, oldest first; empty when the word has a single stage.
-   */
-  stageStatuses: readonly PronunciationStatus[];
-
-  /**
    * Whole card read as one sentence by screen readers.
    */
   ariaLabel: string;
-}
-
-/**
- * One sentence card of the list, ready to render.
- */
-export interface SentenceCardView {
-  /**
-   * The sentence behind the card, handed to the edit sheet.
-   */
-  sentence: Sentence;
-
-  /**
-   * Day it was said ("14").
-   */
-  day: string;
-
-  /**
-   * Short month it was said ("oct").
-   */
-  month: string;
-
-  /**
-   * Whole card read as one sentence by screen readers.
-   */
-  ariaLabel: string;
-}
-
-/**
- * The sentence sheet being shown: `sentence` is `null` for a new one.
- */
-export interface SentenceSheetRequest {
-  /**
-   * Sentence to edit, `null` to write a new one.
-   */
-  sentence: Sentence | null;
 }
 
 /**

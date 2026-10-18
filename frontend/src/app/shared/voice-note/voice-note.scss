@@ -1,0 +1,17 @@
+/* Voice note: play button, played time, waveform filling up while it plays, length. */
+
+@use 'tools' as *;
+
+/* Block host, the strip taking the width it is given. */
+:host {
+  display: block;
+}
+
+/* Played time and length, fixed-width digits so the waveform does not shift while it plays. */
+.voice-note__time {
+  flex: none;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}

@@ -32,6 +32,14 @@ export const routes: Routes = [
       {
         path: 'mots/:id',
         title: 'Mot · ABCome',
+        data: { kind: 'word' },
+        loadComponent: () =>
+          import('@pages/word-detail/word-detail').then((page) => page.WordDetailPage),
+      },
+      {
+        path: 'phrases/:id',
+        title: 'Phrase · ABCome',
+        data: { kind: 'sentence' },
         loadComponent: () =>
           import('@pages/word-detail/word-detail').then((page) => page.WordDetailPage),
       },

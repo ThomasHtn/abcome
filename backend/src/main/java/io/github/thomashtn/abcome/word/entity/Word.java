@@ -10,7 +10,8 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 
 /**
- * Word Côme says; its stages are {@link Pronunciation} rows, loaded separately to avoid N+1 queries.
+ * Word or sentence Côme says; its stages are {@link Pronunciation} rows, loaded separately to avoid N+1
+ * queries.
  */
 @Entity
 @Table(name = "word")
@@ -42,6 +43,12 @@ public class Word {
     private WordCategory category;
 
     /**
+     * Word or sentence; never changes.
+     */
+    @Column(name = "kind", nullable = false, updatable = false)
+    private WordKind kind;
+
+    /**
      * Instant the word was added to the notebook.
      */
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -54,14 +61,16 @@ public class Word {
     }
 
     /**
-     * Creates a word.
+     * Creates a word or a sentence.
      *
+     * @param kind            word or sentence
      * @param label           cleaned label
      * @param normalizedLabel comparison key
-     * @param category        dictionary category
+     * @param category        dictionary category, custom for a sentence
      * @param createdAt       creation instant
      */
-    public Word(String label, String normalizedLabel, WordCategory category, Instant createdAt) {
+    public Word(WordKind kind, String label, String normalizedLabel, WordCategory category, Instant createdAt) {
+        this.kind = kind;
         this.label = label;
         this.normalizedLabel = normalizedLabel;
         this.category = category;
@@ -115,6 +124,15 @@ public class Word {
      */
     public WordCategory getCategory() {
         return category;
+    }
+
+    /**
+     * Returns whether this is a word or a sentence.
+     *
+     * @return the kind
+     */
+    public WordKind getKind() {
+        return kind;
     }
 
     /**

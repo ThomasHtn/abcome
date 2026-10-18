@@ -1,4 +1,4 @@
-import { formatRecordingClock, pickRecordingMimeType } from './recording.utils';
+import { formatRecordingClock, pickRecordingMimeType, waveformLevels } from './recording.utils';
 
 describe('pickRecordingMimeType', () => {
   it('prefers WebM with Opus when the browser has it', () => {
@@ -19,5 +19,15 @@ describe('formatRecordingClock', () => {
     expect(formatRecordingClock(7_400)).toBe('0:07');
     expect(formatRecordingClock(15_000)).toBe('0:15');
     expect(formatRecordingClock(0)).toBe('0:00');
+  });
+});
+
+describe('waveformLevels', () => {
+  it('keeps the peak of each slice, the loudest one full', () => {
+    expect(waveformLevels([0.1, -0.2, 0.4, 0, -0.1, 0.05], 3)).toEqual([0.5, 1, 0.25]);
+  });
+
+  it('draws silence as flat bars', () => {
+    expect(waveformLevels([0, 0, 0, 0], 2)).toEqual([0, 0]);
   });
 });

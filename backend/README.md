@@ -48,8 +48,7 @@ Root package `io.github.thomashtn.abcome`. A feature package only uses `shared` 
 | `shared` | Config, error handling (`GlobalExceptionHandler`), security chain, text and date helpers |
 | `auth` | Login, logout, session check, lockout |
 | `dictionary` | Read-only IFDC dictionary, cached in memory |
-| `word` | Words and their pronunciation stages |
-| `sentence` | Sentences |
+| `word` | Words and sentences (entries of kind `sentence`) with their pronunciation stages |
 | `recording` | Word sounds, stored as `bytea` |
 
 Each feature package splits into `controller`, `dto`, `entity`, `repository`, `service`.

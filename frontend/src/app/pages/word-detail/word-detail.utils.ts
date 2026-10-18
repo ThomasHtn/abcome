@@ -6,6 +6,7 @@ import {
 } from '@core/date/date.utils';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
 import { formatRecordingClock } from '@core/recordings/recording.utils';
+import { quote } from '@core/text/text.utils';
 import { STATUS_LABELS } from '@core/words/word.constants';
 import { PronunciationStatus, Recording, Word } from '@core/words/word.model';
 import { sortPronunciations } from '@core/words/word.utils';
@@ -28,10 +29,11 @@ export function stageTitle(index: number, count: number, date: string, today: st
 }
 
 /**
- * The word's stages for the timeline, newest first, as the mockup shows its progress.
+ * The word's stages for the timeline, newest first, as the mockup shows its progress, each with its sounds.
  */
 export function timelineStages(word: Word, today: string): TimelineStage[] {
   const stages = sortPronunciations(word.pronunciations);
+  const sounds = gallerySounds(word.recordings);
   return stages
     .map((pronunciation, index) => {
       const title = stageTitle(index, stages.length, pronunciation.date, today);
@@ -47,6 +49,8 @@ export function timelineStages(word: Word, today: string): TimelineStage[] {
           `le ${formatLongDate(pronunciation.date)}. Modifier`,
         latest,
         oldest,
+        sounds: sounds.filter((sound) => sound.recording.pronunciationId === pronunciation.id),
+        soundsLabel: `Sons de ${quote(pronunciation.spoken)}`,
       };
     })
     .reverse();
@@ -74,7 +78,7 @@ export function turnedMastered(before: PronunciationStatus, after: Pronunciation
 }
 
 /**
- * The word's sounds for the gallery, in the API order (newest first), dated in the family's zone.
+ * The word's sounds, in the API order (newest first), dated in the family's zone.
  */
 export function gallerySounds(recordings: readonly Recording[]): GallerySound[] {
   return recordings.map((recording) => {
@@ -87,10 +91,10 @@ export function gallerySounds(recordings: readonly Recording[]): GallerySound[] 
     return {
       recording,
       src: API_ENDPOINTS.recording(recording.id),
-      caption: `${formatShortDate(day)} · ${length}`,
+      day: formatShortDate(day),
       description,
       listenLabel: `Écouter le son ${description}`,
-      deleteLabel: `Supprimer le son ${description}`,
+      actionsLabel: `Actions sur le son ${description}`,
     };
   });
 }

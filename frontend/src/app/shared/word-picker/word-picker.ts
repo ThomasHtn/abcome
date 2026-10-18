@@ -2,13 +2,13 @@ import { ChangeDetectionStrategy, Component, computed, input, model, output } fr
 
 import { DictionaryEntry } from '@core/dictionary/dictionary.model';
 import { frequentShortcuts } from '@core/dictionary/dictionary.utils';
-import { CATEGORY_LABELS } from '@core/words/word.constants';
+import { CATEGORY_LABELS, STATUS_LABELS } from '@core/words/word.constants';
 import { Word } from '@core/words/word.model';
 import { currentPronunciation, sortByFirstSaidDesc } from '@core/words/word.utils';
 import { Icon } from '@shared/icon/icon';
 import { QuotePipe } from '@shared/quote/quote.pipe';
 import { SearchField } from '@shared/search-field/search-field';
-import { StatusBadge } from '@shared/status-badge/status-badge';
+import { StatusDot } from '@shared/status-dot/status-dot';
 
 import { WORD_PICKER_RECENT_COUNT } from './word-picker.constants';
 import { WordChoice, WordPickerEmptyState } from './word-picker.model';
@@ -28,7 +28,7 @@ let nextPickerId = 0;
 @Component({
   selector: 'app-word-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [QuotePipe, Icon, SearchField, StatusBadge],
+  imports: [QuotePipe, Icon, SearchField, StatusDot],
   templateUrl: './word-picker.html',
   styleUrl: './word-picker.scss',
 })
@@ -72,6 +72,11 @@ export class WordPicker {
    * French category names.
    */
   protected readonly categoryLabels = CATEGORY_LABELS;
+
+  /**
+   * French status names, read out beside the decorative status dot.
+   */
+  protected readonly statusLabels = STATUS_LABELS;
 
   /**
    * Accessible name of a suggestion.

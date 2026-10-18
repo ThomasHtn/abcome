@@ -1,0 +1,35 @@
+/* Sounds of a stage, inside its card: a hairline, then compact voice note rows. */
+
+@use 'tools' as *;
+
+/* Block under the stage's header, set apart by a hairline. */
+:host {
+  display: block;
+  border-block-start: 1px solid var(--color-border);
+  padding: 0.25rem 0.25rem 0.375rem 0.75rem;
+}
+
+/* One sound row; rows pop in one step apart. */
+.stage-sounds__item {
+  min-block-size: 3.25rem;
+
+  @include motion {
+    animation: pop var(--duration-pop) var(--ease-pop) both;
+    animation-delay: calc(var(--motion-step) * var(--sound-index, 0));
+  }
+}
+
+/* Quiet "⋮": no tile, a muted icon on a full touch target. */
+.stage-sounds__more {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.75rem;
+  border: 0;
+  border-radius: 0.75rem;
+  padding: 0;
+  background-color: transparent;
+  color: var(--color-text-muted);
+}

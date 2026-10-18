@@ -30,7 +30,24 @@
   }
 }
 
-/* Destructive action: red icon. */
+/* Destructive action: flat red tint, red icon, like the menu's delete row. */
 :host(.icon-button--danger) {
+  background-color: var(--color-learning-bg);
   color: var(--color-danger-text);
+  box-shadow: none;
+}
+
+/* Flat lavender disc next to the lavender tabs, icon in lavender. */
+:host(.icon-button--tint) {
+  border-radius: 50%;
+  background-color: var(--color-lavender-50);
+  color: var(--color-lavender-700);
+  box-shadow: none;
+}
+
+/* Compact row action (sound rows, stage cards): 44 px rounded tile, still a full touch target. */
+:host(.icon-button--sm) {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: 0.875rem;
 }

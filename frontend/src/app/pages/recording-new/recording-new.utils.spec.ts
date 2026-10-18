@@ -1,3 +1,5 @@
+import { aPronunciation, aWord } from '@core/words/word.fixtures';
+
 import {
   doneCopy,
   liveBars,
@@ -6,6 +8,7 @@ import {
   recordingTitle,
   rmsLevel,
   saveButtonText,
+  stageOptions,
   summarizeLevels,
 } from './recording-new.utils';
 
@@ -41,10 +44,9 @@ describe('recording-new utils', () => {
     expect(recordingInstruction('ready')).toContain('Touche le micro');
     expect(recordingInstruction('recording')).toContain('carré rouge');
     expect(recordingInstruction('review')).toContain('Écoute le son');
-    expect(recordingTitle('ready')).toBe('Enregistrer un son');
-    expect(recordingTitle('pick')).toBe('Associer le son');
-    expect(recordingTitle('note')).toBe('Nouveau mot');
-    expect(recordingTitle('done')).toBe("C'est fait");
+    expect(recordingTitle('ready', true)).toBe('Enregistrer un son');
+    expect(recordingTitle('pick', true)).toBe('Associer le son');
+    expect(recordingTitle('done', true)).toBe("C'est fait");
   });
 
   it('closes with a message matching what was saved', () => {
@@ -57,13 +59,41 @@ describe('recording-new utils', () => {
       title: 'Son ajouté à «\u00A0lapin\u00A0»\u00A0!',
       text: 'Il a maintenant 3 sons. Tu les retrouves sur sa page.',
     });
+    expect(doneCopy({ ...base, kind: 'stage', spoken: 'lapin', soundCount: 2 })).toEqual({
+      title: 'Nouvelle prononciation de «\u00A0lapin\u00A0»\u00A0!',
+      text: "Côme le dit «\u00A0lapin\u00A0». Le son l'accompagne sur sa page.",
+    });
     expect(doneCopy({ ...base, kind: 'added', spoken: '', soundCount: 1 }).text).toBe(
       'Tu le retrouves sur sa page.',
     );
   });
 
-  it('words the save button of a new word', () => {
-    expect(saveButtonText(false)).toBe("Note d'abord ce qu'il dit");
-    expect(saveButtonText(true)).toBe('Enregistrer le mot');
+  it('words the save button of a new word or stage', () => {
+    expect(saveButtonText(false, true)).toBe("Note d'abord ce qu'il dit");
+    expect(saveButtonText(true, true)).toBe('Enregistrer le mot');
+    expect(saveButtonText(true, false)).toBe('Enregistrer la prononciation');
+  });
+
+  it('offers the stages of a word newest first, the current one titled', () => {
+    const options = stageOptions(
+      aWord({
+        pronunciations: [
+          aPronunciation({ id: 2, spoken: 'apin', status: 'almost', date: '2026-10-12' }),
+          aPronunciation({ id: 1, spoken: 'pin', status: 'learning', date: '2026-09-16' }),
+        ],
+      }),
+    );
+
+    expect(options.map((option) => option.caption)).toEqual([
+      'Maintenant · 12 oct. 2026',
+      '16 sept. 2026',
+    ]);
+    expect(options[1].ariaLabel).toBe('pin, En route, le 16 septembre 2026');
+  });
+
+  it('titles the note step after what it notes', () => {
+    expect(recordingTitle('note', true)).toBe('Nouveau mot');
+    expect(recordingTitle('note', false)).toBe('Nouvelle prononciation');
+    expect(recordingTitle('stage', false)).toBe('Associer le son');
   });
 });

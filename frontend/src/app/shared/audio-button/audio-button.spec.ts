@@ -62,4 +62,23 @@ describe('AudioButton', () => {
     fixture.detectChanges();
     expect(button?.getAttribute('aria-label')).toBe('Écouter le son de « apin »');
   });
+
+  it('reports the playback position while playing, and 0 once stopped', async () => {
+    const fixture = TestBed.createComponent(AudioButton);
+    fixture.componentRef.setInput('src', '/api/recordings/7');
+    fixture.componentRef.setInput('label', 'Écouter');
+    fixture.detectChanges();
+    const positions: number[] = [];
+    fixture.componentInstance.positionChange.subscribe((position) => positions.push(position));
+
+    (fixture.nativeElement as HTMLElement).querySelector('button')?.click();
+    await fixture.whenStable();
+    players[0].currentTime = 1.2;
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    players[0].dispatchEvent(new Event('ended'));
+
+    expect(positions).toContain(1200);
+    expect(positions.at(-1)).toBe(0);
+  });
 });

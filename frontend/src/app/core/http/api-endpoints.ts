@@ -43,22 +43,13 @@ export const API_ENDPOINTS = {
   pronunciation: (id: number): string => `/api/pronunciations/${id}`,
 
   /**
-   * Sound gallery of one word, to add a sound as raw audio.
+   * Sounds of one stage, to add a sound as raw audio.
    */
-  wordRecordings: (wordId: number): string => `/api/words/${wordId}/recordings`,
+  pronunciationRecordings: (pronunciationId: number): string =>
+    `/api/pronunciations/${pronunciationId}/recordings`,
 
   /**
-   * Audio bytes of a recording (immutable, so cached forever), and the route to delete it.
+   * Audio bytes of a recording (immutable, so cached forever), and the route to move or delete it.
    */
   recording: (id: number): string => `/api/recordings/${id}`,
-
-  /**
-   * Every sentence, returned whole.
-   */
-  sentences: '/api/sentences',
-
-  /**
-   * One sentence, to edit or delete it.
-   */
-  sentence: (id: number): string => `/api/sentences/${id}`,
 } as const;

@@ -32,8 +32,8 @@ public class OpenApiConfig {
             .title("ABCome API")
             .version("1.0.0")
             .description("""
-                REST API of the ABCome notebook: a toddler's first words, their pronunciation
-                stages, sentences and audio recordings.
+                REST API of the ABCome notebook: a toddler's first words and sentences, their
+                pronunciation stages and audio recordings.
                 """)
             .contact(new Contact().name("Thomas HTN"));
     }

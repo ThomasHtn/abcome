@@ -1,6 +1,6 @@
 import { matchesQuery, normalizeText } from '@core/text/text.utils';
 
-import { Pronunciation, PronunciationStatus, Recording, Word } from './word.model';
+import { Pronunciation, PronunciationStatus, Recording, Word, WordKind } from './word.model';
 
 /**
  * Stages oldest first, by date then id, the order the API also guarantees.
@@ -69,10 +69,25 @@ export function wordMatchesQuery(word: Word, query: string): boolean {
 
 /**
  * Word with the same label once normalized, the duplicate the API would refuse; `undefined` when none.
+ * Sentences are never duplicates.
  */
 export function findWordByLabel(words: readonly Word[], label: string): Word | undefined {
   const needle = normalizeText(label);
-  return words.find((word) => normalizeText(word.label) === needle);
+  return words.find((word) => word.kind === 'word' && normalizeText(word.label) === needle);
+}
+
+/**
+ * Page of an entry: `/mots/7` for a word, `/phrases/7` for a sentence.
+ */
+export function entryPath(word: Pick<Word, 'id' | 'kind'>): string {
+  return `${word.kind === 'sentence' ? '/phrases' : '/mots'}/${word.id}`;
+}
+
+/**
+ * Entries of one kind: the words, or the sentences.
+ */
+export function entriesOfKind(words: readonly Word[], kind: WordKind): Word[] {
+  return words.filter((word) => word.kind === kind);
 }
 
 /**
@@ -98,23 +113,39 @@ export function upsertPronunciation(words: readonly Word[], pronunciation: Pronu
 }
 
 /**
- * Copy of the list without the stage `pronunciationId`.
+ * Stage receiving the sounds of a deleted one, as the API picks it: the stage just before, else just after.
  */
-export function removePronunciation(words: readonly Word[], pronunciationId: number): Word[] {
-  return words.map((word) =>
-    word.pronunciations.some((pronunciation) => pronunciation.id === pronunciationId)
-      ? {
-          ...word,
-          pronunciations: word.pronunciations.filter(
-            (pronunciation) => pronunciation.id !== pronunciationId,
-          ),
-        }
-      : word,
-  );
+export function heirStage(word: Word, pronunciationId: number): Pronunciation | undefined {
+  const stages = sortPronunciations(word.pronunciations);
+  const index = stages.findIndex((pronunciation) => pronunciation.id === pronunciationId);
+  return index < 0 ? undefined : stages[index > 0 ? index - 1 : 1];
 }
 
 /**
- * Copy of the list where the word owning `recording` lists it first, the gallery being newest first.
+ * Copy of the list without the stage `pronunciationId`, its sounds filed under its heir.
+ */
+export function removePronunciation(words: readonly Word[], pronunciationId: number): Word[] {
+  return words.map((word) => {
+    const heir = heirStage(word, pronunciationId);
+    if (!heir) {
+      return word;
+    }
+    return {
+      ...word,
+      pronunciations: word.pronunciations.filter(
+        (pronunciation) => pronunciation.id !== pronunciationId,
+      ),
+      recordings: word.recordings.map((recording) =>
+        recording.pronunciationId === pronunciationId
+          ? { ...recording, pronunciationId: heir.id }
+          : recording,
+      ),
+    };
+  });
+}
+
+/**
+ * Copy of the list where the word owning `recording` lists it first, sounds being newest first.
  */
 export function addRecording(words: readonly Word[], recording: Recording): Word[] {
   return words.map((word) =>
@@ -125,6 +156,22 @@ export function addRecording(words: readonly Word[], recording: Recording): Word
             recording,
             ...word.recordings.filter((existing) => existing.id !== recording.id),
           ],
+        }
+      : word,
+  );
+}
+
+/**
+ * Copy of the list where `recording` replaces the sound of the same id, in place.
+ */
+export function replaceRecording(words: readonly Word[], recording: Recording): Word[] {
+  return words.map((word) =>
+    word.id === recording.wordId
+      ? {
+          ...word,
+          recordings: word.recordings.map((existing) =>
+            existing.id === recording.id ? recording : existing,
+          ),
         }
       : word,
   );

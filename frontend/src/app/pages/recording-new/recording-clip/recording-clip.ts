@@ -2,8 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 
 import { formatRecordingClock } from '@core/recordings/recording.utils';
 import { AudioButton } from '@shared/audio-button/audio-button';
-
-import { LevelBars } from '../level-bars/level-bars';
+import { LevelBars } from '@shared/level-bars/level-bars';
 
 /**
  * Reminder of the recorded sound at the top of the next steps: play button, waveform, length.

@@ -5,11 +5,15 @@ import io.github.thomashtn.abcome.word.entity.Pronunciation;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 /**
  * Access to the pronunciation stages; reads go through projections built straight by the query.
+ *
+ * <p>The sounds filed under a stage are moved here too, by entity name, which keeps this package free
+ * of any dependency on the recording package.</p>
  */
 public interface PronunciationRepository extends JpaRepository<Pronunciation, Long> {
 
@@ -49,10 +53,13 @@ public interface PronunciationRepository extends JpaRepository<Pronunciation, Lo
     Optional<PronunciationResponse> findResponseById(@Param("id") Long id);
 
     /**
-     * Counts the stages of a word, to keep at least one.
+     * Files every sound of a stage under another one, without loading their bytes.
      *
-     * @param wordId word identifier
-     * @return number of stages
+     * @param from stage losing its sounds
+     * @param to   stage receiving them
+     * @return number of moved sounds
      */
-    long countByWordId(Long wordId);
+    @Modifying
+    @Query("update Recording r set r.pronunciationId = :to where r.pronunciationId = :from")
+    int moveRecordings(@Param("from") Long from, @Param("to") Long to);
 }

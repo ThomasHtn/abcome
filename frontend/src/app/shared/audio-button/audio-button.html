@@ -2,14 +2,15 @@
 <button
   class="audio-button"
   type="button"
+  [class.audio-button--sm]="size() === 'sm'"
   [class.audio-button--lg]="size() === 'lg'"
   [class.audio-button--playing]="playing()"
   [attr.aria-label]="playing() ? 'Arrêter le son' : label()"
   (click)="toggle()"
 >
   @if (playing()) {
-    <svg app-icon name="square" filled [size]="size() === 'lg' ? 34 : 18"></svg>
+    <svg app-icon name="square" filled [size]="iconSize().stop"></svg>
   } @else {
-    <svg app-icon name="play" filled [size]="size() === 'lg' ? 40 : 22"></svg>
+    <svg app-icon name="play" filled [size]="iconSize().play"></svg>
   }
 </button>

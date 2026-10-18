@@ -4,8 +4,11 @@ import {
   countByStatus,
   currentPronunciation,
   currentStatus,
+  entriesOfKind,
+  entryPath,
   findWordByLabel,
   firstSaidDate,
+  heirStage,
   removePronunciation,
   removeRecording,
   sortByFirstSaidDesc,
@@ -78,6 +81,18 @@ describe('word lists', () => {
     const gateau = aWord({ id: 3, label: 'gâteau' });
     expect(findWordByLabel([lapin, gateau], ' Gateau')).toBe(gateau);
     expect(findWordByLabel([lapin], 'chat')).toBeUndefined();
+    expect(findWordByLabel([{ ...gateau, kind: 'sentence' }], 'gateau')).toBeUndefined();
+  });
+
+  it('links a word under /mots and a sentence under /phrases', () => {
+    expect(entryPath({ id: 7, kind: 'word' })).toBe('/mots/7');
+    expect(entryPath({ id: 8, kind: 'sentence' })).toBe('/phrases/8');
+  });
+
+  it('keeps the entries of one kind', () => {
+    const sentence = aWord({ id: 9, kind: 'sentence', label: 'Encore du gâteau' });
+    expect(entriesOfKind([lapin, sentence], 'sentence')).toEqual([sentence]);
+    expect(entriesOfKind([lapin, sentence], 'word')).toEqual([lapin]);
   });
 });
 
@@ -106,7 +121,26 @@ describe('list updates', () => {
     expect(untouched).toBe(maman);
   });
 
-  it('puts a new sound first in its word gallery only', () => {
+  it('hands the sounds of a removed stage to the stage before it, or after it for the oldest', () => {
+    const third = aPronunciation({ id: 3, wordId: 1, date: '2026-10-14' });
+    const withSounds = {
+      ...lapin,
+      pronunciations: [...lapin.pronunciations, third],
+      recordings: [
+        aRecording({ id: 7, wordId: 1, pronunciationId: 2 }),
+        aRecording({ id: 8, wordId: 1, pronunciationId: 1 }),
+      ],
+    };
+
+    expect(heirStage(withSounds, 2)?.id).toBe(1);
+    expect(heirStage(withSounds, 1)?.id).toBe(2);
+    const [afterMiddle] = removePronunciation([withSounds], 2);
+    expect(afterMiddle.recordings.map((recording) => recording.pronunciationId)).toEqual([1, 1]);
+    const [afterOldest] = removePronunciation([withSounds], 1);
+    expect(afterOldest.recordings.map((recording) => recording.pronunciationId)).toEqual([2, 2]);
+  });
+
+  it('puts a new sound first in its word only', () => {
     const older = aRecording({ id: 3, wordId: 1 });
     const withSound = { ...lapin, recordings: [older] };
     const [updated, untouched] = addRecording([withSound, maman], aRecording({ id: 4, wordId: 1 }));

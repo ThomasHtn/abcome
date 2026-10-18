@@ -1,4 +1,9 @@
 /**
+ * What a notebook entry is: a single word, or a sentence labelled by what Côme meant.
+ */
+export type WordKind = 'word' | 'sentence';
+
+/**
  * How close a spoken form is to the word: "En route", "Presque", "Bien dit".
  */
 export type PronunciationStatus = 'learning' | 'almost' | 'mastered';
@@ -62,7 +67,8 @@ export interface Pronunciation {
 }
 
 /**
- * A sound of the word, without its bytes: those are played from `API_ENDPOINTS.recording(id)`.
+ * A sound of the word filed under one of its stages, without its bytes: those are played from
+ * `API_ENDPOINTS.recording(id)`.
  */
 export interface Recording {
   /**
@@ -71,9 +77,14 @@ export interface Recording {
   id: number;
 
   /**
-   * Word whose gallery holds it.
+   * Word it belongs to.
    */
   wordId: number;
+
+  /**
+   * Stage it is filed under.
+   */
+  pronunciationId: number;
 
   /**
    * Audio type, `audio/webm` or `audio/mp4`.
@@ -101,12 +112,17 @@ export interface Word {
   id: number;
 
   /**
-   * The word itself ("lapin").
+   * Word or sentence; both have stages and sounds alike.
+   */
+  kind: WordKind;
+
+  /**
+   * The word itself ("lapin"), or what a sentence means ("Il n'y a plus de gâteau").
    */
   label: string;
 
   /**
-   * Category from the dictionary, `custom` otherwise.
+   * Category from the dictionary, `custom` otherwise and for a sentence.
    */
   category: WordCategory;
 
@@ -147,11 +163,16 @@ export interface PronunciationRequest {
 }
 
 /**
- * Body of a word creation, which always comes with its first stage.
+ * Body of a word or sentence creation, which always comes with its first stage.
  */
 export interface CreateWordRequest {
   /**
-   * The word, 1 to 40 characters, unique once normalized.
+   * Word (the default) or sentence.
+   */
+  kind?: WordKind;
+
+  /**
+   * The word, 1 to 40 characters and unique once normalized, or what a sentence means, up to 200.
    */
   label: string;
 
@@ -159,6 +180,16 @@ export interface CreateWordRequest {
    * Its first stage.
    */
   pronunciation: PronunciationRequest;
+}
+
+/**
+ * Body of a sound move to another stage of its word.
+ */
+export interface MoveRecordingRequest {
+  /**
+   * Stage receiving the sound.
+   */
+  pronunciationId: number;
 }
 
 /**

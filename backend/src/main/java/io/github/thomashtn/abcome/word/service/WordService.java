@@ -36,24 +36,26 @@ public interface WordService {
     void lockForUpdate(Long id);
 
     /**
-     * Adds a word with its first stage; its category comes from the dictionary.
+     * Adds a word or a sentence with its first stage; a word's category comes from the dictionary.
      *
-     * @param request label and first stage
-     * @return the created word
+     * @param request kind, label and first stage
+     * @return the created word or sentence
      * @throws io.github.thomashtn.abcome.shared.exception.ConflictException       when the word already exists,
      *                                                                          whatever its case or accents
-     * @throws io.github.thomashtn.abcome.shared.exception.InvalidRequestException when the date is in the future
+     * @throws io.github.thomashtn.abcome.shared.exception.InvalidRequestException when the date is in the future,
+     *                                                                          or a text too long for the kind
      */
     WordResponse create(CreateWordRequest request);
 
     /**
-     * Renames a word, for a typo; its stages stay.
+     * Renames a word or a sentence, for a typo; its stages stay.
      *
      * @param id      word identifier
      * @param request new label
-     * @return the renamed word
+     * @return the renamed word or sentence
      * @throws io.github.thomashtn.abcome.shared.exception.ResourceNotFoundException when unknown
      * @throws io.github.thomashtn.abcome.shared.exception.ConflictException         when another word has this label
+     * @throws io.github.thomashtn.abcome.shared.exception.InvalidRequestException   when too long for the kind
      */
     WordResponse rename(Long id, UpdateWordRequest request);
 

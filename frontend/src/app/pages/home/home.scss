@@ -1,4 +1,4 @@
-/* Home screen: cream page, salmon mascot card, lavender tabs, card list above the action bar. */
+/* Home screen: cream page, salmon mascot card, lavender tabs and search, card list above the action bar. */
 
 @use 'tools' as *;
 
@@ -50,7 +50,6 @@
 
 /* Lavender track holding the two tabs. */
 .home__tabs {
-  margin-block-start: 0.125rem;
   border-radius: var(--radius-pill);
   padding: 0.25rem;
   background-color: var(--color-lavender-50);

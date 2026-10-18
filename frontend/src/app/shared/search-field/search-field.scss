@@ -1,4 +1,4 @@
-/* Search pill: white on the page, lavender inside a card; magnifier in lavender. */
+/* Search pill: white on the page, lavender inside a card, ringed in lavender; magnifier in lavender. */
 
 @use 'tools' as *;
 
@@ -16,6 +16,18 @@
 .search-field--tint {
   background-color: var(--color-lavender-50);
   box-shadow: none;
+}
+
+/* White pill ringed in lavender, flat like the tabs it replaces. */
+.search-field--outline {
+  border: 2px solid var(--color-lavender-200);
+  padding-inline: 1rem;
+  box-shadow: none;
+}
+
+/* The cross next to the field already clears it: no second, native one. */
+.search-field--outline .search-field__input::-webkit-search-cancel-button {
+  appearance: none;
 }
 
 /* Focus shows on the whole pill, the input itself draws nothing. */

@@ -1,5 +1,6 @@
 import { normalizeText } from '@core/text/text.utils';
 import { Word } from '@core/words/word.model';
+import { entriesOfKind } from '@core/words/word.utils';
 
 import { FREQUENT_SHORTCUT_COUNT } from './dictionary.constants';
 import { DictionaryEntry } from './dictionary.model';
@@ -13,7 +14,7 @@ export function frequentShortcuts(
   words: readonly Word[],
   count: number = FREQUENT_SHORTCUT_COUNT,
 ): DictionaryEntry[] {
-  const known = new Set(words.map((word) => normalizeText(word.label)));
+  const known = new Set(entriesOfKind(words, 'word').map((word) => normalizeText(word.label)));
   return entries
     .filter((entry) => entry.frequent && !known.has(normalizeText(entry.label)))
     .slice(0, count);

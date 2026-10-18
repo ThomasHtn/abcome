@@ -10,11 +10,13 @@ import io.github.thomashtn.abcome.shared.exception.PayloadTooLargeException;
 import io.github.thomashtn.abcome.shared.exception.ResourceNotFoundException;
 import io.github.thomashtn.abcome.shared.exception.UnsupportedMediaTypeException;
 import io.github.thomashtn.abcome.word.dto.RecordingResponse;
+import io.github.thomashtn.abcome.word.service.PronunciationService;
 import io.github.thomashtn.abcome.word.service.WordService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import org.springframework.http.InvalidMediaTypeException;
@@ -24,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Sounds stored in PostgreSQL, any number per word.
+ * Sounds stored in PostgreSQL, any number per stage of a word.
  *
  * <p>The upload is checked and read before any transaction starts, so a slow phone never holds a
  * database connection while it sends its bytes.</p>
@@ -48,7 +50,12 @@ public class DefaultRecordingService implements RecordingService {
     private final RecordingRepository recordingRepository;
 
     /**
-     * Word lock, so a sound is never added to a word being deleted.
+     * Reads the stage receiving a sound, to know its word.
+     */
+    private final PronunciationService pronunciationService;
+
+    /**
+     * Word lock, so a sound is never added to a word or a stage being deleted.
      */
     private final WordService wordService;
 
@@ -80,11 +87,12 @@ public class DefaultRecordingService implements RecordingService {
     /**
      * Creates the service.
      *
-     * @param recordingRepository recording storage
-     * @param wordService         word lock
-     * @param transactionTemplate transaction runner
-     * @param properties          application settings holding the limits
-     * @param clock               application clock
+     * @param recordingRepository  recording storage
+     * @param pronunciationService stage reader
+     * @param wordService          word lock
+     * @param transactionTemplate  transaction runner
+     * @param properties           application settings holding the limits
+     * @param clock                application clock
      */
     @SuppressFBWarnings(
         value = "EI_EXPOSE_REP2",
@@ -93,12 +101,14 @@ public class DefaultRecordingService implements RecordingService {
     )
     public DefaultRecordingService(
         RecordingRepository recordingRepository,
+        PronunciationService pronunciationService,
         WordService wordService,
         TransactionTemplate transactionTemplate,
         ApplicationProperties properties,
         Clock clock
     ) {
         this.recordingRepository = recordingRepository;
+        this.pronunciationService = pronunciationService;
         this.wordService = wordService;
         this.transactionTemplate = transactionTemplate;
         this.maxBytes = properties.recording().maxBytes();
@@ -108,19 +118,19 @@ public class DefaultRecordingService implements RecordingService {
     }
 
     /**
-     * Checks type and duration, reads the bounded body, then inserts the sound in one transaction.
+     * Checks type and duration, reads the bounded body, then files the sound under its stage in one transaction.
      *
-     * <p>The word row is locked first, so a concurrent deletion of the word either runs before (404)
-     * or waits and takes the new sound with it.</p>
+     * <p>The word row is locked first, then the stage read again: a concurrent deletion of the word or
+     * the stage either runs before (404) or waits, and a deleted word takes the new sound with it.</p>
      *
-     * @param wordId      word identifier
-     * @param contentType upload content type
-     * @param durationMs  length measured by the browser
-     * @param body        raw audio body
+     * @param pronunciationId stage identifier
+     * @param contentType     upload content type
+     * @param durationMs      length measured by the browser
+     * @param body            raw audio body
      * @return the stored sound, without its bytes
      */
     @Override
-    public RecordingResponse add(Long wordId, String contentType, int durationMs, InputStream body) {
+    public RecordingResponse add(Long pronunciationId, String contentType, int durationMs, InputStream body) {
         String mimeType = acceptedMimeType(contentType);
         if (durationMs < minDurationMs || durationMs > maxDurationMs) {
             throw new InvalidRequestException(
@@ -130,14 +140,18 @@ public class DefaultRecordingService implements RecordingService {
         byte[] data = readBounded(body);
 
         // PostgreSQL keeps microseconds: truncating now returns the same instant as any later read.
-        Recording recording = new Recording(
-            wordId, data, mimeType, durationMs, clock.instant().truncatedTo(ChronoUnit.MICROS)
-        );
+        Instant createdAt = clock.instant().truncatedTo(ChronoUnit.MICROS);
         return transactionTemplate.execute(status -> {
+            Long wordId = pronunciationService.findById(pronunciationId).wordId();
             wordService.lockForUpdate(wordId);
-            Recording saved = recordingRepository.saveAndFlush(recording);
+            // Read again under the lock: the stage may have been deleted while waiting.
+            pronunciationService.findById(pronunciationId);
+            Recording saved = recordingRepository.saveAndFlush(
+                new Recording(wordId, pronunciationId, data, mimeType, durationMs, createdAt)
+            );
             return new RecordingResponse(
-                saved.getId(), saved.getWordId(), saved.getMimeType(), saved.getDurationMs(), saved.getCreatedAt()
+                saved.getId(), saved.getWordId(), saved.getPronunciationId(), saved.getMimeType(),
+                saved.getDurationMs(), saved.getCreatedAt()
             );
         });
     }
@@ -157,6 +171,30 @@ public class DefaultRecordingService implements RecordingService {
     }
 
     /**
+     * Locks the sound's word, checks the stage belongs to it, then moves the sound without reading its bytes.
+     *
+     * <p>The word lock queues the move behind a concurrent deletion of the target stage, which would
+     * otherwise leave the sound on a stage that no longer exists.</p>
+     *
+     * @param id              recording identifier
+     * @param pronunciationId stage receiving it
+     * @return the moved sound, without its bytes
+     */
+    @Override
+    @Transactional
+    public RecordingResponse move(Long id, Long pronunciationId) {
+        Long wordId = recordingRepository.findWordIdById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_MESSAGE));
+        wordService.lockForUpdate(wordId);
+        if (!isStageOf(pronunciationId, wordId)) {
+            throw new InvalidRequestException("A sound moves to another pronunciation of its own word only.");
+        }
+        recordingRepository.moveTo(id, pronunciationId);
+        return recordingRepository.findResponseById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_MESSAGE));
+    }
+
+    /**
      * Deletes the sound without reading its bytes.
      *
      * @param id recording identifier
@@ -166,6 +204,21 @@ public class DefaultRecordingService implements RecordingService {
     public void delete(Long id) {
         if (recordingRepository.deleteRecordingById(id) == 0) {
             throw new ResourceNotFoundException(NOT_FOUND_MESSAGE);
+        }
+    }
+
+    /**
+     * Tells whether a stage exists and belongs to a word.
+     *
+     * @param pronunciationId stage identifier
+     * @param wordId          word identifier
+     * @return {@code true} when it is one of the word's stages
+     */
+    private boolean isStageOf(Long pronunciationId, Long wordId) {
+        try {
+            return pronunciationService.findById(pronunciationId).wordId().equals(wordId);
+        } catch (ResourceNotFoundException exception) {
+            return false;
         }
     }
 

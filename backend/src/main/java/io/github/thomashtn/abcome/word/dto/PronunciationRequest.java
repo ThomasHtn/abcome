@@ -9,15 +9,15 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
 /**
- * Stage to add or rewrite.
+ * Stage to add or rewrite; the size bound is a sentence's, the service checks a word's shorter one.
  *
  * @param spoken what Côme said, cleaned of extra spaces before it is validated
  * @param status how well he said it
  * @param date   day he said it, not in the future
  */
-@Schema(description = "How Côme says a word on a given day.")
+@Schema(description = "How Côme says a word or sentence on a given day.")
 public record PronunciationRequest(
-    @Schema(example = "apin") @NotBlank @Size(max = 60) String spoken,
+    @Schema(example = "apin") @NotBlank @Size(max = 200) String spoken,
     @Schema(example = "almost") @NotNull PronunciationStatus status,
     @Schema(example = "2026-10-12") @NotNull LocalDate date
 ) {

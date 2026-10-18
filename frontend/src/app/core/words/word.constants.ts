@@ -1,4 +1,4 @@
-import { PronunciationStatus, WordCategory } from './word.model';
+import { PronunciationStatus, WordCategory, WordKind } from './word.model';
 
 /**
  * Statuses from furthest to closest, the order of every picker and filter.
@@ -48,11 +48,11 @@ export const CATEGORY_LABELS: Readonly<Record<WordCategory, string>> = {
 };
 
 /**
- * Longest word label the API accepts.
+ * Longest label the API accepts, per kind: a word, or what a sentence means.
  */
-export const WORD_LABEL_MAX_LENGTH = 40;
+export const LABEL_MAX_LENGTHS: Readonly<Record<WordKind, number>> = { word: 40, sentence: 200 };
 
 /**
- * Longest spoken form the API accepts.
+ * Longest spoken form the API accepts, per kind.
  */
-export const SPOKEN_MAX_LENGTH = 60;
+export const SPOKEN_MAX_LENGTHS: Readonly<Record<WordKind, number>> = { word: 60, sentence: 200 };

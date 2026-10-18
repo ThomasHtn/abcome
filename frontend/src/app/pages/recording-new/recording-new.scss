@@ -1,4 +1,4 @@
-/* Record screen: waveform card, round controls, word target card, effect note, closing screen. */
+/* Record screen: waveform card, round controls, word target card, stage choice, effect note, closing screen. */
 
 @use 'tools' as *;
 
@@ -235,7 +235,44 @@
   line-height: 1.35;
 }
 
-/* "Enregistrement du son…" under the word search while an existing word receives the sound. */
+/* A stage offered for the sound: white row, status dot, spoken form and day. */
+.recording-new__stage {
+  min-block-size: 3.75rem;
+  border: 0;
+  border-radius: 1.125rem;
+  padding: 0.5rem 0.875rem;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-chip);
+  color: var(--color-ink);
+  text-align: start;
+}
+
+/* "Il le dit autrement": lavender, like the other secondary choices. */
+.recording-new__stage--new {
+  background-color: var(--color-lavender-50);
+  box-shadow: none;
+  color: var(--color-lavender-700);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+/* Spoken form of a stage. */
+.recording-new__stage-spoken {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+/* Day of a stage, "Maintenant" for the current one. */
+.recording-new__stage-caption {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+/* "Enregistrement du son…" under the stages while the chosen one receives the sound. */
 .recording-new__saving {
   color: var(--color-text-muted);
   font-size: 0.9375rem;
@@ -245,30 +282,10 @@
 
 /* Dot of the chosen status, grey until something is written. */
 .recording-new__effect-dot {
-  flex: none;
   margin-block-start: 0.25rem;
-  inline-size: 0.75rem;
-  block-size: 0.75rem;
-  border-radius: 50%;
-  background-color: var(--color-border);
 }
 
-/* "En route" dot. */
-.recording-new__effect-dot--learning {
-  background-color: var(--color-learning-dot);
-}
-
-/* "Presque" dot. */
-.recording-new__effect-dot--almost {
-  background-color: var(--color-almost-dot);
-}
-
-/* "Bien dit" dot. */
-.recording-new__effect-dot--mastered {
-  background-color: var(--color-mastered-dot);
-}
-
-/* White disc holding the plus of the save button. */
+/* White disc holding the "+" of the save button, as on the home screen. */
 .recording-new__plus {
   display: inline-flex;
   flex: none;
@@ -278,6 +295,7 @@
   block-size: 2rem;
   border-radius: 50%;
   background-color: var(--color-surface);
+  color: var(--color-salmon-700);
 }
 
 /* Closing screen, centred. */

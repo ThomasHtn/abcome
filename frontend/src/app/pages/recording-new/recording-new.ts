@@ -22,12 +22,14 @@ import {
 import { formatRecordingClock } from '@core/recordings/recording.utils';
 import { quote } from '@core/text/text.utils';
 import { CATEGORY_LABELS } from '@core/words/word.constants';
-import { Word } from '@core/words/word.model';
+import { Pronunciation, PronunciationRequest, Word } from '@core/words/word.model';
+import { currentStatus } from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
 import { ActionBar } from '@shared/action-bar/action-bar';
 import { AudioButton } from '@shared/audio-button/audio-button';
 import { Button } from '@shared/button/button';
 import { Icon } from '@shared/icon/icon';
+import { LevelBars } from '@shared/level-bars/level-bars';
 import { Mascot } from '@shared/mascot/mascot';
 import { MascotBubble } from '@shared/mascot-bubble/mascot-bubble';
 import { PageHeader } from '@shared/page-header/page-header';
@@ -39,27 +41,28 @@ import {
   toPronunciationRequest,
 } from '@shared/pronunciation-form/pronunciation-form.utils';
 import { QuotePipe } from '@shared/quote/quote.pipe';
+import { StatusDot } from '@shared/status-dot/status-dot';
 import { WordPicker } from '@shared/word-picker/word-picker';
 import { WordChoice } from '@shared/word-picker/word-picker.model';
 
 import { AudioRecorder } from './audio-recorder';
-import { LevelBars } from './level-bars/level-bars';
 import { RecorderError } from './recorder-error';
 import { RecordingClip } from './recording-clip/recording-clip';
 import { LEVEL_BAR_COUNT, MIN_KEEP_MS, RECORDER_ERROR_MESSAGES } from './recording-new.constants';
-import { RecordedClip, RecordingPhase, SaveOutcome } from './recording-new.model';
+import { PendingStage, RecordedClip, RecordingPhase, SaveOutcome } from './recording-new.model';
 import {
   doneCopy,
   liveBars,
   recordingInstruction,
   recordingTitle,
   saveButtonText,
+  stageOptions,
   summarizeLevels,
 } from './recording-new.utils';
 
 /**
- * Record-a-sound screen: record up to 15 s, listen and retry, pick the word, then save the sound in
- * its gallery. An existing word takes it at once; a new word first needs its first pronunciation.
+ * Record-a-sound screen: record up to 15 s, listen and retry, pick the word, then file the sound under
+ * a stage. An existing word offers its stages or a new one; a new word first needs its first stage.
  */
 @Component({
   selector: 'app-recording-new-page',
@@ -78,6 +81,7 @@ import {
     PageHeader,
     PronunciationForm,
     RecordingClip,
+    StatusDot,
     WordPicker,
   ],
   templateUrl: './recording-new.html',
@@ -105,9 +109,10 @@ export class RecordingNewPage {
   private readonly celebration = inject(Celebration);
 
   /**
-   * New word already created by a save whose upload failed, so a retry only resends the sound.
+   * Stage already created by a save whose upload failed (a new word's first one, or a new stage), so
+   * a retry only resends the sound.
    */
-  private pendingWordId: number | null = null;
+  private pending: PendingStage | null = null;
 
   /**
    * The microphone.
@@ -155,9 +160,25 @@ export class RecordingNewPage {
   protected readonly playing = signal(false);
 
   /**
-   * Word the sound belongs to, `null` until chosen.
+   * Word the sound belongs to, `null` until chosen; `word` is set for a word of the notebook.
    */
   protected readonly target = signal<WordChoice | null>(null);
+
+  /**
+   * The chosen notebook word as it is now, with a stage added since; `null` for a new word.
+   */
+  protected readonly targetWord = computed(() => {
+    const id = this.target()?.word?.id;
+    return this.words().find((word) => word.id === id) ?? null;
+  });
+
+  /**
+   * Stages of the chosen notebook word offered for the sound, newest first.
+   */
+  protected readonly stages = computed(() => {
+    const word = this.targetWord();
+    return word ? stageOptions(word) : [];
+  });
 
   /**
    * Text typed in the word search.
@@ -165,7 +186,7 @@ export class RecordingNewPage {
   protected readonly query = signal('');
 
   /**
-   * First pronunciation of a new word.
+   * First pronunciation of a new word, or new stage of a notebook word.
    */
   protected readonly draft = signal<PronunciationDraft>(emptyDraft());
 
@@ -204,7 +225,7 @@ export class RecordingNewPage {
   /**
    * Screen title.
    */
-  protected readonly title = computed(() => recordingTitle(this.phase()));
+  protected readonly title = computed(() => recordingTitle(this.phase(), !this.targetWord()));
 
   /**
    * Lapinou's instruction, or the microphone failure.
@@ -262,14 +283,14 @@ export class RecordingNewPage {
   });
 
   /**
-   * Whether the new word's first pronunciation can be saved.
+   * Whether the new word's first pronunciation, or the new stage, can be saved.
    */
   protected readonly ready = computed(() => isDraftReady(this.draft()));
 
   /**
    * Text of the save button.
    */
-  protected readonly saveText = computed(() => saveButtonText(this.ready()));
+  protected readonly saveText = computed(() => saveButtonText(this.ready(), !this.targetWord()));
 
   /**
    * Title and sentence of the closing screen.
@@ -323,7 +344,7 @@ export class RecordingNewPage {
   }
 
   /**
-   * Keeps the clip: straight into the gallery of a preselected word, else to the word search.
+   * Keeps the clip: to the stages of a preselected word, else to the word search.
    */
   protected keep(): void {
     if (this.tooShort()) {
@@ -331,21 +352,21 @@ export class RecordingNewPage {
     }
     const preselected = this.preselected();
     if (preselected) {
-      void this.addToWord(preselected);
+      this.openStages(preselected);
     } else {
       this.phase.set('pick');
     }
   }
 
   /**
-   * An existing word takes the sound at once; a new word asks for its first pronunciation first.
+   * A notebook word offers its stages; a new word asks for its first pronunciation.
    */
   protected choose(choice: WordChoice): void {
     if (choice.word) {
-      void this.addToWord(choice.word);
+      this.openStages(choice.word);
       return;
     }
-    this.pendingWordId = null;
+    this.pending = null;
     this.target.set(choice);
     this.draft.set(emptyDraft());
     this.phase.set('note');
@@ -355,13 +376,58 @@ export class RecordingNewPage {
    * Back to the word search.
    */
   protected changeWord(): void {
-    this.pendingWordId = null;
+    this.pending = null;
     this.target.set(null);
     this.phase.set('pick');
   }
 
   /**
-   * Creates the new word with its first pronunciation, then adds the sound to its gallery.
+   * Leaves the note step: back to the stages of a notebook word, or to the search for a new word.
+   */
+  protected leaveNote(): void {
+    const word = this.targetWord();
+    if (word) {
+      this.openStages(word);
+    } else {
+      this.changeWord();
+    }
+  }
+
+  /**
+   * Form of a new stage of the chosen word, starting from its current status and today.
+   */
+  protected noteNewStage(): void {
+    const word = this.targetWord();
+    if (!word) {
+      return;
+    }
+    this.pending = null;
+    this.draft.set(emptyDraft(currentStatus(word)));
+    this.phase.set('note');
+  }
+
+  /**
+   * Files the clip under an existing stage of the chosen word.
+   */
+  protected async fileUnder(pronunciation: Pronunciation): Promise<void> {
+    const clip = this.clip();
+    const word = this.targetWord();
+    if (!clip || !word || this.saving()) {
+      return;
+    }
+    this.saving.set(true);
+    try {
+      await this.wordsApi.addRecording(pronunciation.id, clip.blob, clip.durationMs);
+      this.finish('added', word.label, '', word.id);
+    } catch (error) {
+      this.reportFailure(error, word.label);
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  /**
+   * Creates the new word or the new stage, then files the sound under that stage.
    */
   protected async save(): Promise<void> {
     const target = this.target();
@@ -369,17 +435,16 @@ export class RecordingNewPage {
     if (!target || !clip || !this.ready() || this.saving()) {
       return;
     }
+    const word = this.targetWord();
+    const request = toPronunciationRequest(this.draft());
     this.saving.set(true);
     try {
-      this.pendingWordId ??= (
-        await this.wordsApi.create({
-          label: target.label.trim(),
-          pronunciation: toPronunciationRequest(this.draft()),
-        })
-      ).id;
-      await this.wordsApi.addRecording(this.pendingWordId, clip.blob, clip.durationMs);
-      this.finish('new', target.label, this.draft().spoken.trim(), this.pendingWordId);
-      this.pendingWordId = null;
+      this.pending ??= word
+        ? { wordId: word.id, stageId: (await this.wordsApi.addPronunciation(word.id, request)).id }
+        : await this.createWord(target.label, request);
+      await this.wordsApi.addRecording(this.pending.stageId, clip.blob, clip.durationMs);
+      this.finish(word ? 'stage' : 'new', target.label, request.spoken, this.pending.wordId);
+      this.pending = null;
     } catch (error) {
       this.reportFailure(error, target.label);
     } finally {
@@ -392,7 +457,7 @@ export class RecordingNewPage {
    */
   protected another(): void {
     this.lastWordId.set(this.outcome()?.wordId ?? null);
-    this.pendingWordId = null;
+    this.pending = null;
     this.setClip(null);
     this.target.set(null);
     this.query.set('');
@@ -402,22 +467,23 @@ export class RecordingNewPage {
   }
 
   /**
-   * Adds the clip to an existing word's gallery.
+   * Creates a new word with its first stage, which receives the sound.
    */
-  private async addToWord(word: Word): Promise<void> {
-    const clip = this.clip();
-    if (!clip || this.saving()) {
-      return;
-    }
-    this.saving.set(true);
-    try {
-      await this.wordsApi.addRecording(word.id, clip.blob, clip.durationMs);
-      this.finish('added', word.label, '', word.id);
-    } catch (error) {
-      this.reportFailure(error, word.label);
-    } finally {
-      this.saving.set(false);
-    }
+  private async createWord(
+    label: string,
+    pronunciation: PronunciationRequest,
+  ): Promise<PendingStage> {
+    const word = await this.wordsApi.create({ label: label.trim(), pronunciation });
+    return { wordId: word.id, stageId: word.pronunciations[0].id };
+  }
+
+  /**
+   * Offers the stages of a notebook word for the clip.
+   */
+  private openStages(word: Word): void {
+    this.pending = null;
+    this.target.set({ label: word.label, category: word.category, word });
+    this.phase.set('stage');
   }
 
   /**
@@ -448,13 +514,20 @@ export class RecordingNewPage {
         this.toasts.show("Ce son n'est pas accepté. Recommence l'enregistrement.", 'error');
         return;
       default:
-        this.toasts.show(
-          this.pendingWordId === null
-            ? "Le son n'a pas pu être enregistré, réessaie."
-            : "Le mot est noté, mais le son n'est pas parti. Réessaie.",
-          'error',
-        );
+        this.toasts.show(this.uploadFailure(), 'error');
     }
+  }
+
+  /**
+   * Why the save failed: nothing kept, or the stage kept without its sound.
+   */
+  private uploadFailure(): string {
+    if (this.pending === null) {
+      return "Le son n'a pas pu être enregistré, réessaie.";
+    }
+    return this.targetWord()
+      ? "La prononciation est notée, mais le son n'est pas parti. Réessaie."
+      : "Le mot est noté, mais le son n'est pas parti. Réessaie.";
   }
 
   /**

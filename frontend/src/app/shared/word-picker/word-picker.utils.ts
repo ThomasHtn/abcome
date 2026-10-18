@@ -5,21 +5,22 @@ import {
   normalizeText,
   rankByQuery,
 } from '@core/text/text.utils';
-import { CATEGORY_LABELS, WORD_LABEL_MAX_LENGTH } from '@core/words/word.constants';
+import { CATEGORY_LABELS, LABEL_MAX_LENGTHS } from '@core/words/word.constants';
 import { Word } from '@core/words/word.model';
-import { wordMatchesQuery } from '@core/words/word.utils';
+import { entriesOfKind, wordMatchesQuery } from '@core/words/word.utils';
 
 import { WORD_PICKER_MAX_SUGGESTIONS } from './word-picker.constants';
 import { WordChoice, WordSuggestion } from './word-picker.model';
 
 /**
- * Every pickable word: the notebook's first, then the dictionary entries Côme does not say yet.
+ * Every pickable entry: the notebook's words and sentences first, then the dictionary entries Côme does
+ * not say yet as a word.
  */
 export function pickerCandidates(
   entries: readonly DictionaryEntry[],
   words: readonly Word[],
 ): WordChoice[] {
-  const known = new Set(words.map((word) => normalizeText(word.label)));
+  const known = new Set(entriesOfKind(words, 'word').map((word) => normalizeText(word.label)));
   return [
     ...words.map((word) => ({ label: word.label, category: word.category, word })),
     ...entries
@@ -79,12 +80,13 @@ export function newWordOffer(
   query: string,
 ): string | null {
   const label = query.trim();
-  if (label === '' || label.length > WORD_LABEL_MAX_LENGTH) {
+  if (label === '' || label.length > LABEL_MAX_LENGTHS.word) {
     return null;
   }
   const needle = normalizeText(label);
+  // A sentence with the same text is no duplicate: the word can still be added.
   const taken = pickerCandidates(entries, words).some(
-    (candidate) => normalizeText(candidate.label) === needle,
+    (candidate) => candidate.word?.kind !== 'sentence' && normalizeText(candidate.label) === needle,
   );
   return taken ? null : label;
 }

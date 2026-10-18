@@ -1,6 +1,7 @@
 package io.github.thomashtn.abcome.recording.controller;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.github.thomashtn.abcome.recording.dto.MoveRecordingRequest;
 import io.github.thomashtn.abcome.recording.dto.RecordingContent;
 import io.github.thomashtn.abcome.recording.service.RecordingService;
 import io.github.thomashtn.abcome.shared.exception.ApiErrorResponse;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.io.InputStream;
 import java.net.URI;
 import org.springframework.core.io.ByteArrayResource;
@@ -22,12 +24,13 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Sounds of the words: uploaded raw into a word's gallery, played back and deleted by id.
+ * Sounds of the words: uploaded raw under a stage, played back, moved to another stage and deleted by id.
  */
 @RestController
 @Tag(name = "Recordings", description = "Short sounds of Côme saying a word.")
@@ -58,17 +61,17 @@ public class RecordingController {
     }
 
     /**
-     * Adds a sound to a word's gallery.
+     * Files a sound under a stage of a word.
      *
-     * @param id          word identifier
+     * @param id          stage identifier
      * @param durationMs  length measured by the browser
      * @param contentType upload type, codec parameters allowed
      * @param body        raw audio body
      * @return the stored sound, without its bytes, and its playback URL
      */
-    @PostMapping(value = "/api/words/{id}/recordings", consumes = {"audio/webm", "audio/mp4"})
+    @PostMapping(value = "/api/pronunciations/{id}/recordings", consumes = {"audio/webm", "audio/mp4"})
     @Operation(
-        summary = "Add a sound to a word",
+        summary = "Add a sound to a pronunciation stage",
         requestBody = @RequestBody(content = {
             @Content(mediaType = "audio/webm", schema = @Schema(type = "string", format = "binary")),
             @Content(mediaType = "audio/mp4", schema = @Schema(type = "string", format = "binary"))
@@ -77,7 +80,7 @@ public class RecordingController {
     @ApiResponse(responseCode = "201", description = "The stored sound; Location is its playback URL.")
     @ApiResponse(responseCode = "400", description = "INVALID_REQUEST: empty body or duration out of range.",
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    @ApiResponse(responseCode = "404", description = "NOT_FOUND: unknown word.",
+    @ApiResponse(responseCode = "404", description = "NOT_FOUND: unknown stage.",
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     @ApiResponse(responseCode = "413", description = "PAYLOAD_TOO_LARGE: above 2 MB.",
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
@@ -118,7 +121,28 @@ public class RecordingController {
     }
 
     /**
-     * Deletes a sound from its word's gallery.
+     * Files a sound under another stage of its word.
+     *
+     * @param id      recording identifier
+     * @param request stage receiving it
+     * @return the moved sound, without its bytes
+     */
+    @PutMapping("/api/recordings/{id}")
+    @Operation(summary = "Move a sound to another pronunciation stage of its word")
+    @ApiResponse(responseCode = "200", description = "The moved sound.")
+    @ApiResponse(responseCode = "400", description = "INVALID_REQUEST: stage missing, unknown or of another word.",
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "NOT_FOUND: unknown recording.",
+        content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
+    public RecordingResponse move(
+        @PathVariable Long id,
+        @org.springframework.web.bind.annotation.RequestBody @Valid MoveRecordingRequest request
+    ) {
+        return recordingService.move(id, request.pronunciationId());
+    }
+
+    /**
+     * Deletes a sound.
      *
      * @param id recording identifier
      * @return no content

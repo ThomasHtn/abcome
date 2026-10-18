@@ -1,8 +1,10 @@
 @if (deletedLabel(); as label) {
   <!-- Goodbye screen after the deletion. -->
   <div class="word-detail__gone pop flex flex-1 flex-col items-center justify-center gap-4">
-    <h1 class="word-detail__gone-title">{{ label | quote }} a été supprimé</h1>
-    <a app-button variant="secondary" routerLink="/">Retour à la liste</a>
+    <h1 class="word-detail__gone-title">{{ label | quote }} {{ copy().deletedSuffix }}</h1>
+    <a app-button variant="secondary" routerLink="/" [queryParams]="copy().listQuery">
+      Retour à la liste
+    </a>
   </div>
 } @else if (word(); as word) {
   <!-- Back to the list, and the "⋯" menu of the word. -->
@@ -21,7 +23,7 @@
   </header>
 
   <div class="word-detail">
-    <!-- Hero: Lapinou and the word on the color of its current status. -->
+    <!-- Hero: Lapinou, the word and its current status, on the color of that status. -->
     @if (current(); as now) {
       <section
         class="word-detail__hero enter"
@@ -42,80 +44,77 @@
       </section>
     }
 
-    <!-- Timeline of the pronunciations, newest first. -->
+    <!-- Timeline of the pronunciations, newest first, each with its sounds. -->
     <section
       class="enter motion-step-2 flex flex-col gap-3 lg:col-span-3"
       aria-labelledby="word-progress"
     >
-      <div class="flex items-baseline justify-between gap-2">
-        <h2 id="word-progress" class="word-detail__section">Ses progrès</h2>
-        <span class="word-detail__hint">Touche une étape pour la modifier</span>
-      </div>
+      <h2 id="word-progress" class="word-detail__section">Ses progrès</h2>
 
-      <ol class="word-detail__stages flex flex-col">
+      <ol class="word-detail__stages flex flex-col gap-3.5">
         @for (stage of stages(); track stage.pronunciation.id; let index = $index) {
-          <li
-            class="word-detail__stage flex items-center gap-3"
-            [class.word-detail__stage--linked]="!stage.oldest"
-            [style.--stage-index]="index"
-          >
-            <!-- Status dot on the line linking the stages. -->
-            <app-status-badge
-              class="word-detail__dot"
-              size="lg"
-              [status]="stage.pronunciation.status"
-            />
-
-            <!-- The stage card: a tap edits it. -->
+          <li class="word-detail__stage" [style.--stage-index]="index">
+            <!-- The stage's header: a tap edits it. -->
             <button
-              class="word-detail__card press flex min-w-0 flex-1 items-center gap-2.5"
+              class="word-detail__card flex w-full min-w-0 items-center gap-2.5"
               type="button"
               [class.word-detail__card--latest]="stage.latest"
-              [class.word-detail__card--learning]="stage.pronunciation.status === 'learning'"
-              [class.word-detail__card--almost]="stage.pronunciation.status === 'almost'"
-              [class.word-detail__card--mastered]="stage.pronunciation.status === 'mastered'"
               [attr.aria-label]="stage.ariaLabel"
               (click)="openStage(stage.pronunciation)"
             >
               <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span class="word-detail__caption">{{ stage.caption }}</span>
+                <span class="word-detail__caption flex items-center gap-1.5">
+                  <app-status-dot [status]="stage.pronunciation.status" />
+                  {{ stage.caption }}
+                </span>
                 <span class="word-detail__spoken">{{ stage.pronunciation.spoken | quote }}</span>
               </span>
-              <span class="word-detail__edit" aria-hidden="true">
-                <svg app-icon name="pencil" [size]="16" [strokeWidth]="2.2"></svg>
-              </span>
+              <svg
+                class="word-detail__chevron"
+                app-icon
+                name="chevron-right"
+                aria-hidden="true"
+                [size]="20"
+                [strokeWidth]="2.4"
+              ></svg>
             </button>
+
+            @if (stage.sounds.length > 0) {
+              <!-- The stage's sounds, in the same card. -->
+              <app-stage-sounds
+                [sounds]="stage.sounds"
+                [label]="stage.soundsLabel"
+                (actions)="openSoundActions($event)"
+              />
+            }
           </li>
         }
       </ol>
-    </section>
 
-    <!-- Every sound recorded for the word. -->
-    <app-sound-gallery
-      class="enter motion-step-3 block lg:col-span-3"
-      [sounds]="sounds()"
-      [label]="word.label"
-      [wordId]="word.id"
-      (remove)="askRemoveSound($event)"
-    />
+      @if (sounds().length === 0) {
+        <!-- No sound yet: the microphone of the bar records the first one. -->
+        <p class="word-detail__no-sound">
+          Pas encore de son. Touche le micro pour enregistrer Côme dire {{ word.label | quote }}.
+        </p>
+      }
+    </section>
   </div>
 
   <!-- Main action, plus recording a sound for this word. -->
   <app-action-bar>
     <button app-button class="min-w-0 flex-1" type="button" size="lg" (click)="openNewStage()">
       <span class="word-detail__plus" aria-hidden="true">
-        <svg app-icon name="plus" [size]="20" [strokeWidth]="2.6"></svg>
+        <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
       </span>
       {{ progressText() }}
     </button>
     <a
-      app-icon-button
       class="word-detail__record"
       routerLink="/sons/nouveau"
       [queryParams]="{ mot: word.id }"
       [attr.aria-label]="'Enregistrer un son de ' + (word.label | quote)"
     >
-      <svg app-icon name="mic" [size]="24" [strokeWidth]="2.2"></svg>
+      <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
     </a>
   </app-action-bar>
 
@@ -134,17 +133,7 @@
         <span class="word-detail__action-icon" aria-hidden="true">
           <svg app-icon name="pencil" [size]="20" [strokeWidth]="2.2"></svg>
         </span>
-        Renommer le mot
-      </button>
-      <button
-        class="word-detail__action press flex items-center gap-3.5"
-        type="button"
-        (click)="open('choose')"
-      >
-        <span class="word-detail__action-icon" aria-hidden="true">
-          <svg app-icon name="list-ordered" [size]="20" [strokeWidth]="2.2"></svg>
-        </span>
-        Modifier une prononciation
+        Renommer {{ copy().theNoun }}
       </button>
       <button
         class="word-detail__action word-detail__action--danger press flex items-center gap-3.5"
@@ -154,42 +143,9 @@
         <span class="word-detail__action-icon" aria-hidden="true">
           <svg app-icon name="trash-2" [size]="20" [strokeWidth]="2.2"></svg>
         </span>
-        Supprimer le mot
+        Supprimer {{ copy().theNoun }}
       </button>
     </div>
-  </app-bottom-sheet>
-
-  <!-- Which stage to edit. -->
-  <app-bottom-sheet
-    heading="Modifier"
-    [open]="sheet() === 'choose'"
-    (openChange)="onSheetToggle('choose', $event)"
-  >
-    <p class="word-detail__sheet-text">Quelle prononciation veux-tu modifier ?</p>
-    <ul class="flex flex-col gap-2.5">
-      @for (stage of stages(); track stage.pronunciation.id) {
-        <li>
-          <button
-            class="word-detail__row press flex w-full items-center gap-3"
-            type="button"
-            [class.word-detail__row--learning]="stage.pronunciation.status === 'learning'"
-            [class.word-detail__row--almost]="stage.pronunciation.status === 'almost'"
-            [class.word-detail__row--mastered]="stage.pronunciation.status === 'mastered'"
-            [attr.aria-label]="stage.ariaLabel"
-            (click)="openStage(stage.pronunciation)"
-          >
-            <app-status-badge size="sm" [status]="stage.pronunciation.status" />
-            <span class="flex min-w-0 flex-1 flex-col">
-              <span class="word-detail__row-spoken">{{ stage.pronunciation.spoken | quote }}</span>
-              <span class="word-detail__row-caption">
-                {{ stage.title }} · {{ shortDate(stage.pronunciation.date) }}
-              </span>
-            </span>
-            <svg app-icon name="chevron-right" [size]="20"></svg>
-          </button>
-        </li>
-      }
-    </ul>
   </app-bottom-sheet>
 
   <!-- Stage form: a new pronunciation or a correction. -->
@@ -200,6 +156,7 @@
     (openChange)="onSheetToggle('stage', $event)"
   >
     <app-pronunciation-form
+      [kind]="kind()"
       [spokenPlaceholder]="spokenPlaceholder()"
       [dateLabel]="dateLabel()"
       [(draft)]="draft"
@@ -219,14 +176,15 @@
 
   <!-- Rename the word. -->
   <app-bottom-sheet
-    heading="Renommer le mot"
+    [heading]="'Renommer ' + copy().theNoun"
     [open]="sheet() === 'rename'"
     [error]="sheetError()"
     (openChange)="onSheetToggle('rename', $event)"
   >
     <app-text-field
-      label="Le mot"
-      [maxLength]="labelMaxLength"
+      [label]="copy().labelField"
+      [multiline]="kind() === 'sentence'"
+      [maxLength]="labelMaxLength()"
       [error]="renameError()"
       [value]="renameLabel()"
       (valueChange)="typeLabel($event)"
@@ -252,13 +210,78 @@
   <!-- The only stage cannot go: the word itself has to. -->
   <app-confirm-sheet
     heading="C'est sa seule prononciation"
-    message="Un mot garde toujours au moins une prononciation. Pour l'effacer, supprime le mot."
     cancelLabel="Garder"
-    confirmLabel="Supprimer le mot"
+    [message]="copy().lastStageMessage"
+    [confirmLabel]="'Supprimer ' + copy().theNoun"
     [open]="sheet() === 'last-stage'"
     (openChange)="onSheetToggle('last-stage', $event)"
     (confirmed)="open('delete')"
   />
+
+  <!-- Actions of one sound, behind its "⋮". -->
+  <app-bottom-sheet
+    heading="Ce son"
+    [open]="sheet() === 'sound'"
+    (openChange)="onSheetToggle('sound', $event)"
+  >
+    <p class="word-detail__sheet-text">Le son {{ actionSoundDescription() }}</p>
+    <div class="flex flex-col gap-2.5">
+      @if (stages().length > 1) {
+        <button
+          class="word-detail__action press flex items-center gap-3.5"
+          type="button"
+          (click)="askMoveSound()"
+        >
+          <span class="word-detail__action-icon" aria-hidden="true">
+            <svg app-icon name="arrow-up-down" [size]="20" [strokeWidth]="2.2"></svg>
+          </span>
+          Ranger avec une autre prononciation
+        </button>
+      }
+      <button
+        class="word-detail__action word-detail__action--danger press flex items-center gap-3.5"
+        type="button"
+        (click)="askRemoveSound()"
+      >
+        <span class="word-detail__action-icon" aria-hidden="true">
+          <svg app-icon name="trash-2" [size]="20" [strokeWidth]="2.2"></svg>
+        </span>
+        Supprimer le son
+      </button>
+    </div>
+  </app-bottom-sheet>
+
+  <!-- Which stage a sound moves to. -->
+  <app-bottom-sheet
+    heading="Ranger ce son"
+    [open]="sheet() === 'move-sound'"
+    [error]="sheetError()"
+    (openChange)="onSheetToggle('move-sound', $event)"
+  >
+    <p class="word-detail__sheet-text">Avec quelle prononciation ?</p>
+    <ul class="flex flex-col gap-2.5">
+      @for (stage of moveTargets(); track stage.pronunciation.id) {
+        <li>
+          <button
+            class="word-detail__row press flex w-full items-center gap-3"
+            type="button"
+            [disabled]="busy()"
+            [attr.aria-label]="'Ranger avec ' + stage.pronunciation.spoken + ', ' + stage.title"
+            (click)="moveSound(stage.pronunciation)"
+          >
+            <app-status-dot [status]="stage.pronunciation.status" />
+            <span class="flex min-w-0 flex-1 flex-col">
+              <span class="word-detail__row-spoken">{{ stage.pronunciation.spoken | quote }}</span>
+              <span class="word-detail__row-caption">
+                {{ stage.title }} · {{ shortDate(stage.pronunciation.date) }}
+              </span>
+            </span>
+            <svg app-icon name="chevron-right" [size]="20"></svg>
+          </button>
+        </li>
+      }
+    </ul>
+  </app-bottom-sheet>
 
   <!-- Deletion of one sound. -->
   <app-confirm-sheet
@@ -286,10 +309,12 @@
 } @else if (loaded()) {
   <!-- Unknown id: a deleted word or a wrong link. -->
   <div class="word-detail__gone pop flex flex-1 flex-col items-center justify-center gap-4">
-    <h1 class="word-detail__gone-title">Ce mot n'est pas dans le carnet</h1>
-    <a app-button variant="secondary" routerLink="/">Retour à la liste</a>
+    <h1 class="word-detail__gone-title">{{ copy().notFound }}</h1>
+    <a app-button variant="secondary" routerLink="/" [queryParams]="copy().listQuery">
+      Retour à la liste
+    </a>
   </div>
 } @else {
   <!-- Notebook still loading. -->
-  <p class="word-detail__loading" role="status">Chargement du mot…</p>
+  <p class="word-detail__loading" role="status">{{ copy().loading }}</p>
 }

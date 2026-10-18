@@ -1,0 +1,18 @@
+<!-- Play button, then the waveform between the time played and the length of the sound. -->
+<div class="voice-note flex items-center gap-2.5">
+  <app-audio-button
+    [src]="src()"
+    [label]="label()"
+    [size]="size()"
+    (positionChange)="positionMs.set($event)"
+  />
+  <span class="voice-note__time" aria-hidden="true">{{ elapsed() }}</span>
+  <app-level-bars
+    class="min-w-0 flex-1"
+    size="sm"
+    tone="clip"
+    [levels]="levels()"
+    [progress]="progress()"
+  />
+  <span class="voice-note__time" aria-hidden="true">{{ length() }}</span>
+</div>

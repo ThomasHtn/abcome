@@ -2,6 +2,7 @@ package io.github.thomashtn.abcome.word.repository;
 
 import io.github.thomashtn.abcome.word.dto.RecordingResponse;
 import io.github.thomashtn.abcome.word.entity.Word;
+import io.github.thomashtn.abcome.word.entity.WordKind;
 import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +25,7 @@ public interface WordRepository extends JpaRepository<Word, Long> {
      */
     String SELECT_RECORDING = """
         select new io.github.thomashtn.abcome.word.dto.RecordingResponse(
-            r.id, r.wordId, r.mimeType, r.durationMs, r.createdAt)
+            r.id, r.wordId, r.pronunciationId, r.mimeType, r.durationMs, r.createdAt)
         from Recording r
         """;
 
@@ -41,21 +42,23 @@ public interface WordRepository extends JpaRepository<Word, Long> {
     List<Word> findAllByOrderByIdAsc();
 
     /**
-     * Tells whether a word already uses this comparison key.
+     * Tells whether an entry of this kind already uses this comparison key.
      *
+     * @param kind            kind compared, words only in practice
      * @param normalizedLabel comparison key
      * @return {@code true} when taken
      */
-    boolean existsByNormalizedLabel(String normalizedLabel);
+    boolean existsByKindAndNormalizedLabel(WordKind kind, String normalizedLabel);
 
     /**
-     * Tells whether another word already uses this comparison key.
+     * Tells whether another entry of this kind already uses this comparison key.
      *
+     * @param kind            kind compared, words only in practice
      * @param normalizedLabel comparison key
-     * @param id              word being renamed, which may keep its own key
-     * @return {@code true} when taken by another word
+     * @param id              entry being renamed, which may keep its own key
+     * @return {@code true} when taken by another entry
      */
-    boolean existsByNormalizedLabelAndIdNot(String normalizedLabel, Long id);
+    boolean existsByKindAndNormalizedLabelAndIdNot(WordKind kind, String normalizedLabel, Long id);
 
     /**
      * Reads a word and locks its row until the transaction ends, so writers of its stages and sounds queue up.

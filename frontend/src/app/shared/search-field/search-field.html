@@ -2,9 +2,11 @@
 <label
   class="search-field flex items-center gap-2.5"
   [class.search-field--tint]="tone() === 'tint'"
+  [class.search-field--outline]="tone() === 'outline'"
 >
   <svg class="search-field__icon" app-icon name="search" [size]="20" [strokeWidth]="2.2"></svg>
   <input
+    #input
     class="search-field__input min-w-0 flex-1"
     type="search"
     autocomplete="off"

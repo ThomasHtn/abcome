@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   effect,
   inject,
@@ -11,6 +12,15 @@ import {
 } from '@angular/core';
 
 import { Icon } from '@shared/icon/icon';
+
+/**
+ * Play and stop icon sizes, in px, per button size.
+ */
+const ICON_SIZES = {
+  sm: { play: 18, stop: 14 },
+  md: { play: 22, stop: 18 },
+  lg: { play: 40, stop: 34 },
+} as const;
 
 /**
  * Round lavender play/stop button for a recording (a word's sound, or a fresh recording's blob URL).
@@ -30,6 +40,11 @@ export class AudioButton {
   private audio: HTMLAudioElement | null = null;
 
   /**
+   * Animation frame reporting the playback position, 0 when none is pending.
+   */
+  private frame = 0;
+
+  /**
    * Audio to play: `API_ENDPOINTS.recording(id)` or an object URL.
    */
   public readonly src = input.required<string>();
@@ -40,9 +55,9 @@ export class AudioButton {
   public readonly label = input.required<string>();
 
   /**
-   * `md` 52 px in lists, `lg` 112 px as the recorder's main control.
+   * `sm` 44 px inside a card row, `md` 52 px in lists, `lg` 112 px as the recorder's main control.
    */
-  public readonly size = input<'md' | 'lg'>('md');
+  public readonly size = input<'sm' | 'md' | 'lg'>('md');
 
   /**
    * Emitted when playback starts or stops, so a screen can animate a waveform.
@@ -50,9 +65,19 @@ export class AudioButton {
   public readonly playingChange = output<boolean>();
 
   /**
+   * Playback position in milliseconds, every frame while playing, back to 0 when it stops.
+   */
+  public readonly positionChange = output<number>();
+
+  /**
    * Whether the sound is playing.
    */
   protected readonly playing = signal(false);
+
+  /**
+   * Sizes of the play and stop icons for the button's size.
+   */
+  protected readonly iconSize = computed(() => ICON_SIZES[this.size()]);
 
   /**
    * Stops the sound when its source changes or the button goes away.
@@ -111,12 +136,32 @@ export class AudioButton {
   }
 
   /**
-   * Updates the icon and tells the screen, only on a real change.
+   * Updates the icon and tells the screen, only on a real change; follows the position while playing.
    */
   private setPlaying(playing: boolean): void {
-    if (this.playing() !== playing) {
-      this.playing.set(playing);
-      this.playingChange.emit(playing);
+    if (this.playing() === playing) {
+      return;
     }
+    this.playing.set(playing);
+    this.playingChange.emit(playing);
+    cancelAnimationFrame(this.frame);
+    this.frame = 0;
+    if (playing) {
+      this.followPosition();
+    } else {
+      this.positionChange.emit(0);
+    }
+  }
+
+  /**
+   * Reports the position once per frame until the sound stops.
+   */
+  private followPosition(): void {
+    this.frame = requestAnimationFrame(() => {
+      if (this.playing() && this.audio) {
+        this.positionChange.emit(this.audio.currentTime * 1000);
+        this.followPosition();
+      }
+    });
   }
 }

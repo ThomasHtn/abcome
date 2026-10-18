@@ -1,6 +1,11 @@
 import { todayIso } from '@core/date/date.utils';
-import { SPOKEN_MAX_LENGTH } from '@core/words/word.constants';
-import { Pronunciation, PronunciationRequest, PronunciationStatus } from '@core/words/word.model';
+import { SPOKEN_MAX_LENGTHS } from '@core/words/word.constants';
+import {
+  Pronunciation,
+  PronunciationRequest,
+  PronunciationStatus,
+  WordKind,
+} from '@core/words/word.model';
 import { dateFieldError } from '@shared/date-field/date-field.utils';
 
 import { PronunciationDraft } from './pronunciation-form.model';
@@ -23,13 +28,17 @@ export function draftOf(pronunciation: Pronunciation): PronunciationDraft {
 }
 
 /**
- * Whether the draft can be saved: something written within the API's length, on a valid day.
+ * Whether the draft can be saved: something written within the API's length for the kind, on a valid day.
  */
-export function isDraftReady(draft: PronunciationDraft, today: string = todayIso()): boolean {
+export function isDraftReady(
+  draft: PronunciationDraft,
+  today: string = todayIso(),
+  kind: WordKind = 'word',
+): boolean {
   const spoken = draft.spoken.trim();
   return (
     spoken.length > 0 &&
-    spoken.length <= SPOKEN_MAX_LENGTH &&
+    spoken.length <= SPOKEN_MAX_LENGTHS[kind] &&
     dateFieldError(draft.date, today) === null
   );
 }

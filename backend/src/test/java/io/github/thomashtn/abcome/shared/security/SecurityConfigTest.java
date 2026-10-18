@@ -45,7 +45,7 @@ class SecurityConfigTest extends PostgreSqlIntegrationTest {
     @Test
     @DisplayName("Refuses a write without a CSRF token, even inside a session")
     void refusesWriteWithoutCsrfToken() throws Exception {
-        mockMvc().perform(post("/api/sentences").cookie(signIn()))
+        mockMvc().perform(post("/api/words").cookie(signIn()))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.code").value("FORBIDDEN"));
     }

@@ -24,7 +24,8 @@ public interface PronunciationService {
      * @param request new stage
      * @return the created stage
      * @throws io.github.thomashtn.abcome.shared.exception.ResourceNotFoundException when the word is unknown
-     * @throws io.github.thomashtn.abcome.shared.exception.InvalidRequestException   when the date is in the future
+     * @throws io.github.thomashtn.abcome.shared.exception.InvalidRequestException   when the date is in the future,
+     *                                                                            or the spoken form too long
      */
     PronunciationResponse add(Long wordId, PronunciationRequest request);
 
@@ -35,7 +36,8 @@ public interface PronunciationService {
      * @param request new values
      * @return the updated stage
      * @throws io.github.thomashtn.abcome.shared.exception.ResourceNotFoundException when unknown
-     * @throws io.github.thomashtn.abcome.shared.exception.InvalidRequestException   when the date is in the future
+     * @throws io.github.thomashtn.abcome.shared.exception.InvalidRequestException   when the date is in the future,
+     *                                                                            or the spoken form too long
      */
     PronunciationResponse update(Long id, PronunciationRequest request);
 

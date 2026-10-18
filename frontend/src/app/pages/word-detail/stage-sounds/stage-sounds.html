@@ -1,0 +1,22 @@
+<!-- One row per sound of the stage, newest first: its voice note, then a quiet button for its actions. -->
+<ul class="stage-sounds flex flex-col" [attr.aria-label]="label()">
+  @for (sound of sounds(); track sound.recording.id; let index = $index) {
+    <li class="stage-sounds__item flex items-center gap-1" [style.--sound-index]="index">
+      <app-voice-note
+        class="min-w-0 flex-1"
+        size="sm"
+        [src]="sound.src"
+        [label]="sound.listenLabel"
+        [durationMs]="sound.recording.durationMs"
+      />
+      <button
+        class="stage-sounds__more"
+        type="button"
+        [attr.aria-label]="sound.actionsLabel"
+        (click)="actions.emit(sound.recording)"
+      >
+        <svg app-icon name="ellipsis-vertical" [size]="20" [strokeWidth]="2.6"></svg>
+      </button>
+    </li>
+  }
+</ul>

@@ -3,7 +3,7 @@
   <app-text-field
     [label]="spokenLabel()"
     [placeholder]="spokenPlaceholder()"
-    [maxLength]="spokenMaxLength"
+    [maxLength]="spokenMaxLength()"
     [value]="draft().spoken"
     (valueChange)="update({ spoken: $event })"
   />

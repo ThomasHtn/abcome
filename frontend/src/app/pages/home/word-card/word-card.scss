@@ -32,12 +32,8 @@
   }
 }
 
-/* What Côme says, the star of the card; a long form wraps on two lines at most. */
-.word-card__spoken {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+/* The word or the sentence's meaning, the title of the card, shown whole on as many lines as it needs. */
+.word-card__label {
   overflow-wrap: anywhere;
   font-family: var(--font-display);
   font-size: 1.3125rem;
@@ -45,38 +41,18 @@
   line-height: 1.15;
 }
 
-/* The word itself, quieter; two lines at most. */
-.word-card__label {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+/* "Côme dit « apin »", quieter, shown whole too. */
+.word-card__said {
   overflow-wrap: anywhere;
   color: var(--color-text-muted);
-  font-size: var(--text-body);
+  font-size: var(--text-meta);
   font-weight: 700;
 }
 
-/* One stage of the progress, colored by its status. */
-.word-card__stage {
-  inline-size: 0.5rem;
-  block-size: 0.5rem;
-  border-radius: 50%;
-}
-
-/* Stage "En route". */
-.word-card__stage--learning {
-  background-color: var(--color-learning-dot);
-}
-
-/* Stage "Presque". */
-.word-card__stage--almost {
-  background-color: var(--color-almost-dot);
-}
-
-/* Stage "Bien dit". */
-.word-card__stage--mastered {
-  background-color: var(--color-mastered-dot);
+/* What Côme says, in his salmon as in the titles. */
+.word-card__spoken {
+  color: var(--color-salmon-700);
+  font-weight: 800;
 }
 
 /* Narrow card (strong zoom): date and status on top, the words below on the full width. */
@@ -90,7 +66,7 @@
     order: 1;
   }
 
-  .word-card__badge {
+  .word-card__current {
     margin-inline-start: auto;
   }
 }

@@ -3,8 +3,6 @@ import {
   Component,
   computed,
   inject,
-  input,
-  linkedSignal,
   output,
   signal,
 } from '@angular/core';
@@ -12,31 +10,34 @@ import {
 import { todayIso } from '@core/date/date.utils';
 import { Celebration } from '@core/feedback/celebration';
 import { ToastQueue } from '@core/feedback/toast-queue';
-import { SENTENCE_MAX_LENGTH } from '@core/sentences/sentence.constants';
-import { Sentence, SentenceRequest } from '@core/sentences/sentence.model';
-import { SentencesApi } from '@core/sentences/sentences-api';
+import { LABEL_MAX_LENGTHS } from '@core/words/word.constants';
+import { WordsApi } from '@core/words/words-api';
 import { BottomSheet } from '@shared/bottom-sheet/bottom-sheet';
 import { Button } from '@shared/button/button';
-import { DateField } from '@shared/date-field/date-field';
-import { dateFieldError } from '@shared/date-field/date-field.utils';
-import { QuotePipe } from '@shared/quote/quote.pipe';
+import { PronunciationForm } from '@shared/pronunciation-form/pronunciation-form';
+import { PronunciationDraft } from '@shared/pronunciation-form/pronunciation-form.model';
+import {
+  emptyDraft,
+  isDraftReady,
+  toPronunciationRequest,
+} from '@shared/pronunciation-form/pronunciation-form.utils';
 import { TextField } from '@shared/text-field/text-field';
 
 /**
- * Sheet to write, edit or delete a sentence; shown while the page keeps it in its template.
+ * Sheet to note a new sentence: what Côme meant, then how he said it; its page does the rest.
+ * Shown while the page keeps it in its template.
  */
 @Component({
   selector: 'app-sentence-sheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [QuotePipe, BottomSheet, Button, DateField, TextField],
+  imports: [BottomSheet, Button, PronunciationForm, TextField],
   templateUrl: './sentence-sheet.html',
-  styleUrl: './sentence-sheet.scss',
 })
 export class SentenceSheet {
   /**
-   * Saves and deletes sentences.
+   * Creates the sentence.
    */
-  private readonly api = inject(SentencesApi);
+  private readonly wordsApi = inject(WordsApi);
 
   /**
    * Says what was done once the sheet closes.
@@ -49,70 +50,44 @@ export class SentenceSheet {
   private readonly celebration = inject(Celebration);
 
   /**
-   * Sentence to edit, `null` to write a new one.
-   */
-  public readonly sentence = input<Sentence | null>(null);
-
-  /**
    * Tells the page the sheet is done, saved or not.
    */
   public readonly closed = output();
 
   /**
-   * Longest sentence the API accepts.
+   * Longest meaning the API accepts.
    */
-  protected readonly maxLength = SENTENCE_MAX_LENGTH;
+  protected readonly labelMaxLength = LABEL_MAX_LENGTHS.sentence;
 
   /**
-   * Form, or the deletion question in place of it.
+   * What Côme meant, the sentence's title.
    */
-  protected readonly mode = signal<'form' | 'confirm'>('form');
+  protected readonly label = signal('');
 
   /**
-   * What Côme said, starting from the edited sentence.
+   * Its first pronunciation, said today by default.
    */
-  protected readonly spoken = linkedSignal(() => this.sentence()?.spoken ?? '');
+  protected readonly draft = signal<PronunciationDraft>(emptyDraft('learning'));
 
   /**
-   * What he meant, optional.
-   */
-  protected readonly meaning = linkedSignal(() => this.sentence()?.meaning ?? '');
-
-  /**
-   * Day it was said, today for a new sentence.
-   */
-  protected readonly date = linkedSignal(() => this.sentence()?.date ?? todayIso());
-
-  /**
-   * A save or a deletion is on its way.
+   * A save is on its way.
    */
   protected readonly busy = signal(false);
 
   /**
-   * Why the last write failed, shown inside the sheet (a toast would sit under the modal dialog).
+   * Why the last save failed, shown inside the sheet (a toast would sit under the modal dialog).
    */
   protected readonly error = signal<string | null>(null);
 
   /**
-   * The day is filled in and not in the future, as the API requires.
-   */
-  protected readonly dateValid = computed(() => dateFieldError(this.date()) === null);
-
-  /**
-   * Title of the sheet for what it is doing now.
-   */
-  protected readonly heading = computed(() => {
-    if (this.mode() === 'confirm') {
-      return 'Supprimer la phrase';
-    }
-    return this.sentence() ? 'Modifier la phrase' : 'Nouvelle phrase';
-  });
-
-  /**
-   * Saving needs something said, a valid day and nothing pending.
+   * Saving needs a meaning, a ready pronunciation and nothing pending.
    */
   protected readonly canSave = computed(
-    () => this.spoken().trim() !== '' && this.dateValid() && !this.busy(),
+    () =>
+      this.label().trim() !== '' &&
+      this.label().trim().length <= this.labelMaxLength &&
+      isDraftReady(this.draft(), todayIso(), 'sentence') &&
+      !this.busy(),
   );
 
   /**
@@ -125,55 +100,25 @@ export class SentenceSheet {
   }
 
   /**
-   * Creates or updates the sentence; a new one is celebrated.
+   * Creates the sentence with its first pronunciation, and celebrates it.
    */
   protected async save(): Promise<void> {
     if (!this.canSave()) {
       return;
     }
-    const existing = this.sentence();
-    const request: SentenceRequest = {
-      spoken: this.spoken().trim(),
-      meaning: this.meaning().trim() || null,
-      date: this.date(),
-    };
-    await this.run(async () => {
-      if (existing) {
-        await this.api.update(existing.id, request);
-        this.toasts.show('Phrase modifiée');
-      } else {
-        await this.api.create(request);
-        this.toasts.show('Nouvelle phrase notée');
-        this.celebration.play();
-      }
-    }, "La phrase n'a pas pu être enregistrée. Réessaie.");
-  }
-
-  /**
-   * Deletes the edited sentence once the question was answered yes.
-   */
-  protected async remove(): Promise<void> {
-    const existing = this.sentence();
-    if (!existing || this.busy()) {
-      return;
-    }
-    await this.run(async () => {
-      await this.api.remove(existing.id);
-      this.toasts.show('Phrase supprimée');
-    }, "La phrase n'a pas pu être supprimée. Réessaie.");
-  }
-
-  /**
-   * Runs a write, closes the sheet on success and keeps it open with the message inside on failure.
-   */
-  private async run(write: () => Promise<void>, failure: string): Promise<void> {
     this.busy.set(true);
     this.error.set(null);
     try {
-      await write();
+      await this.wordsApi.create({
+        kind: 'sentence',
+        label: this.label().trim(),
+        pronunciation: toPronunciationRequest(this.draft()),
+      });
+      this.toasts.show('Nouvelle phrase notée');
+      this.celebration.play();
       this.closed.emit();
     } catch {
-      this.error.set(failure);
+      this.error.set("La phrase n'a pas pu être enregistrée. Réessaie.");
     } finally {
       this.busy.set(false);
     }

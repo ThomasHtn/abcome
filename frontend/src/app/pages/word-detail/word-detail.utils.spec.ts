@@ -42,6 +42,25 @@ describe('word-detail utils', () => {
     ]);
   });
 
+  it('files each sound under its stage, newest first, and names the list after the spoken form', () => {
+    const withSounds = {
+      ...lapin,
+      recordings: [
+        aRecording({ id: 3, pronunciationId: 3 }),
+        aRecording({ id: 2, pronunciationId: 2 }),
+        aRecording({ id: 1, pronunciationId: 3 }),
+      ],
+    };
+    const stages = timelineStages(withSounds, '2026-10-17');
+
+    expect(stages.map((stage) => stage.sounds.map((sound) => sound.recording.id))).toEqual([
+      [3, 1],
+      [2],
+      [],
+    ]);
+    expect(stages[2].soundsLabel).toBe('Sons de «\u00A0pin\u00A0»');
+  });
+
   it('names each stage button with what, how well, when, and the action', () => {
     expect(timelineStages(lapin, '2026-10-17')[2].ariaLabel).toBe(
       'Première fois : pin, En route, le 16 septembre 2026. Modifier',
@@ -72,10 +91,10 @@ describe('word-detail utils', () => {
 
     expect(sounds.map((sound) => sound.recording.id)).toEqual([2, 1]);
     expect(sounds[0].src).toBe('/api/recordings/2');
-    expect(sounds[0].caption).toBe('17 oct. · 0:03');
+    expect(sounds[0].day).toBe('17 oct.');
     expect(sounds[0].listenLabel).toBe('Écouter le son du 17 octobre 2026 (0:03)');
-    expect(sounds[0].deleteLabel).toBe('Supprimer le son du 17 octobre 2026 (0:03)');
-    expect(sounds[1].caption).toBe('16 sept. · 0:01');
+    expect(sounds[0].actionsLabel).toBe('Actions sur le son du 17 octobre 2026 (0:03)');
+    expect(sounds[1].day).toBe('16 sept.');
   });
 });
 

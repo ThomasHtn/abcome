@@ -10,81 +10,107 @@
       aria-label="Se déconnecter"
       (click)="logoutOpen.set(true)"
     >
-      <svg app-icon name="log-out" [size]="22" [strokeWidth]="2"></svg>
+      <svg app-icon name="log-out" [size]="24" [strokeWidth]="2.4"></svg>
     </button>
   </header>
 
   <!-- Lapinou and the notebook in one sentence. -->
   <app-home-summary class="enter motion-step-1" [summary]="summary()" />
 
-  <!-- Tabs, search and the status filters; one row on wider screens when they fit. -->
+  <!-- Tabs or search, then the status filters; one row on wider screens when they fit. -->
   <div class="home__controls flex flex-col md:flex-row md:flex-wrap md:items-center">
-    <!-- Words / sentences tabs; arrow keys move between them. -->
-    <div
-      class="home__tabs enter motion-step-2 grid grid-cols-2 gap-1 md:w-64 md:flex-none"
-      role="tablist"
-      aria-label="Type de notes"
-    >
-      <button
-        #wordsTab
-        id="home-tab-words"
-        class="home__tab"
-        type="button"
-        role="tab"
-        aria-controls="home-panel"
-        [class.home__tab--selected]="tab() === 'words'"
-        [attr.aria-selected]="tab() === 'words'"
-        [attr.tabindex]="tab() === 'words' ? 0 : -1"
-        (click)="selectTab('words')"
-        (keydown.arrowleft)="switchTabByKey()"
-        (keydown.arrowright)="switchTabByKey()"
-      >
-        Mots
-      </button>
-      <button
-        #sentencesTab
-        id="home-tab-sentences"
-        class="home__tab"
-        type="button"
-        role="tab"
-        aria-controls="home-panel"
-        [class.home__tab--selected]="tab() === 'sentences'"
-        [attr.aria-selected]="tab() === 'sentences'"
-        [attr.tabindex]="tab() === 'sentences' ? 0 : -1"
-        (click)="selectTab('sentences')"
-        (keydown.arrowleft)="switchTabByKey()"
-        (keydown.arrowright)="switchTabByKey()"
-      >
-        Phrases
-      </button>
-    </div>
-
-    <!-- Search on the open tab. -->
-    <app-search-field
-      class="enter motion-step-3 md:min-w-64 md:flex-1"
-      [label]="tab() === 'words' ? 'Chercher un mot de Côme' : 'Chercher une phrase'"
-      [value]="query()"
-      (valueChange)="search($event)"
-    />
-
-    @if (tab() === 'words') {
-      <!-- Status filters, sharing the width so all four always fit on one row. -->
-      <app-filter-chips
-        class="md:w-96 md:flex-none"
-        label="Filtrer par couleur"
-        fill
-        [options]="filterOptions"
-        [(value)]="filter"
-      />
+    @if (searchShown()) {
+      <!-- Open search in place of the tabs, focused only when opened by hand; the cross or Escape closes and clears it. -->
+      <div class="pop flex items-center gap-2 md:w-80 md:flex-none">
+        <app-search-field
+          class="min-w-0 flex-1"
+          tone="outline"
+          [autofocus]="searchOpen()"
+          [label]="searchLabel()"
+          [value]="query()"
+          (valueChange)="search($event)"
+          (keydown.escape)="closeSearch()"
+        />
+        <button
+          app-icon-button
+          type="button"
+          tone="tint"
+          aria-label="Fermer la recherche"
+          (click)="closeSearch()"
+        >
+          <svg app-icon name="x" [size]="18" [strokeWidth]="2.4"></svg>
+        </button>
+      </div>
+    } @else {
+      <!-- Words / sentences tabs, with the search folded into a magnifier. -->
+      <div class="enter motion-step-2 flex items-center gap-2 md:w-80 md:flex-none">
+        <!-- Arrow keys move between the two tabs. -->
+        <div
+          class="home__tabs grid min-w-0 flex-1 grid-cols-2 gap-1"
+          role="tablist"
+          aria-label="Type de notes"
+        >
+          <button
+            #wordsTab
+            id="home-tab-words"
+            class="home__tab"
+            type="button"
+            role="tab"
+            aria-controls="home-panel"
+            [class.home__tab--selected]="tab() === 'words'"
+            [attr.aria-selected]="tab() === 'words'"
+            [attr.tabindex]="tab() === 'words' ? 0 : -1"
+            (click)="selectTab('words')"
+            (keydown.arrowleft)="switchTabByKey()"
+            (keydown.arrowright)="switchTabByKey()"
+          >
+            Mots
+          </button>
+          <button
+            #sentencesTab
+            id="home-tab-sentences"
+            class="home__tab"
+            type="button"
+            role="tab"
+            aria-controls="home-panel"
+            [class.home__tab--selected]="tab() === 'sentences'"
+            [attr.aria-selected]="tab() === 'sentences'"
+            [attr.tabindex]="tab() === 'sentences' ? 0 : -1"
+            (click)="selectTab('sentences')"
+            (keydown.arrowleft)="switchTabByKey()"
+            (keydown.arrowright)="switchTabByKey()"
+          >
+            Phrases
+          </button>
+        </div>
+        <button
+          #searchToggle
+          app-icon-button
+          type="button"
+          tone="tint"
+          [attr.aria-label]="searchLabel()"
+          (click)="searchOpen.set(true)"
+        >
+          <svg app-icon name="search" [size]="20" [strokeWidth]="2.2"></svg>
+        </button>
+      </div>
     }
+
+    <!-- Status filters, sharing the width so all four always fit on one row. -->
+    <app-filter-chips
+      class="md:w-96 md:flex-none"
+      label="Filtrer par couleur"
+      fill
+      [options]="filterOptions"
+      [(value)]="filter"
+    />
   </div>
 
   <!-- Content of the open tab. -->
   <div
     id="home-panel"
-    class="home__panel flex flex-col"
+    class="home__panel home__panel--filtered flex flex-col"
     role="tabpanel"
-    [class.home__panel--filtered]="tab() === 'words'"
     [attr.aria-labelledby]="tab() === 'words' ? 'home-tab-words' : 'home-tab-sentences'"
   >
     @switch (openListState()) {
@@ -100,7 +126,7 @@
             type="button"
             variant="soft"
             size="sm"
-            (click)="tab() === 'words' ? wordsApi.words.reload() : sentencesApi.sentences.reload()"
+            (click)="wordsApi.words.reload()"
           >
             Réessayer
           </button>
@@ -133,13 +159,11 @@
             </div>
           }
         } @else {
-          <!-- Sentences, newest first; a tap opens one for editing. -->
+          <!-- Sentences, newest first; a tap opens the sentence's page. -->
           @if (sentenceCards().length > 0) {
             <ul class="home__list" aria-label="Phrases de Côme">
-              @for (card of sentenceCards(); track card.sentence.id; let index = $index) {
-                <li>
-                  <app-sentence-card [card]="card" [index]="index" (edit)="openSentence($event)" />
-                </li>
+              @for (card of sentenceCards(); track card.id; let index = $index) {
+                <li><app-word-card [card]="card" [index]="index" /></li>
               }
             </ul>
           } @else {
@@ -164,18 +188,27 @@
       <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
     </a>
   } @else {
-    <button app-button type="button" size="lg" block (click)="openSentence(null)">
+    <button
+      app-button
+      class="min-w-0 flex-1"
+      type="button"
+      size="lg"
+      (click)="sentenceSheetOpen.set(true)"
+    >
       <span class="home__plus" aria-hidden="true">
         <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
       </span>
       Ajouter une phrase
     </button>
+    <a class="home__record" routerLink="/sons/nouveau" aria-label="Enregistrer un son">
+      <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
+    </a>
   }
 </app-action-bar>
 
-<!-- Sentence sheet, created fresh for every opening. -->
-@if (sentenceSheet(); as request) {
-  <app-sentence-sheet [sentence]="request.sentence" (closed)="sentenceSheet.set(null)" />
+<!-- New sentence sheet, created fresh for every opening. -->
+@if (sentenceSheetOpen()) {
+  <app-sentence-sheet (closed)="sentenceSheetOpen.set(false)" />
 }
 
 <!-- Logout question. -->

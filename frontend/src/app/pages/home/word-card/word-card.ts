@@ -2,19 +2,19 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { RouterLink } from '@angular/router';
 
 import { QuotePipe } from '@shared/quote/quote.pipe';
-import { StatusBadge } from '@shared/status-badge/status-badge';
+import { StatusDot } from '@shared/status-dot/status-dot';
 
 import { DateTile } from '../date-tile/date-tile';
 import { CARD_STAGGER_LIMIT } from '../home.constants';
 import { WordCardView } from '../home.model';
 
 /**
- * One word of the home list: first date, what Côme says now, the word and its progress.
+ * One word of the home list: first date, the word, what Côme says now and the current status.
  */
 @Component({
   selector: 'app-word-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [QuotePipe, RouterLink, DateTile, StatusBadge],
+  imports: [QuotePipe, RouterLink, StatusDot, DateTile],
   templateUrl: './word-card.html',
   styleUrl: './word-card.scss',
 })

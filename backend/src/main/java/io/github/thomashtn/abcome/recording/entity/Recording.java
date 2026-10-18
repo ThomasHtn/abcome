@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 
 /**
- * Sound of a word, stored as {@code bytea}; a word has any number of them.
+ * Sound of a word, stored as {@code bytea} and filed under one of its stages; a stage has any number of them.
  *
  * <p>This entity is only loaded to play a sound: word lists read its metadata through a projection
  * and never touch {@link #data}.</p>
@@ -36,6 +36,12 @@ public class Recording {
      */
     @Column(name = "word_id", nullable = false, updatable = false)
     private Long wordId;
+
+    /**
+     * Stage this sound is filed under; moved to another stage of the word when its stage is deleted.
+     */
+    @Column(name = "pronunciation_id", nullable = false)
+    private Long pronunciationId;
 
     /**
      * Audio bytes, as recorded by the browser.
@@ -76,14 +82,18 @@ public class Recording {
     /**
      * Creates a recording.
      *
-     * @param wordId     word it belongs to
-     * @param data       audio bytes
-     * @param mimeType   audio type without parameters
-     * @param durationMs length in milliseconds
-     * @param createdAt  creation instant
+     * @param wordId          word it belongs to
+     * @param pronunciationId stage it is filed under
+     * @param data            audio bytes
+     * @param mimeType        audio type without parameters
+     * @param durationMs      length in milliseconds
+     * @param createdAt       creation instant
      */
-    public Recording(Long wordId, byte[] data, String mimeType, int durationMs, Instant createdAt) {
+    public Recording(
+        Long wordId, Long pronunciationId, byte[] data, String mimeType, int durationMs, Instant createdAt
+    ) {
         this.wordId = wordId;
+        this.pronunciationId = pronunciationId;
         this.data = data;
         this.mimeType = mimeType;
         this.sizeBytes = data.length;
@@ -107,6 +117,15 @@ public class Recording {
      */
     public Long getWordId() {
         return wordId;
+    }
+
+    /**
+     * Returns the stage it is filed under.
+     *
+     * @return stage identifier
+     */
+    public Long getPronunciationId() {
+        return pronunciationId;
     }
 
     /**

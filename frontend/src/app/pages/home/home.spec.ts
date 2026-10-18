@@ -5,15 +5,14 @@ import { provideRouter, Router } from '@angular/router';
 
 import { AuthSession } from '@core/auth/auth-session';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
-import { Sentence } from '@core/sentences/sentence.model';
 import { aPronunciation, aWord } from '@core/words/word.fixtures';
 
 import { HomePage } from './home';
 
 /**
- * Two words: "lapin" (almost) and "chat" (learning).
+ * Two words, "lapin" (almost) and "chat" (learning), and one sentence.
  */
-const WORDS = [
+const ENTRIES = [
   aWord({ id: 1, label: 'lapin' }),
   aWord({
     id: 2,
@@ -22,13 +21,20 @@ const WORDS = [
       aPronunciation({ id: 20, wordId: 2, spoken: 'ka', status: 'learning', date: '2026-09-25' }),
     ],
   }),
-];
-
-/**
- * One sentence.
- */
-const SENTENCES: Sentence[] = [
-  { id: 1, spoken: 'a pu ato', meaning: "Il n'y a plus de gâteau", date: '2026-10-14' },
+  aWord({
+    id: 3,
+    kind: 'sentence',
+    label: "Il n'y a plus de gâteau",
+    pronunciations: [
+      aPronunciation({
+        id: 30,
+        wordId: 3,
+        spoken: 'a pu ato',
+        status: 'learning',
+        date: '2026-10-14',
+      }),
+    ],
+  }),
 ];
 
 describe('HomePage', () => {
@@ -58,16 +64,18 @@ describe('HomePage', () => {
   afterEach(() => http.verify());
 
   /**
-   * Renders the home screen on a tab and serves both lists.
+   * Renders the home screen on a tab, with a search from the URL, and serves the notebook.
    */
-  async function render(onglet?: string): Promise<ComponentFixture<HomePage>> {
+  async function render(onglet?: string, q?: string): Promise<ComponentFixture<HomePage>> {
     const fixture = TestBed.createComponent(HomePage);
     if (onglet) {
       fixture.componentRef.setInput('onglet', onglet);
     }
+    if (q) {
+      fixture.componentRef.setInput('q', q);
+    }
     fixture.detectChanges();
-    http.expectOne(API_ENDPOINTS.words).flush(WORDS);
-    http.expectOne(API_ENDPOINTS.sentences).flush(SENTENCES);
+    http.expectOne(API_ENDPOINTS.words).flush(ENTRIES);
     // The resources settle on a macrotask.
     await new Promise((resolve) => setTimeout(resolve));
     fixture.detectChanges();
@@ -82,12 +90,32 @@ describe('HomePage', () => {
   }
 
   /**
-   * Types a search.
+   * The search input, `null` while folded into the magnifier.
+   */
+  function searchInput(fixture: ComponentFixture<HomePage>): HTMLInputElement | null {
+    return (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+  }
+
+  /**
+   * Opens the search with the magnifier.
+   */
+  function openSearch(fixture: ComponentFixture<HomePage>): void {
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('button[aria-label="Chercher un mot de Côme"]')!
+      .click();
+    fixture.detectChanges();
+  }
+
+  /**
+   * Types a search, opening it first when folded.
    */
   function search(fixture: ComponentFixture<HomePage>, query: string): void {
-    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
-      'input[type="search"]',
-    )!;
+    if (!searchInput(fixture)) {
+      openSearch(fixture);
+    }
+    const input = searchInput(fixture)!;
     input.value = query;
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
@@ -100,6 +128,54 @@ describe('HomePage', () => {
     expect(text(fixture)).toContain('Les mots de Côme');
     expect(text(fixture)).toContain('Côme a déjà dit 2 mots !');
     expect(element.querySelectorAll('app-word-card')).toHaveLength(2);
+  });
+
+  it('folds the search into a magnifier that swaps the tabs for the field', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+    document.body.append(element);
+
+    expect(searchInput(fixture)).toBeNull();
+    openSearch(fixture);
+    await fixture.whenStable();
+
+    expect(element.querySelector('[role="tablist"]')).toBeNull();
+    expect(document.activeElement).toBe(searchInput(fixture));
+
+    search(fixture, 'ka');
+    element.querySelector<HTMLButtonElement>('button[aria-label="Fermer la recherche"]')!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(searchInput(fixture)).toBeNull();
+    expect(element.querySelectorAll('app-word-card')).toHaveLength(2);
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Chercher un mot de Côme');
+    element.remove();
+  });
+
+  it('closes the search on Escape', async () => {
+    const fixture = await render();
+
+    search(fixture, 'ka');
+    searchInput(fixture)!.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    fixture.detectChanges();
+
+    expect(searchInput(fixture)).toBeNull();
+  });
+
+  it('opens the search kept in the URL without focusing it', async () => {
+    const fixture = await render(undefined, 'ka');
+    document.body.append(fixture.nativeElement as HTMLElement);
+    await fixture.whenStable();
+
+    expect(searchInput(fixture)?.value).toBe('ka');
+    expect(document.activeElement).not.toBe(searchInput(fixture));
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('app-word-card')).toHaveLength(
+      1,
+    );
+    (fixture.nativeElement as HTMLElement).remove();
   });
 
   it('searches the spoken forms and offers to add a missing word', async () => {
@@ -129,12 +205,14 @@ describe('HomePage', () => {
     expect(text(fixture)).toContain('«\u00A0ka\u00A0»');
   });
 
-  it('shows the sentences tab from the URL and opens the sheet to add one', async () => {
+  it('shows the sentences tab from the URL, linking to their pages, and opens the sheet to add one', async () => {
     const fixture = await render('phrases');
     const element = fixture.nativeElement as HTMLElement;
 
     expect(text(fixture)).toContain('Les phrases de Côme');
-    expect(element.querySelectorAll('app-sentence-card')).toHaveLength(1);
+    expect(element.querySelectorAll('app-word-card')).toHaveLength(1);
+    expect(element.querySelector('app-word-card a')!.getAttribute('href')).toBe('/phrases/3');
+    expect(text(fixture)).toContain("Il n'y a plus de gâteau");
     expect(element.querySelector('#home-tab-sentences')!.getAttribute('aria-selected')).toBe(
       'true',
     );

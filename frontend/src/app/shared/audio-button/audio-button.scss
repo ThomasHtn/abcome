@@ -33,6 +33,13 @@
   }
 }
 
+/* Compact disc inside a card row, still a 44 px touch target. */
+.audio-button--sm {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  box-shadow: none;
+}
+
 /* Recorder's main control. */
 .audio-button--lg {
   inline-size: 7rem;

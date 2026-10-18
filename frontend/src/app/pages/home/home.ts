@@ -1,9 +1,11 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   ElementRef,
   inject,
+  Injector,
   input,
   linkedSignal,
   signal,
@@ -14,9 +16,8 @@ import { Router, RouterLink } from '@angular/router';
 import { LOGIN_ROUTE } from '@core/auth/auth.constants';
 import { AuthSession } from '@core/auth/auth-session';
 import { resourceValue } from '@core/http/resource.utils';
-import { Sentence } from '@core/sentences/sentence.model';
-import { SentencesApi } from '@core/sentences/sentences-api';
 import { Word } from '@core/words/word.model';
+import { entriesOfKind } from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
 import { ActionBar } from '@shared/action-bar/action-bar';
 import { Button } from '@shared/button/button';
@@ -28,21 +29,18 @@ import { QuotePipe } from '@shared/quote/quote.pipe';
 import { SearchField } from '@shared/search-field/search-field';
 
 import { SEARCH_PARAM, SENTENCES_TAB_PARAM, STATUS_FILTER_OPTIONS } from './home.constants';
-import { HomeTab, ListState, SentenceSheetRequest, StatusFilter } from './home.model';
+import { HomeTab, ListState, StatusFilter } from './home.model';
 import {
   emptySentencesMessage,
   emptyWordsMessage,
   listState,
   sentencesSummary,
   tabFromParam,
-  toSentenceCard,
   toWordCard,
-  visibleSentences,
   visibleWords,
   wordsSummary,
 } from './home.utils';
 import { HomeSummaryCard } from './home-summary/home-summary';
-import { SentenceCard } from './sentence-card/sentence-card';
 import { SentenceSheet } from './sentence-sheet/sentence-sheet';
 import { WordCard } from './word-card/word-card';
 
@@ -63,7 +61,6 @@ import { WordCard } from './word-card/word-card';
     IconButton,
     SearchField,
     HomeSummaryCard,
-    SentenceCard,
     SentenceSheet,
     WordCard,
   ],
@@ -82,24 +79,31 @@ export class HomePage {
   private readonly router = inject(Router);
 
   /**
-   * Words tab button, focused when the arrow keys switch tab.
+   * Schedules the focus move back to the magnifier once the tabs are rendered again.
    */
-  private readonly wordsTab = viewChild.required<ElementRef<HTMLButtonElement>>('wordsTab');
+  private readonly injector = inject(Injector);
 
   /**
-   * Sentences tab button, focused when the arrow keys switch tab.
+   * Words tab button, focused when the arrow keys switch tab; absent while the search is open.
    */
-  private readonly sentencesTab = viewChild.required<ElementRef<HTMLButtonElement>>('sentencesTab');
+  private readonly wordsTab = viewChild<ElementRef<HTMLButtonElement>>('wordsTab');
 
   /**
-   * Shared words of the notebook.
+   * Sentences tab button, focused when the arrow keys switch tab; absent while the search is open.
+   */
+  private readonly sentencesTab = viewChild<ElementRef<HTMLButtonElement>>('sentencesTab');
+
+  /**
+   * Magnifier opening the search, focused again when the search closes.
+   */
+  private readonly searchToggle = viewChild('searchToggle', {
+    read: ElementRef<HTMLButtonElement>,
+  });
+
+  /**
+   * Shared words and sentences of the notebook.
    */
   protected readonly wordsApi = inject(WordsApi);
-
-  /**
-   * Shared sentences of the notebook.
-   */
-  protected readonly sentencesApi = inject(SentencesApi);
 
   /**
    * `?onglet=` from the URL: `phrases` opens the sentences.
@@ -122,7 +126,24 @@ export class HomePage {
   protected readonly query = linkedSignal(() => this.q() ?? '');
 
   /**
-   * Status filter of the words tab.
+   * Whether the search was opened with the magnifier or by typing.
+   */
+  protected readonly searchOpen = signal(false);
+
+  /**
+   * Search field shown in place of the tabs, also when the URL brings a search back.
+   */
+  protected readonly searchShown = computed(() => this.searchOpen() || this.query() !== '');
+
+  /**
+   * What the search looks for on the open tab, as placeholder and accessible name.
+   */
+  protected readonly searchLabel = computed(() =>
+    this.tab() === 'words' ? 'Chercher un mot de Côme' : 'Chercher une phrase',
+  );
+
+  /**
+   * Status filter of the open tab, kept across tabs.
    */
   protected readonly filter = signal<StatusFilter>('all');
 
@@ -132,18 +153,21 @@ export class HomePage {
   protected readonly filterOptions = STATUS_FILTER_OPTIONS;
 
   /**
-   * Every word, empty until loaded.
+   * Every word and sentence, empty until loaded.
    */
-  protected readonly words = computed<readonly Word[]>(
+  private readonly entries = computed<readonly Word[]>(
     () => resourceValue(this.wordsApi.words, null) ?? [],
   );
 
   /**
-   * Every sentence, empty until loaded.
+   * Every word.
    */
-  protected readonly sentences = computed<readonly Sentence[]>(
-    () => resourceValue(this.sentencesApi.sentences, null) ?? [],
-  );
+  protected readonly words = computed(() => entriesOfKind(this.entries(), 'word'));
+
+  /**
+   * Every sentence.
+   */
+  protected readonly sentences = computed(() => entriesOfKind(this.entries(), 'sentence'));
 
   /**
    * Mascot card for the open tab.
@@ -160,18 +184,16 @@ export class HomePage {
   );
 
   /**
-   * Sentence cards matching the search.
+   * Sentence cards matching the search and filter.
    */
   protected readonly sentenceCards = computed(() =>
-    visibleSentences(this.sentences(), this.query()).map(toSentenceCard),
+    visibleWords(this.sentences(), this.query(), this.filter()).map(toWordCard),
   );
 
   /**
-   * Loading state of the open tab's list.
+   * Loading state of the notebook, words and sentences alike.
    */
-  protected readonly openListState = computed<ListState>(() =>
-    listState(this.tab() === 'words' ? this.wordsApi.words : this.sentencesApi.sentences),
-  );
+  protected readonly openListState = computed<ListState>(() => listState(this.wordsApi.words));
 
   /**
    * Why the words list is empty.
@@ -183,7 +205,9 @@ export class HomePage {
   /**
    * Why the sentences list is empty.
    */
-  protected readonly emptySentences = computed(() => emptySentencesMessage(this.query()));
+  protected readonly emptySentences = computed(() =>
+    emptySentencesMessage(this.query(), this.filter(), this.sentences().length),
+  );
 
   /**
    * Search trimmed, for the "Ajouter « q »" link.
@@ -191,9 +215,9 @@ export class HomePage {
   protected readonly trimmedQuery = computed(() => this.query().trim());
 
   /**
-   * Sentence sheet being shown, `null` when closed.
+   * Whether the new sentence sheet is shown.
    */
-  protected readonly sentenceSheet = signal<SentenceSheetRequest | null>(null);
+  protected readonly sentenceSheetOpen = signal(false);
 
   /**
    * Whether the logout question is shown.
@@ -223,6 +247,7 @@ export class HomePage {
    * Filters the list as the search is typed and mirrors it in the URL, without a history entry.
    */
   protected search(value: string): void {
+    this.searchOpen.set(true);
     this.query.set(value);
     void this.router.navigate([], {
       queryParams: { [SEARCH_PARAM]: value === '' ? null : value },
@@ -232,19 +257,21 @@ export class HomePage {
   }
 
   /**
+   * Clears and folds the search back into the magnifier, which gets the focus back.
+   */
+  protected closeSearch(): void {
+    this.search('');
+    this.searchOpen.set(false);
+    afterNextRender(() => this.searchToggle()?.nativeElement.focus(), { injector: this.injector });
+  }
+
+  /**
    * Arrow keys move between the two tabs, as the ARIA tabs pattern expects.
    */
   protected switchTabByKey(): void {
     const next: HomeTab = this.tab() === 'words' ? 'sentences' : 'words';
     this.selectTab(next);
-    (next === 'words' ? this.wordsTab() : this.sentencesTab()).nativeElement.focus();
-  }
-
-  /**
-   * Opens the sheet for a new sentence, or to edit one.
-   */
-  protected openSentence(sentence: Sentence | null): void {
-    this.sentenceSheet.set({ sentence });
+    (next === 'words' ? this.wordsTab() : this.sentencesTab())?.nativeElement.focus();
   }
 
   /**

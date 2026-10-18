@@ -5,9 +5,10 @@ import { provideRouter } from '@angular/router';
 
 import { Celebration } from '@core/feedback/celebration';
 import { ToastQueue } from '@core/feedback/toast-queue';
+import { Waveforms } from '@core/recordings/waveforms';
 import { aPronunciation, aRecording, aWord } from '@core/words/word.fixtures';
-import { Pronunciation, PronunciationRequest, Word } from '@core/words/word.model';
-import { removeRecording, upsertPronunciation } from '@core/words/word.utils';
+import { Pronunciation, PronunciationRequest, Word, WordKind } from '@core/words/word.model';
+import { removeRecording, replaceRecording, upsertPronunciation } from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
 
 import { WordDetailPage } from './word-detail';
@@ -41,8 +42,20 @@ describe('WordDetailPage', () => {
           aPronunciation({ id: 11, spoken: 'apin', status: 'almost', date: '2026-10-12' }),
         ],
         recordings: [
-          aRecording({ id: 8, wordId: 1, createdAt: '2026-10-14T09:00:00Z', durationMs: 4000 }),
-          aRecording({ id: 7, wordId: 1, createdAt: '2026-10-12T09:00:00Z', durationMs: 3000 }),
+          aRecording({
+            id: 8,
+            wordId: 1,
+            pronunciationId: 11,
+            createdAt: '2026-10-14T09:00:00Z',
+            durationMs: 4000,
+          }),
+          aRecording({
+            id: 7,
+            wordId: 1,
+            pronunciationId: 10,
+            createdAt: '2026-10-12T09:00:00Z',
+            durationMs: 3000,
+          }),
         ],
       }),
     ]);
@@ -54,6 +67,7 @@ describe('WordDetailPage', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
+        { provide: Waveforms, useValue: { load: () => Promise.resolve([]) } },
         {
           provide: WordsApi,
           useValue: {
@@ -65,6 +79,12 @@ describe('WordDetailPage', () => {
               const stage: Pronunciation = { id: 12, wordId, ...request };
               words.update((list) => upsertPronunciation(list, stage));
               return Promise.resolve(stage);
+            },
+            moveRecording: (id: number, pronunciationId: number) => {
+              const recording = words()[0].recordings.find((sound) => sound.id === id)!;
+              const moved = { ...recording, pronunciationId };
+              words.update((list) => replaceRecording(list, moved));
+              return Promise.resolve(moved);
             },
             removeRecording: (id: number) => {
               removedSounds.push(id);
@@ -85,11 +105,12 @@ describe('WordDetailPage', () => {
   });
 
   /**
-   * Renders the page of word `id`.
+   * Renders the page of word `id`, reached under `/mots/` or `/phrases/` as `kind` says.
    */
-  function render(id = '1'): ComponentFixture<WordDetailPage> {
+  function render(id = '1', kind: WordKind = 'word'): ComponentFixture<WordDetailPage> {
     const fixture = TestBed.createComponent(WordDetailPage);
     fixture.componentRef.setInput('id', id);
+    fixture.componentRef.setInput('kind', kind);
     fixture.detectChanges();
     return fixture;
   }
@@ -104,27 +125,80 @@ describe('WordDetailPage', () => {
     button?.click();
   }
 
-  it('shows the word, its stages newest first and its sounds newest first', () => {
+  it('shows the word with its status, its stages newest first, each with its own sounds', () => {
     const element = render().nativeElement as HTMLElement;
 
     expect(element.querySelector('h1')?.textContent?.trim()).toBe('lapin');
-    const spoken = [...element.querySelectorAll('.word-detail__spoken')].map((span) =>
-      span.textContent?.trim(),
+    expect(element.querySelector('.word-detail__hero app-status-badge')?.textContent?.trim()).toBe(
+      'Presque',
     );
-    expect(spoken).toEqual(['«\u00A0apin\u00A0»', '«\u00A0pin\u00A0»']);
-    const sounds = [...element.querySelectorAll('.sound-gallery__caption')].map((caption) =>
-      caption.textContent?.trim(),
-    );
-    expect(sounds).toEqual(['14 oct. · 0:04', '12 oct. · 0:03']);
-    expect(element.querySelectorAll('.word-detail__stage app-audio-button')).toHaveLength(0);
+    const stages = [...element.querySelectorAll('.word-detail__stage')].map((stage) => [
+      stage.querySelector('.word-detail__spoken')?.textContent?.trim(),
+      [...stage.querySelectorAll('.stage-sounds__more')].map((more) =>
+        more.getAttribute('aria-label'),
+      ),
+    ]);
+    expect(stages).toEqual([
+      ['«\u00A0apin\u00A0»', ['Actions sur le son du 14 octobre 2026 (0:04)']],
+      ['«\u00A0pin\u00A0»', ['Actions sur le son du 12 octobre 2026 (0:03)']],
+    ]);
+    expect(element.querySelector('.word-detail__no-sound')).toBeNull();
     expect(element.textContent).toContain('Il le dit mieux !');
+  });
+
+  it('says how to record the first sound of a word without any', () => {
+    words.update((list) => list.map((word) => ({ ...word, recordings: [] })));
+    const element = render().nativeElement as HTMLElement;
+
+    expect(element.querySelector('app-stage-sounds')).toBeNull();
+    expect(element.querySelector('.word-detail__no-sound')?.textContent).toContain(
+      'Touche le micro',
+    );
+  });
+
+  it('speaks of a sentence on a sentence page, even before finding it', async () => {
+    words.update((list) => list.map((word) => ({ ...word, kind: 'sentence' as const })));
+    const fixture = render('1', 'sentence');
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('[aria-label^="Actions sur"]')?.click();
+    await fixture.whenStable();
+    const menu = element.querySelector('dialog[open]') as HTMLElement;
+    expect(menu.textContent).toContain('Renommer la phrase');
+    expect(menu.textContent).toContain('Supprimer la phrase');
+
+    const missing = render('99', 'sentence').nativeElement as HTMLElement;
+    expect(missing.textContent).toContain("Cette phrase n'est pas dans le carnet");
+  });
+
+  it('moves a sound to another stage chosen in a sheet', async () => {
+    const fixture = render();
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('[aria-label^="Actions sur le son du 14"]')?.click();
+    await fixture.whenStable();
+    const actions = element.querySelector('dialog[open]') as HTMLElement;
+    expect(actions.textContent).toContain('Le son du 14 octobre 2026 (0:04)');
+    clickButton(actions, 'Ranger avec une autre prononciation');
+    await fixture.whenStable();
+    const sheet = element.querySelector('dialog[open]') as HTMLElement;
+    expect(sheet.textContent).toContain('Avec quelle prononciation ?');
+    expect(sheet.querySelectorAll('.word-detail__row')).toHaveLength(1);
+    clickButton(sheet, 'pin');
+    await fixture.whenStable();
+
+    const pinStage = element.querySelectorAll('.word-detail__stage')[1];
+    expect(pinStage.querySelectorAll('app-voice-note')).toHaveLength(2);
+    expect(element.querySelector('dialog[open]')).toBeNull();
   });
 
   it('deletes one sound after confirmation and keeps the others', async () => {
     const fixture = render();
     const element = fixture.nativeElement as HTMLElement;
 
-    element.querySelector<HTMLButtonElement>('[aria-label^="Supprimer le son du 14"]')?.click();
+    element.querySelector<HTMLButtonElement>('[aria-label^="Actions sur le son du 14"]')?.click();
+    await fixture.whenStable();
+    clickButton(element.querySelector('dialog[open]') as HTMLElement, 'Supprimer le son');
     await fixture.whenStable();
     const confirm = element.querySelector('dialog[open]') as HTMLElement;
     expect(confirm.textContent).toContain('Le son du 14 octobre 2026 (0:04) sera effacé.');
@@ -132,7 +206,7 @@ describe('WordDetailPage', () => {
     await fixture.whenStable();
 
     expect(removedSounds).toEqual([8]);
-    expect(element.querySelectorAll('.sound-gallery__caption')).toHaveLength(1);
+    expect(element.querySelectorAll('app-voice-note')).toHaveLength(1);
     expect(TestBed.inject(ToastQueue).current()?.text).toBe('Son supprimé');
   });
 

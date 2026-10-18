@@ -21,6 +21,7 @@ export function aRecording(overrides: Partial<Recording> = {}): Recording {
   return {
     id: 1,
     wordId: 1,
+    pronunciationId: 10,
     mimeType: 'audio/webm',
     durationMs: 3200,
     createdAt: '2026-10-17T09:30:00Z',
@@ -35,6 +36,7 @@ export function aWord(overrides: Partial<Word> = {}): Word {
   const id = overrides.id ?? 1;
   return {
     id,
+    kind: 'word',
     label: 'lapin',
     category: 'animals',
     createdAt: '2026-09-16T08:00:00Z',

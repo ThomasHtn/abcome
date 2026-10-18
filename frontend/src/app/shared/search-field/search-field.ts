@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
+import {
+  afterNextRender,
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  input,
+  model,
+  viewChild,
+} from '@angular/core';
 
 import { Icon } from '@shared/icon/icon';
 
@@ -25,9 +34,32 @@ export class SearchField {
   public readonly label = input.required<string>();
 
   /**
-   * `surface` white with a shadow on the cream page, `tint` lavender inside a white card.
+   * `surface` white with a shadow on the cream page, `tint` lavender inside a white card,
+   * `outline` white ringed in lavender where it replaces the home tabs.
    */
-  public readonly tone = input<'surface' | 'tint'>('surface');
+  public readonly tone = input<'surface' | 'tint' | 'outline'>('surface');
+
+  /**
+   * Focuses the field once rendered, for a field opened on demand; the native attribute only acts
+   * on page load.
+   */
+  public readonly autofocus = input(false, { transform: booleanAttribute });
+
+  /**
+   * The input itself, focused by `autofocus`.
+   */
+  private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
+
+  /**
+   * Focuses the field after the first render when asked.
+   */
+  constructor() {
+    afterNextRender(() => {
+      if (this.autofocus()) {
+        this.input().nativeElement.focus();
+      }
+    });
+  }
 
   /**
    * Updates the bound value on every keystroke.

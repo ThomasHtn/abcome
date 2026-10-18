@@ -16,8 +16,8 @@ import { ToastQueue } from '@core/feedback/toast-queue';
 import { apiErrorCode, isNotFound } from '@core/http/api-error.utils';
 import { resourceValue } from '@core/http/resource.utils';
 import { quote } from '@core/text/text.utils';
-import { WORD_LABEL_MAX_LENGTH } from '@core/words/word.constants';
-import { Pronunciation, Recording, Word } from '@core/words/word.model';
+import { LABEL_MAX_LENGTHS } from '@core/words/word.constants';
+import { Pronunciation, Recording, Word, WordKind } from '@core/words/word.model';
 import { currentPronunciation, currentStatus, firstPronunciation } from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
 import { ActionBar } from '@shared/action-bar/action-bar';
@@ -39,10 +39,11 @@ import {
 } from '@shared/pronunciation-form/pronunciation-form.utils';
 import { QuotePipe } from '@shared/quote/quote.pipe';
 import { StatusBadge } from '@shared/status-badge/status-badge';
+import { StatusDot } from '@shared/status-dot/status-dot';
 import { TextField } from '@shared/text-field/text-field';
 
-import { SoundGallery } from './sound-gallery/sound-gallery';
-import { CONFIRM_SHEETS } from './word-detail.constants';
+import { StageSounds } from './stage-sounds/stage-sounds';
+import { CONFIRM_SHEETS, KIND_COPY } from './word-detail.constants';
 import { MissingTarget, WordSheet } from './word-detail.model';
 import {
   gallerySounds,
@@ -54,8 +55,8 @@ import {
 } from './word-detail.utils';
 
 /**
- * Word page: the word on its status color, the timeline of its pronunciations (newest first), its
- * sound gallery, and sheets to add, edit or remove a stage, delete a sound, rename or delete the word.
+ * Word page: the word and its status, the timeline of its pronunciations (newest first) each with its
+ * sounds, and sheets to add, edit or remove a stage, delete a sound, rename or delete the word.
  */
 @Component({
   selector: 'app-word-detail-page',
@@ -71,8 +72,9 @@ import {
     IconButton,
     Mascot,
     PronunciationForm,
-    SoundGallery,
+    StageSounds,
     StatusBadge,
+    StatusDot,
     TextField,
   ],
   templateUrl: './word-detail.html',
@@ -115,6 +117,16 @@ export class WordDetailPage {
   public readonly id = input.required<string>();
 
   /**
+   * Route data: `word` under `/mots/`, `sentence` under `/phrases/`.
+   */
+  public readonly kind = input<WordKind>('word');
+
+  /**
+   * Wording for a word or a sentence, known from the route even before the notebook loads.
+   */
+  protected readonly copy = computed(() => KIND_COPY[this.kind()]);
+
+  /**
    * Whether the notebook has loaded, to tell "loading" from "not found".
    */
   protected readonly loaded = computed(() => this.wordsApi.words.hasValue());
@@ -149,7 +161,7 @@ export class WordDetailPage {
   protected readonly today = todayIso();
 
   /**
-   * Timeline, newest stage first.
+   * Timeline, newest stage first, each stage with its sounds.
    */
   protected readonly stages = computed(() => {
     const word = this.word();
@@ -157,9 +169,34 @@ export class WordDetailPage {
   });
 
   /**
-   * Sound gallery, newest first.
+   * Every sound of the word, newest first, to name the one being deleted.
    */
   protected readonly sounds = computed(() => gallerySounds(this.word()?.recordings ?? []));
+
+  /**
+   * Sound whose "⋮" was tapped, kept while its actions, move or deletion are open; `null` otherwise.
+   */
+  protected readonly actionSound = signal<Recording | null>(null);
+
+  /**
+   * Day and length of that sound, under the actions sheet's title.
+   */
+  protected readonly actionSoundDescription = computed(() => {
+    const sound = this.sounds().find((item) => item.recording.id === this.actionSound()?.id);
+    return sound?.description ?? '';
+  });
+
+  /**
+   * Sound whose new stage is being chosen; `null` otherwise.
+   */
+  protected readonly movingSound = signal<Recording | null>(null);
+
+  /**
+   * Stages the moving sound can go to: every stage but its own, newest first.
+   */
+  protected readonly moveTargets = computed(() =>
+    this.stages().filter((stage) => stage.pronunciation.id !== this.movingSound()?.pronunciationId),
+  );
 
   /**
    * Sound waiting for its deletion to be confirmed; `null` otherwise.
@@ -210,7 +247,9 @@ export class WordDetailPage {
   /**
    * Whether the stage form can be saved.
    */
-  protected readonly draftReady = computed(() => isDraftReady(this.draft()));
+  protected readonly draftReady = computed(() =>
+    isDraftReady(this.draft(), this.today, this.kind()),
+  );
 
   /**
    * Title of the stage form.
@@ -276,7 +315,7 @@ export class WordDetailPage {
   /**
    * Longest label the API accepts.
    */
-  protected readonly labelMaxLength = WORD_LABEL_MAX_LENGTH;
+  protected readonly labelMaxLength = computed(() => LABEL_MAX_LENGTHS[this.kind()]);
 
   /**
    * Short date of a stage, for the stage list.
@@ -299,7 +338,7 @@ export class WordDetailPage {
     if (fromList) {
       this.location.back();
     } else {
-      void this.router.navigateByUrl('/');
+      void this.router.navigate(['/'], { queryParams: this.copy().listQuery });
     }
   }
 
@@ -432,7 +471,7 @@ export class WordDetailPage {
       return;
     }
     if (label === '') {
-      this.renameError.set('Écris le mot.');
+      this.renameError.set(this.copy().emptyLabel);
       return;
     }
     if (label === word.label) {
@@ -444,14 +483,14 @@ export class WordDetailPage {
     try {
       await this.wordsApi.rename(word.id, { label });
       this.sheet.set(null);
-      this.toasts.show('Mot renommé');
+      this.toasts.show(this.copy().renamed);
     } catch (error) {
       if (apiErrorCode(error) === 'WORD_ALREADY_EXISTS') {
         this.renameError.set(`${quote(label)} est déjà dans ses mots.`);
       } else if (isNotFound(error)) {
         this.handleMissing('word');
       } else {
-        this.sheetError.set("Le mot n'a pas pu être renommé, réessaie.");
+        this.sheetError.set(this.copy().renameFailed);
       }
     } finally {
       this.busy.set(false);
@@ -472,16 +511,52 @@ export class WordDetailPage {
         this.deletedLabel.set(word.label);
         this.sheet.set(null);
       },
-      "Le mot n'a pas pu être supprimé, réessaie.",
+      this.copy().deleteFailed,
       'word',
     );
   }
 
   /**
-   * Asks to confirm the deletion of a sound.
+   * Offers the actions of a sound: move it, delete it.
    */
-  protected askRemoveSound(recording: Recording): void {
-    this.removingSound.set(recording);
+  protected openSoundActions(recording: Recording): void {
+    this.actionSound.set(recording);
+    this.open('sound');
+  }
+
+  /**
+   * Asks which stage the sound of the actions sheet moves to.
+   */
+  protected askMoveSound(): void {
+    this.movingSound.set(this.actionSound());
+    this.open('move-sound');
+  }
+
+  /**
+   * Files the moving sound under the chosen stage.
+   */
+  protected async moveSound(target: Pronunciation): Promise<void> {
+    const moving = this.movingSound();
+    if (!moving || this.busy()) {
+      return;
+    }
+    await this.run(
+      async () => {
+        await this.wordsApi.moveRecording(moving.id, target.id);
+        this.movingSound.set(null);
+        this.sheet.set(null);
+        this.toasts.show(`Son rangé avec ${quote(target.spoken)}`);
+      },
+      "Le son n'a pas pu être déplacé, réessaie.",
+      'sound',
+    );
+  }
+
+  /**
+   * Asks to confirm the deletion of the sound of the actions sheet.
+   */
+  protected askRemoveSound(): void {
+    this.removingSound.set(this.actionSound());
     this.open('remove-sound');
   }
 
@@ -560,7 +635,9 @@ export class WordDetailPage {
   private handleMissing(missing: MissingTarget): void {
     const label = this.word()?.label;
     this.sheet.set(null);
+    this.actionSound.set(null);
     this.removingSound.set(null);
+    this.movingSound.set(null);
     this.wordsApi.words.reload();
     if (missing === 'word' && label !== undefined) {
       this.deletedLabel.set(label);

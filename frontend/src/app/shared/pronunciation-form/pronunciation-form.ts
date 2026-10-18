@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, model } from '@angular/core';
 
-import { SPOKEN_MAX_LENGTH } from '@core/words/word.constants';
+import { todayIso } from '@core/date/date.utils';
+import { SPOKEN_MAX_LENGTHS } from '@core/words/word.constants';
+import { WordKind } from '@core/words/word.model';
 import { DateField } from '@shared/date-field/date-field';
 import { StatusPicker } from '@shared/status-picker/status-picker';
 import { TextField } from '@shared/text-field/text-field';
@@ -45,14 +47,19 @@ export class PronunciationForm {
   public readonly dateHint = input<string | null>(null);
 
   /**
-   * Whether the draft can be saved (spoken form written, valid day); screens may also call `isDraftReady`.
+   * Word or sentence, whose spoken forms run longer.
    */
-  public readonly valid = computed(() => isDraftReady(this.draft()));
+  public readonly kind = input<WordKind>('word');
 
   /**
-   * Longest spoken form the API accepts.
+   * Whether the draft can be saved (spoken form written, valid day); screens may also call `isDraftReady`.
    */
-  protected readonly spokenMaxLength = SPOKEN_MAX_LENGTH;
+  public readonly valid = computed(() => isDraftReady(this.draft(), todayIso(), this.kind()));
+
+  /**
+   * Longest spoken form the API accepts for the kind.
+   */
+  protected readonly spokenMaxLength = computed(() => SPOKEN_MAX_LENGTHS[this.kind()]);
 
   /**
    * Replaces some fields of the draft, keeping the others.

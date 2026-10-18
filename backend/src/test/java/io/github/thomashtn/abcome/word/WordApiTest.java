@@ -92,12 +92,16 @@ class WordApiTest extends NotebookApiTest {
         String spoken = "b".repeat(60);
         postWord(wordJson("  " + label + "  ", "  " + spoken + "  ", "learning", "2026-09-16"))
             .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.kind").value("word"))
             .andExpect(jsonPath("$.label").value(label))
             .andExpect(jsonPath("$.pronunciations[0].spoken").value(spoken));
 
         postWord(wordJson("  " + "c".repeat(41) + "  ", "pin", "learning", "2026-09-16"))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.errors.label").exists());
+            .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+        postWord(wordJson("chat", "d".repeat(61), "learning", "2026-09-16"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
     }
 
     @Test

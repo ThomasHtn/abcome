@@ -27,6 +27,8 @@ describe('pronunciation form utils', () => {
     expect(isDraftReady({ ...draft, spoken: '   ' }, today)).toBe(false);
     expect(isDraftReady({ ...draft, spoken: ' apin ' }, today)).toBe(true);
     expect(isDraftReady({ ...draft, spoken: 'a'.repeat(61) }, today)).toBe(false);
+    expect(isDraftReady({ ...draft, spoken: 'a'.repeat(200) }, today, 'sentence')).toBe(true);
+    expect(isDraftReady({ ...draft, spoken: 'a'.repeat(201) }, today, 'sentence')).toBe(false);
   });
 
   it('is not ready without a day or with a day in the future', () => {

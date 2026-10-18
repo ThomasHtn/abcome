@@ -18,4 +18,17 @@ describe('SearchField', () => {
     }
     expect(fixture.componentInstance.value()).toBe('lap');
   });
+
+  it('focuses the field once rendered when asked', async () => {
+    const fixture = TestBed.createComponent(SearchField);
+    fixture.componentRef.setInput('label', 'Chercher un mot');
+    fixture.componentRef.setInput('autofocus', true);
+    document.body.append(fixture.nativeElement as HTMLElement);
+    await fixture.whenStable();
+
+    expect(document.activeElement).toBe(
+      (fixture.nativeElement as HTMLElement).querySelector('input'),
+    );
+    (fixture.nativeElement as HTMLElement).remove();
+  });
 });

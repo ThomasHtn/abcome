@@ -9,6 +9,7 @@ import { resourcePatcher } from '@core/http/resource.utils';
 
 import {
   CreateWordRequest,
+  MoveRecordingRequest,
   Pronunciation,
   PronunciationRequest,
   Recording,
@@ -19,6 +20,7 @@ import {
   addRecording,
   removePronunciation,
   removeRecording,
+  replaceRecording,
   upsertPronunciation,
   upsertWord,
 } from './word.utils';
@@ -107,7 +109,8 @@ export class WordsApi {
   }
 
   /**
-   * Removes a stage; rejects with `LAST_PRONUNCIATION` when it is the word's only one.
+   * Removes a stage, its sounds going to a neighbour; rejects with `LAST_PRONUNCIATION` when it is the
+   * word's only one.
    */
   public async removePronunciation(id: number): Promise<void> {
     await firstValueFrom(this.http.delete<void>(API_ENDPOINTS.pronunciation(id)));
@@ -115,12 +118,16 @@ export class WordsApi {
   }
 
   /**
-   * Adds a sound to a word's gallery, uploaded as raw audio.
+   * Files a sound under a stage, uploaded as raw audio.
    * Rejects with `PAYLOAD_TOO_LARGE` or `UNSUPPORTED_MEDIA_TYPE` when the browser recorded something unusual.
    */
-  public async addRecording(wordId: number, audio: Blob, durationMs: number): Promise<Recording> {
+  public async addRecording(
+    pronunciationId: number,
+    audio: Blob,
+    durationMs: number,
+  ): Promise<Recording> {
     const recording = await firstValueFrom(
-      this.http.post<Recording>(API_ENDPOINTS.wordRecordings(wordId), audio, {
+      this.http.post<Recording>(API_ENDPOINTS.pronunciationRecordings(pronunciationId), audio, {
         headers: { 'Content-Type': audio.type },
         params: { durationMs: Math.round(durationMs) },
       }),
@@ -130,7 +137,19 @@ export class WordsApi {
   }
 
   /**
-   * Deletes a sound from its word's gallery.
+   * Files a sound under another stage of its word; rejects with `INVALID_REQUEST` when that stage is gone.
+   */
+  public async moveRecording(id: number, pronunciationId: number): Promise<Recording> {
+    const request: MoveRecordingRequest = { pronunciationId };
+    const recording = await firstValueFrom(
+      this.http.put<Recording>(API_ENDPOINTS.recording(id), request),
+    );
+    this.patch((words) => replaceRecording(words, recording));
+    return recording;
+  }
+
+  /**
+   * Deletes a sound.
    */
   public async removeRecording(id: number): Promise<void> {
     await firstValueFrom(this.http.delete<void>(API_ENDPOINTS.recording(id)));

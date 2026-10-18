@@ -56,7 +56,8 @@
                   <span class="word-picker__spoken">{{ recent.current.spoken | quote }}</span>
                   <span class="word-picker__caption">{{ recent.word.label }}</span>
                 </span>
-                <app-status-badge size="sm" [status]="recent.current.status" />
+                <app-status-dot [status]="recent.current.status" />
+                <span class="sr-only">{{ statusLabels[recent.current.status] }}</span>
               </button>
             </li>
           }

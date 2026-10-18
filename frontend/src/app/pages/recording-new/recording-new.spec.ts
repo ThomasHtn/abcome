@@ -4,8 +4,13 @@ import { provideRouter } from '@angular/router';
 
 import { DictionaryApi } from '@core/dictionary/dictionary-api';
 import { aPronunciation, aRecording, aWord } from '@core/words/word.fixtures';
-import { CreateWordRequest, Word } from '@core/words/word.model';
-import { addRecording, upsertWord } from '@core/words/word.utils';
+import {
+  CreateWordRequest,
+  Pronunciation,
+  PronunciationRequest,
+  Word,
+} from '@core/words/word.model';
+import { addRecording, upsertPronunciation, upsertWord } from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
 
 import { AudioRecorder } from './audio-recorder';
@@ -27,6 +32,7 @@ describe('RecordingNewPage', () => {
   let record: ReturnType<typeof vi.fn>;
   let uploads: [number, number][];
   let created: CreateWordRequest[];
+  let addedStages: PronunciationRequest[];
   let words: ReturnType<typeof signal<Word[]>>;
 
   beforeEach(() => {
@@ -35,6 +41,7 @@ describe('RecordingNewPage', () => {
     record = vi.fn().mockResolvedValue(clip);
     uploads = [];
     created = [];
+    addedStages = [];
     words = signal<Word[]>([lapin]);
     TestBed.configureTestingModule({
       providers: [
@@ -53,9 +60,21 @@ describe('RecordingNewPage', () => {
               words.update((list) => upsertWord(list, word));
               return Promise.resolve(word);
             },
-            addRecording: (wordId: number, _audio: Blob, durationMs: number) => {
-              uploads.push([wordId, durationMs]);
-              const recording = aRecording({ id: 100 + uploads.length, wordId, durationMs });
+            addPronunciation: (wordId: number, request: PronunciationRequest) => {
+              addedStages.push(request);
+              const stage: Pronunciation = { id: 12, wordId, ...request };
+              words.update((list) => upsertPronunciation(list, stage));
+              return Promise.resolve(stage);
+            },
+            addRecording: (pronunciationId: number, _audio: Blob, durationMs: number) => {
+              uploads.push([pronunciationId, durationMs]);
+              const wordId = pronunciationId === 20 ? 2 : 1;
+              const recording = aRecording({
+                id: 100 + uploads.length,
+                wordId,
+                pronunciationId,
+                durationMs,
+              });
               words.update((list) => addRecording(list, recording));
               return Promise.resolve(recording);
             },
@@ -126,29 +145,32 @@ describe('RecordingNewPage', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Le micro est bloqué');
   });
 
-  it('adds the sound straight to the gallery of the word given in the URL, then another one', async () => {
+  it('files the sound under a stage of the word given in the URL, then another one', async () => {
     const fixture = render('1');
     const element = fixture.nativeElement as HTMLElement;
 
     await press(fixture, "Commencer l'enregistrement");
     await press(fixture, 'Garder ce son');
+    expect(element.textContent).toContain('Que dit Côme sur ce son ?');
+    await press(fixture, 'apin');
 
-    expect(uploads).toEqual([[1, 2400]]);
+    expect(uploads).toEqual([[11, 2400]]);
     expect(element.textContent).toContain('Son ajouté à «\u00A0lapin\u00A0»\u00A0!');
     expect(element.textContent).toContain('Tu le retrouves sur sa page.');
 
     await press(fixture, 'Enregistrer un autre son');
     await press(fixture, "Commencer l'enregistrement");
     await press(fixture, 'Garder ce son');
+    await press(fixture, 'apin');
 
     expect(uploads).toEqual([
-      [1, 2400],
-      [1, 2400],
+      [11, 2400],
+      [11, 2400],
     ]);
     expect(element.textContent).toContain('Il a maintenant 2 sons.');
   });
 
-  it('adds the sound to an existing word picked in the search, without asking anything else', async () => {
+  it('files the sound under a stage of a word picked in the search', async () => {
     const fixture = render();
     const element = fixture.nativeElement as HTMLElement;
     await press(fixture, "Commencer l'enregistrement");
@@ -161,8 +183,9 @@ describe('RecordingNewPage', () => {
     }
     await fixture.whenStable();
     await press(fixture, 'lapin');
+    await press(fixture, 'apin');
 
-    expect(uploads).toEqual([[1, 2400]]);
+    expect(uploads).toEqual([[11, 2400]]);
     expect(created).toEqual([]);
     expect(element.textContent).toContain('Son ajouté à «\u00A0lapin\u00A0»\u00A0!');
   });
@@ -190,7 +213,28 @@ describe('RecordingNewPage', () => {
     await press(fixture, 'Enregistrer le mot');
 
     expect(created.map((request) => request.label)).toEqual(['Lulu']);
-    expect(uploads).toEqual([[2, 2400]]);
+    expect(uploads).toEqual([[20, 2400]]);
     expect(element.textContent).toContain('«\u00A0Lulu\u00A0» est dans ses mots\u00A0!');
+  });
+
+  it('notes a new stage of the word for the sound, then files the sound under it', async () => {
+    const fixture = render('1');
+    const element = fixture.nativeElement as HTMLElement;
+    await press(fixture, "Commencer l'enregistrement");
+    await press(fixture, 'Garder ce son');
+    await press(fixture, 'Il le dit autrement');
+
+    expect(element.textContent).toContain('Nouvelle prononciation de');
+    const spoken = element.querySelector<HTMLInputElement>('input[type="text"]');
+    if (spoken) {
+      spoken.value = 'lapin';
+      spoken.dispatchEvent(new Event('input'));
+    }
+    await fixture.whenStable();
+    await press(fixture, 'Enregistrer la prononciation');
+
+    expect(addedStages.map((request) => request.spoken)).toEqual(['lapin']);
+    expect(uploads).toEqual([[12, 2400]]);
+    expect(element.textContent).toContain('Nouvelle prononciation de «\u00A0lapin\u00A0»\u00A0!');
   });
 });

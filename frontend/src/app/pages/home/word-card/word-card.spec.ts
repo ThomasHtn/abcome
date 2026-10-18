@@ -5,16 +5,16 @@ import { WordCardView } from '../home.model';
 import { WordCard } from './word-card';
 
 /**
- * "lapin", said twice.
+ * "lapin", said "apin" now.
  */
 const CARD: WordCardView = {
   id: 7,
+  path: '/mots/7',
   label: 'lapin',
   spoken: 'apin',
   status: 'almost',
   day: '16',
   month: 'sept',
-  stageStatuses: ['learning', 'almost'],
   ariaLabel: 'apin, pour lapin, Presque, depuis le 16 septembre 2026. Voir sa page',
 };
 
@@ -38,13 +38,20 @@ describe('WordCard', () => {
     expect(link.textContent).toContain('«\u00A0apin\u00A0»');
   });
 
-  it('draws one dot per stage only when the word has progressed', () => {
-    expect(render(CARD).querySelectorAll('.word-card__stage')).toHaveLength(2);
+  it('titles the card with the word, then says what Côme says', () => {
+    const link = render(CARD);
+
+    expect(link.querySelector('.word-card__label')!.textContent).toBe('lapin');
+    expect(link.querySelector('.word-card__said')!.textContent!.trim()).toBe(
+      'Côme dit «\u00A0apin\u00A0»',
+    );
+    expect(link.querySelector('app-card-tag')).toBeNull();
   });
 
-  it('draws no dot for a word said once', () => {
-    expect(
-      render({ ...CARD, stageStatuses: [] }).querySelectorAll('.word-card__stage'),
-    ).toHaveLength(0);
+  it('ends with a small dot of the current status, and no stage dots', () => {
+    const link = render(CARD);
+
+    expect(link.querySelector('.word-card__current')!.classList).toContain('status-dot--almost');
+    expect(link.querySelectorAll('app-status-dot')).toHaveLength(1);
   });
 });

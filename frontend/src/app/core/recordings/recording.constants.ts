@@ -16,3 +16,13 @@ export const RECORDING_MIME_TYPES: readonly string[] = [
   'audio/webm',
   'audio/mp4',
 ];
+
+/**
+ * Bars computed for a stored sound's waveform; the strip merges them when fewer fit.
+ */
+export const WAVEFORM_BAR_COUNT = 48;
+
+/**
+ * Rate the audio is decoded at for its waveform: enough for loudness, cheap to scan, accepted by Safari.
+ */
+export const WAVEFORM_SAMPLE_RATE = 22_050;

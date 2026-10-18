@@ -1,4 +1,3 @@
-import { Sentence } from '@core/sentences/sentence.model';
 import { aPronunciation, aWord } from '@core/words/word.fixtures';
 
 import {
@@ -8,9 +7,7 @@ import {
   listState,
   sentencesSummary,
   tabFromParam,
-  toSentenceCard,
   toWordCard,
-  visibleSentences,
   visibleWords,
   wordsSummary,
 } from './home.utils';
@@ -50,11 +47,37 @@ const MAMAN = aWord({
 });
 
 /**
- * Two sentences, one with its meaning.
+ * Two sentences, the newest one said "Presque".
  */
-const SENTENCES: Sentence[] = [
-  { id: 1, spoken: 'papa pati', meaning: 'Papa est parti', date: '2026-10-09' },
-  { id: 2, spoken: 'a pu ato', meaning: null, date: '2026-10-14' },
+const SENTENCES = [
+  aWord({
+    id: 5,
+    kind: 'sentence',
+    label: 'Papa est parti',
+    pronunciations: [
+      aPronunciation({
+        id: 50,
+        wordId: 5,
+        spoken: 'papa pati',
+        status: 'learning',
+        date: '2026-10-09',
+      }),
+    ],
+  }),
+  aWord({
+    id: 6,
+    kind: 'sentence',
+    label: "Il n'y a plus de gâteau",
+    pronunciations: [
+      aPronunciation({
+        id: 60,
+        wordId: 6,
+        spoken: 'a pu ato',
+        status: 'almost',
+        date: '2026-10-14',
+      }),
+    ],
+  }),
 ];
 
 describe('tabFromParam', () => {
@@ -92,7 +115,7 @@ describe('visibleWords', () => {
 });
 
 describe('toWordCard', () => {
-  it('shows the first date, the current form and every stage', () => {
+  it('shows the first date, the word, its current form and status', () => {
     const card = toWordCard(LAPIN);
     expect(card).toMatchObject({
       label: 'lapin',
@@ -100,31 +123,27 @@ describe('toWordCard', () => {
       status: 'almost',
       day: '16',
       month: 'sept',
-      stageStatuses: ['learning', 'almost'],
     });
     expect(card.ariaLabel).toBe(
       'apin, pour lapin, Presque, depuis le 16 septembre 2026. Voir sa page',
     );
   });
-
-  it('draws no stage dots for a word said once', () => {
-    expect(toWordCard(GATEAU).stageStatuses).toEqual([]);
-  });
 });
 
-describe('visibleSentences and toSentenceCard', () => {
-  it('lists the newest sentence first and searches the meaning too', () => {
-    expect(visibleSentences(SENTENCES, '').map((sentence) => sentence.id)).toEqual([2, 1]);
-    expect(visibleSentences(SENTENCES, 'parti').map((sentence) => sentence.id)).toEqual([1]);
+describe('sentences as cards', () => {
+  it('lists the newest sentence first, searches what was meant and said, and filters by color', () => {
+    expect(visibleWords(SENTENCES, '', 'all').map((sentence) => sentence.id)).toEqual([6, 5]);
+    expect(visibleWords(SENTENCES, 'parti', 'all').map((sentence) => sentence.id)).toEqual([5]);
+    expect(visibleWords(SENTENCES, 'ato', 'all').map((sentence) => sentence.id)).toEqual([6]);
+    expect(visibleWords(SENTENCES, '', 'almost').map((sentence) => sentence.id)).toEqual([6]);
   });
 
-  it('reads the meaning only when there is one', () => {
-    expect(toSentenceCard(SENTENCES[0]).ariaLabel).toBe(
-      '«\u00A0papa pati\u00A0», Papa est parti, le 9 octobre 2026. Modifier',
-    );
-    expect(toSentenceCard(SENTENCES[1]).ariaLabel).toBe(
-      '«\u00A0a pu ato\u00A0», le 14 octobre 2026. Modifier',
-    );
+  it('links a sentence card to its page', () => {
+    expect(toWordCard(SENTENCES[0])).toMatchObject({
+      path: '/phrases/5',
+      label: 'Papa est parti',
+      spoken: 'papa pati',
+    });
   });
 });
 
@@ -150,13 +169,18 @@ describe('summaries', () => {
     expect(sentencesSummary([]).latest).toBeNull();
   });
 
-  it('quotes the newest sentence', () => {
-    expect(sentencesSummary(SENTENCES)).toMatchObject({
+  it('quotes the newest sentence and counts sentences per status', () => {
+    const summary = sentencesSummary(SENTENCES);
+    expect(summary).toMatchObject({
       countText: '2 phrases',
       latestLabel: 'Dernière',
       latest: 'a pu ato',
-      statusCounts: null,
     });
+    expect(summary.statusCounts?.map((count) => count.label)).toEqual([
+      '0 Bien dit',
+      '1 Presque',
+      '1 En route',
+    ]);
   });
 });
 
@@ -178,8 +202,15 @@ describe('empty messages', () => {
   });
 
   it('explains an empty sentence list', () => {
-    expect(emptySentencesMessage('')).toBe('Pas encore de phrase. La première arrive bientôt !');
-    expect(emptySentencesMessage('lolo')).toBe('Aucune phrase ne contient «\u00A0lolo\u00A0».');
+    expect(emptySentencesMessage('', 'all', 0)).toBe(
+      'Pas encore de phrase. La première arrive bientôt !',
+    );
+    expect(emptySentencesMessage('lolo', 'all', 2)).toBe(
+      'Aucune phrase ne contient «\u00A0lolo\u00A0».',
+    );
+    expect(emptySentencesMessage('', 'mastered', 2)).toBe(
+      "Aucune phrase dans cette couleur pour l'instant.",
+    );
   });
 });
 

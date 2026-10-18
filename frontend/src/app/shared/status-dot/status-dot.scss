@@ -1,0 +1,34 @@
+/* Status dot: plain disc in the status color, grey until a status is known. */
+
+@use 'tools' as *;
+
+/* 12 px disc that never shrinks next to a long text. */
+:host {
+  display: inline-block;
+  flex: none;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border-radius: 50%;
+  background-color: var(--color-border);
+}
+
+/* Small dot, beside a line of text. */
+:host(.status-dot--sm) {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+}
+
+/* "En route". */
+:host(.status-dot--learning) {
+  background-color: var(--color-learning-dot);
+}
+
+/* "Presque". */
+:host(.status-dot--almost) {
+  background-color: var(--color-almost-dot);
+}
+
+/* "Bien dit". */
+:host(.status-dot--mastered) {
+  background-color: var(--color-mastered-dot);
+}

@@ -106,7 +106,7 @@ public abstract class PostgreSqlIntegrationTest {
      * Empties the notebook; stages and recordings go with their words.
      */
     protected void clearNotebook() {
-        jdbcTemplate.execute("TRUNCATE word, sentence RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE word RESTART IDENTITY CASCADE");
     }
 
     /**

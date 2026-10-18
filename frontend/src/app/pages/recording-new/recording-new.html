@@ -20,15 +20,76 @@
         [(query)]="query"
         (picked)="choose($event)"
       />
+    </div>
+  }
+
+  @case ('stage') {
+    <!-- Step 3, notebook word: which of its pronunciations is heard on the sound, or a new one. -->
+    <div class="recording-new enter flex flex-col gap-4">
+      @if (clipUrl(); as url) {
+        <app-recording-clip
+          [src]="url"
+          [levels]="clipBars()"
+          [durationMs]="clip()?.durationMs ?? 0"
+        />
+      }
+
+      @if (target(); as chosen) {
+        <!-- The chosen word, with a way back to the search. -->
+        <div class="recording-new__target flex items-center gap-3">
+          <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span class="recording-new__overline">Le son de</span>
+            <span class="recording-new__target-label">{{ chosen.label }}</span>
+          </span>
+          <button app-button type="button" variant="outline" size="sm" (click)="changeWord()">
+            Changer
+          </button>
+        </div>
+      }
+
+      <h2 class="recording-new__question">Que dit Côme sur ce son ?</h2>
+      <ul class="flex flex-col gap-2">
+        @for (option of stages(); track option.pronunciation.id) {
+          <li>
+            <button
+              class="recording-new__stage press flex w-full items-center gap-3"
+              type="button"
+              [disabled]="saving()"
+              [attr.aria-label]="option.ariaLabel"
+              (click)="fileUnder(option.pronunciation)"
+            >
+              <app-status-dot [status]="option.pronunciation.status" />
+              <span class="flex min-w-0 flex-1 flex-col">
+                <span class="recording-new__stage-spoken">
+                  {{ option.pronunciation.spoken | quote }}
+                </span>
+                <span class="recording-new__stage-caption">{{ option.caption }}</span>
+              </span>
+            </button>
+          </li>
+        }
+        <li>
+          <!-- Côme says it differently now: note a new stage for the sound. -->
+          <button
+            class="recording-new__stage recording-new__stage--new press flex w-full items-center gap-3"
+            type="button"
+            [disabled]="saving()"
+            (click)="noteNewStage()"
+          >
+            <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
+            Il le dit autrement
+          </button>
+        </li>
+      </ul>
       @if (saving()) {
-        <!-- An existing word was chosen: its sound is on its way. -->
+        <!-- A stage was chosen: its sound is on its way. -->
         <p class="recording-new__saving" role="status">Enregistrement du son…</p>
       }
     </div>
   }
 
   @case ('note') {
-    <!-- Step 3, new word only: its first pronunciation. -->
+    <!-- Step 3 or 4: a new word's first pronunciation, or a new stage of a notebook word. -->
     <div class="recording-new recording-new--with-bar enter flex flex-col gap-4.5">
       @if (clipUrl(); as url) {
         <app-recording-clip
@@ -39,13 +100,15 @@
       }
 
       @if (target(); as chosen) {
-        <!-- The new word, with a way back to the search. -->
+        <!-- The word, with a way back to the previous step. -->
         <div class="recording-new__target flex items-center gap-3">
           <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span class="recording-new__overline">Nouveau mot</span>
+            <span class="recording-new__overline">
+              {{ targetWord() ? 'Nouvelle prononciation de' : 'Nouveau mot' }}
+            </span>
             <span class="recording-new__target-label">{{ chosen.label }}</span>
           </span>
-          <button app-button type="button" variant="outline" size="sm" (click)="changeWord()">
+          <button app-button type="button" variant="outline" size="sm" (click)="leaveNote()">
             Changer
           </button>
         </div>
@@ -53,20 +116,21 @@
 
       <app-pronunciation-form
         spokenLabel="Sur ce son, Côme dit"
-        dateLabel="Dit pour la première fois le"
+        [dateLabel]="targetWord() ? 'Entendu le' : 'Dit pour la première fois le'"
         [(draft)]="draft"
       />
 
       <!-- What saving will do. -->
       <p class="recording-new__effect flex items-start gap-2.5" role="status">
-        <span
+        <app-status-dot
           class="recording-new__effect-dot"
-          aria-hidden="true"
-          [class.recording-new__effect-dot--learning]="ready() && draft().status === 'learning'"
-          [class.recording-new__effect-dot--almost]="ready() && draft().status === 'almost'"
-          [class.recording-new__effect-dot--mastered]="ready() && draft().status === 'mastered'"
-        ></span>
-        {{ target()?.label | quote }} rejoint ses mots, avec ce son pour premier souvenir.
+          [status]="ready() ? draft().status : null"
+        />
+        @if (targetWord()) {
+          Cette prononciation rejoint ses progrès, avec ce son.
+        } @else {
+          {{ target()?.label | quote }} rejoint ses mots, avec ce son pour premier souvenir.
+        }
       </p>
     </div>
 
@@ -81,7 +145,7 @@
       >
         @if (ready()) {
           <span class="recording-new__plus" aria-hidden="true">
-            <svg app-icon name="plus" [size]="20" [strokeWidth]="2.6"></svg>
+            <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
           </span>
         }
         {{ saveText() }}

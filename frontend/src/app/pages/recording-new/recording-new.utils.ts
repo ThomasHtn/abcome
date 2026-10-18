@@ -1,7 +1,17 @@
+import { formatLongDate, formatShortDateWithYear } from '@core/date/date.utils';
 import { quote } from '@core/text/text.utils';
+import { STATUS_LABELS } from '@core/words/word.constants';
+import { Word } from '@core/words/word.model';
+import { sortPronunciations } from '@core/words/word.utils';
 
 import { LEVEL_BAR_COUNT, LEVEL_GAIN } from './recording-new.constants';
-import { DoneCopy, RecorderErrorKind, RecordingPhase, SaveOutcome } from './recording-new.model';
+import {
+  DoneCopy,
+  RecorderErrorKind,
+  RecordingPhase,
+  SaveOutcome,
+  StageOption,
+} from './recording-new.model';
 
 /**
  * Loudness of one analyser frame, 0 to 1: the root mean square of the wave around its silent middle
@@ -73,14 +83,15 @@ export function recordingInstruction(phase: RecordingPhase): string {
 }
 
 /**
- * Title of the screen at each step.
+ * Title of the screen at each step; the note step names what it notes, a word or one of its stages.
  */
-export function recordingTitle(phase: RecordingPhase): string {
+export function recordingTitle(phase: RecordingPhase, newWord: boolean): string {
   switch (phase) {
     case 'pick':
+    case 'stage':
       return 'Associer le son';
     case 'note':
-      return 'Nouveau mot';
+      return newWord ? 'Nouveau mot' : 'Nouvelle prononciation';
     case 'done':
       return "C'est fait";
     default:
@@ -98,6 +109,12 @@ export function doneCopy(outcome: SaveOutcome): DoneCopy {
       text: `Côme le dit ${quote(outcome.spoken)}. Son premier son t'attend sur sa page.`,
     };
   }
+  if (outcome.kind === 'stage') {
+    return {
+      title: `Nouvelle prononciation de ${quote(outcome.label)}\u00A0!`,
+      text: `Côme le dit ${quote(outcome.spoken)}. Le son l'accompagne sur sa page.`,
+    };
+  }
   return {
     title: `Son ajouté à ${quote(outcome.label)}\u00A0!`,
     text:
@@ -108,8 +125,30 @@ export function doneCopy(outcome: SaveOutcome): DoneCopy {
 }
 
 /**
- * Text of the save button of a new word: what to do first, then the creation.
+ * Text of the save button of a new word or stage: what to do first, then the creation.
  */
-export function saveButtonText(ready: boolean): string {
-  return ready ? 'Enregistrer le mot' : "Note d'abord ce qu'il dit";
+export function saveButtonText(ready: boolean, newWord: boolean): string {
+  if (!ready) {
+    return "Note d'abord ce qu'il dit";
+  }
+  return newWord ? 'Enregistrer le mot' : 'Enregistrer la prononciation';
+}
+
+/**
+ * Stages of a word offered for the sound, newest first, the current one first and titled so.
+ */
+export function stageOptions(word: Word): StageOption[] {
+  const stages = sortPronunciations(word.pronunciations);
+  return stages
+    .map((pronunciation, index) => {
+      const date = formatShortDateWithYear(pronunciation.date);
+      return {
+        pronunciation,
+        caption: index === stages.length - 1 ? `Maintenant · ${date}` : date,
+        ariaLabel:
+          `${pronunciation.spoken}, ${STATUS_LABELS[pronunciation.status]}, ` +
+          `le ${formatLongDate(pronunciation.date)}`,
+      };
+    })
+    .reverse();
 }

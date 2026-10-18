@@ -84,12 +84,32 @@ describe('WordsApi', () => {
     expect(api.words.value()?.map((word) => word.label)).toEqual(['lapin', 'chat']);
   });
 
-  it('adds a sound as raw audio with its duration and lists it first in the word gallery', async () => {
+  it('moves a sound to another stage and keeps its place in the word', async () => {
+    await loadList([aWord({ recordings: [aRecording({ id: 5 }), aRecording({ id: 6 })] })]);
+
+    const move = api.moveRecording(5, 11);
+    const request = http.expectOne(API_ENDPOINTS.recording(5));
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({ pronunciationId: 11 });
+    request.flush(aRecording({ id: 5, pronunciationId: 11 }));
+    await move;
+
+    expect(
+      api.words
+        .value()?.[0]
+        .recordings.map((recording) => [recording.id, recording.pronunciationId]),
+    ).toEqual([
+      [5, 11],
+      [6, 10],
+    ]);
+  });
+
+  it('files a sound under a stage as raw audio with its duration and lists it first in its word', async () => {
     await loadList();
     const audio = new Blob(['x'], { type: 'audio/webm' });
 
-    const upload = api.addRecording(1, audio, 2345.6);
-    const request = http.expectOne((req) => req.url === API_ENDPOINTS.wordRecordings(1));
+    const upload = api.addRecording(10, audio, 2345.6);
+    const request = http.expectOne((req) => req.url === API_ENDPOINTS.pronunciationRecordings(10));
     expect(request.request.method).toBe('POST');
     expect(request.request.headers.get('Content-Type')).toBe('audio/webm');
     expect(request.request.params.get('durationMs')).toBe('2346');

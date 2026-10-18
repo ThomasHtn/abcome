@@ -2,15 +2,10 @@ import { TestBed } from '@angular/core/testing';
 
 import { Celebration } from '@core/feedback/celebration';
 import { ToastQueue } from '@core/feedback/toast-queue';
-import { Sentence } from '@core/sentences/sentence.model';
-import { SentencesApi } from '@core/sentences/sentences-api';
+import { aWord } from '@core/words/word.fixtures';
+import { WordsApi } from '@core/words/words-api';
 
 import { SentenceSheet } from './sentence-sheet';
-
-/**
- * A sentence already in the notebook.
- */
-const SENTENCE: Sentence = { id: 4, spoken: 'papa pati', meaning: null, date: '2026-10-09' };
 
 /**
  * A rendered sheet and how many times it asked to close.
@@ -29,9 +24,9 @@ interface RenderedSheet {
 
 describe('SentenceSheet', () => {
   /**
-   * Stands in for the sentences API.
+   * Stands in for the words API's creation.
    */
-  let api: Record<'create' | 'update' | 'remove', ReturnType<typeof vi.fn>>;
+  let create: ReturnType<typeof vi.fn>;
 
   beforeAll(() => {
     // jsdom has no modal dialogs: stand in with the `open` attribute.
@@ -44,20 +39,15 @@ describe('SentenceSheet', () => {
   });
 
   beforeEach(() => {
-    api = {
-      create: vi.fn().mockResolvedValue(SENTENCE),
-      update: vi.fn().mockResolvedValue(SENTENCE),
-      remove: vi.fn().mockResolvedValue(undefined),
-    };
-    TestBed.configureTestingModule({ providers: [{ provide: SentencesApi, useValue: api }] });
+    create = vi.fn().mockResolvedValue(aWord({ id: 4, kind: 'sentence' }));
+    TestBed.configureTestingModule({ providers: [{ provide: WordsApi, useValue: { create } }] });
   });
 
   /**
-   * Renders the sheet for a sentence (or a new one) and counts its closings.
+   * Renders the sheet and counts its closings.
    */
-  function render(sentence: Sentence | null): RenderedSheet {
+  function render(): RenderedSheet {
     const fixture = TestBed.createComponent(SentenceSheet);
-    fixture.componentRef.setInput('sentence', sentence);
     let count = 0;
     fixture.componentInstance.closed.subscribe(() => count++);
     fixture.detectChanges();
@@ -65,67 +55,60 @@ describe('SentenceSheet', () => {
   }
 
   /**
-   * Waits for the pending save or deletion to settle.
+   * Types `value` in the field matched by `selector`.
+   */
+  function type(element: HTMLElement, selector: string, value: string): void {
+    const field = element.querySelector<HTMLInputElement | HTMLTextAreaElement>(selector)!;
+    field.value = value;
+    field.dispatchEvent(new Event('input'));
+    TestBed.tick();
+  }
+
+  /**
+   * Waits for the pending save to settle.
    */
   async function settle(): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve));
     TestBed.tick();
   }
 
-  /**
-   * Clicks the button whose text is `label`.
-   */
-  function click(element: HTMLElement, label: string): void {
-    const button = [...element.querySelectorAll('button')].find(
-      (candidate) => candidate.textContent?.trim() === label,
-    );
-    button!.click();
-    TestBed.tick();
-  }
-
-  it('saves a new sentence without meaning, celebrates and closes', async () => {
-    const { element, closings } = render(null);
-    expect(element.textContent).toContain('Nouvelle phrase');
-    const textarea = element.querySelector('textarea')!;
-    textarea.value = '  encore lolo ';
-    textarea.dispatchEvent(new Event('input'));
-    TestBed.tick();
+  it('creates a sentence from what Côme meant and said, celebrates and closes', async () => {
+    const { element, closings } = render();
+    type(element, 'textarea', '  Il n’y a plus de gâteau ');
+    type(element, 'input[type="text"]', ' a pu ato ');
 
     element.querySelector('form')!.dispatchEvent(new Event('submit'));
     await settle();
 
-    expect(api.create).toHaveBeenCalledWith(
-      expect.objectContaining({ spoken: 'encore lolo', meaning: null }),
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'sentence',
+        label: 'Il n’y a plus de gâteau',
+        pronunciation: expect.objectContaining({ spoken: 'a pu ato', status: 'learning' }),
+      }),
     );
     expect(TestBed.inject(ToastQueue).current()?.text).toBe('Nouvelle phrase notée');
     expect(TestBed.inject(Celebration).burst()).not.toBeNull();
     expect(closings()).toBe(1);
   });
 
-  it('keeps the save button off while nothing was said', () => {
-    const { element } = render(null);
+  it('keeps the save button off until both the meaning and the spoken form are written', () => {
+    const { element } = render();
     const save = element.querySelector<HTMLButtonElement>('button[type="submit"]')!;
-
     expect(save.disabled).toBe(true);
-  });
 
-  it('asks before deleting, then deletes', async () => {
-    const { element, closings } = render(SENTENCE);
-    expect(element.textContent).toContain('Modifier la phrase');
+    type(element, 'textarea', 'Encore');
+    expect(save.disabled).toBe(true);
 
-    click(element, 'Supprimer cette phrase');
-    expect(element.textContent).toContain('Supprimer «\u00A0papa pati\u00A0»\u00A0?');
-
-    click(element, 'Oui, supprimer');
-    await settle();
-
-    expect(api.remove).toHaveBeenCalledWith(4);
-    expect(closings()).toBe(1);
+    type(element, 'input[type="text"]', 'ankor');
+    expect(save.disabled).toBe(false);
   });
 
   it('stays open with the message inside the sheet when the save fails', async () => {
-    api.update.mockRejectedValue(new Error('offline'));
-    const { element, closings } = render(SENTENCE);
+    create.mockRejectedValue(new Error('offline'));
+    const { element, closings } = render();
+    type(element, 'textarea', 'Encore');
+    type(element, 'input[type="text"]', 'ankor');
 
     element.querySelector('form')!.dispatchEvent(new Event('submit'));
     await settle();

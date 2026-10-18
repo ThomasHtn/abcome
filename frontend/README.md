@@ -46,7 +46,8 @@ Lazy-loaded from `app.routes.ts`. URL parameters bind to page inputs (`withCompo
 | `/connexion`    | `LoginPage`        |                              | `guestGuard` |
 | `/`             | `HomePage`         | `onglet` (`phrases`)         | `authGuard`  |
 | `/mots/nouveau` | `WordNewPage`      | `mot` (prefills the search)  | `authGuard`  |
-| `/mots/:id`     | `WordDetailPage`   | `id`                         | `authGuard`  |
+| `/mots/:id`     | `WordDetailPage`   | `id`, `kind` (route data)    | `authGuard`  |
+| `/phrases/:id`  | `WordDetailPage`   | `id`, `kind` (route data)    | `authGuard`  |
 | `/sons/nouveau` | `RecordingNewPage` | `mot` (word id to preselect) | `authGuard`  |
 
 A 401 signs out and redirects to `/connexion`.
@@ -58,8 +59,7 @@ Lists are loaded whole, shared by every screen and patched locally after each wr
 | File                                | Gives                                                                  |
 | ----------------------------------- | ---------------------------------------------------------------------- |
 | `core/auth/auth-session.ts`         | `signedIn()`, `ensureChecked()`, `signIn(password)`, `signOut()`       |
-| `core/words/words-api.ts`           | `words` resource, word, stage and recording writes                     |
-| `core/sentences/sentences-api.ts`   | `sentences` resource, `create`, `update`, `remove`                     |
+| `core/words/words-api.ts`           | `words` resource (words and sentences), entry, stage, recording writes |
 | `core/dictionary/dictionary-api.ts` | `entries` resource, in acquisition order                               |
 | `core/feedback/`                    | `ToastQueue.show(text)`, `Celebration.play()` (confetti)               |
 | `core/words/word.utils.ts`          | Current stage and status, sorting, counting, search                    |
@@ -67,26 +67,27 @@ Lists are loaded whole, shared by every screen and patched locally after each wr
 | `core/text/text.utils.ts`           | Normalization and search ranking (twin of the backend)                 |
 | `core/date/date.utils.ts`           | `todayIso()` (Paris) and date formatting                               |
 | `core/http/api-error.utils.ts`      | `apiErrorCode(error)`, `retryAfterSeconds(error)`, `isNotFound(error)` |
-| `core/recordings/`                  | Duration and size limits, MIME type choice                             |
+| `core/recordings/`                  | Duration and size limits, MIME type choice, decoded waveforms          |
 
 Test factories `aWord()` and `aPronunciation()` are in `core/words/word.fixtures.ts`.
 
 ## Shared components
 
-| Component                                   | Purpose                                              |
-| ------------------------------------------- | ---------------------------------------------------- |
-| `app-button`, `app-icon-button`             | Pill button and header icon tile on a native element |
-| `svg[app-icon]`                             | Icon from the sprite `public/assets/icons/icons.svg` |
-| `app-page-header`                           | Back link, title, optional action                    |
-| `app-action-bar`                            | Fixed bottom bar for the main actions                |
-| `app-mascot`, `app-mascot-bubble`           | Lapinou, alone or with a speech bubble               |
-| `app-bottom-sheet`, `app-confirm-sheet`     | Modal drawer and yes/no question                     |
-| `app-status-badge`, `app-status-picker`     | Display and choice of a pronunciation status         |
-| `app-search-field`, `app-filter-chips`      | Search pill and toggle chips                         |
-| `app-text-field`, `app-date-field`          | Labelled input, textarea, date picker                |
-| `app-audio-button`                          | Play/stop a recording                                |
-| `app-pronunciation-form`                    | Spoken form, status and day of a stage               |
-| `app-word-picker`                           | Search over the notebook and the dictionary          |
-| `app-toast-outlet`, `app-celebration-burst` | Mounted once in the app shell                        |
+| Component                                                 | Purpose                                              |
+| --------------------------------------------------------- | ---------------------------------------------------- |
+| `app-button`, `app-icon-button`                           | Pill button and header icon tile on a native element |
+| `svg[app-icon]`                                           | Icon from the sprite `public/assets/icons/icons.svg` |
+| `app-page-header`                                         | Back link, title, optional action                    |
+| `app-action-bar`                                          | Fixed bottom bar for the main actions                |
+| `app-mascot`, `app-mascot-bubble`                         | Lapinou, alone or with a speech bubble               |
+| `app-bottom-sheet`, `app-confirm-sheet`                   | Modal drawer and yes/no question                     |
+| `app-status-badge`, `app-status-dot`, `app-status-picker` | Display and choice of a pronunciation status         |
+| `app-search-field`, `app-filter-chips`                    | Search pill and toggle chips                         |
+| `app-text-field`, `app-date-field`                        | Labelled input, textarea, date picker                |
+| `app-audio-button`                                        | Play/stop a recording                                |
+| `app-level-bars`, `app-voice-note`                        | Waveform bars, and a stored sound as a voice note    |
+| `app-pronunciation-form`                                  | Spoken form, status and day of a stage               |
+| `app-word-picker`                                         | Search over the notebook and the dictionary          |
+| `app-toast-outlet`, `app-celebration-burst`               | Mounted once in the app shell                        |
 
 Global motion classes (`src/styles/motion.css`): `enter`, `enter-bottom`, `pop`, `motion-step-N`, `shake`, `press`.
