@@ -22,7 +22,7 @@ describe('loginErrorMessage', () => {
 
   it('gives the lockout time in minutes', () => {
     expect(loginErrorMessage(refusal(429, 'TOO_MANY_ATTEMPTS', '900'))).toBe(
-      "Trop d'essais. Réessaie dans 15 minutes.",
+      "Trop d'essais\u00A0: le carnet est bloqué sur ce réseau, pour toute la maison. Réessaie dans 15 minutes.",
     );
   });
 
@@ -34,8 +34,8 @@ describe('loginErrorMessage', () => {
 
 describe('tooManyAttemptsMessage', () => {
   it('rounds the lockout up and agrees in number', () => {
-    expect(tooManyAttemptsMessage(60)).toBe("Trop d'essais. Réessaie dans 1 minute.");
-    expect(tooManyAttemptsMessage(61)).toBe("Trop d'essais. Réessaie dans 2 minutes.");
+    expect(tooManyAttemptsMessage(60)).toContain('Réessaie dans 1 minute.');
+    expect(tooManyAttemptsMessage(61)).toContain('Réessaie dans 2 minutes.');
   });
 
   it('speaks of seconds for a short burst limit', () => {

@@ -11,7 +11,7 @@
           [durationMs]="clip()?.durationMs ?? 0"
         />
       }
-      <h2 class="recording-new__question">À quel mot correspond ce son ?</h2>
+      <h2 class="recording-new__question">À quel mot correspond ce son&nbsp;?</h2>
       <app-word-picker
         searchLabel="Chercher ou créer un mot"
         emptyState="notebook"
@@ -47,7 +47,7 @@
         </div>
       }
 
-      <h2 class="recording-new__question">Que dit Côme sur ce son ?</h2>
+      <h2 class="recording-new__question">Que dit Côme sur ce son&nbsp;?</h2>
       <ul class="flex flex-col gap-2">
         @for (option of stages(); track option.pronunciation.id) {
           <li>
@@ -108,7 +108,14 @@
             </span>
             <span class="recording-new__target-label">{{ chosen.label }}</span>
           </span>
-          <button app-button type="button" variant="outline" size="sm" (click)="leaveNote()">
+          <button
+            app-button
+            type="button"
+            variant="outline"
+            size="sm"
+            [disabled]="saving()"
+            (click)="leaveNote()"
+          >
             Changer
           </button>
         </div>
@@ -117,6 +124,7 @@
       <app-pronunciation-form
         spokenLabel="Sur ce son, Côme dit"
         [dateLabel]="targetWord() ? 'Entendu le' : 'Dit pour la première fois le'"
+        [kind]="kind()"
         [(draft)]="draft"
       />
 
@@ -161,7 +169,7 @@
         <p class="recording-new__done-title" role="status">{{ copy.title }}</p>
         <p class="recording-new__done-text">{{ copy.text }}</p>
         <div class="mt-2 flex flex-col gap-2.5 self-stretch">
-          <a app-button size="lg" block [routerLink]="['/mots', copy.wordId]">Voir sa page</a>
+          <a app-button size="lg" block [routerLink]="copy.path">Voir sa page</a>
           <button app-button type="button" variant="outline" block (click)="another()">
             Enregistrer un autre son
           </button>
@@ -212,6 +220,10 @@
             <app-level-bars [levels]="bars()" [tone]="waveTone()" />
           }
         </div>
+        @if (phase() === 'review' && canTrim()) {
+          <!-- How to use the handles, only while they are offered. -->
+          <p class="recording-new__note">Glisse les poignées pour couper le début ou la fin.</p>
+        }
       </div>
 
       <!-- Controls of the step. -->

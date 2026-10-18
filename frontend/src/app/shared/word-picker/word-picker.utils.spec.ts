@@ -1,8 +1,10 @@
 import { DictionaryEntry } from '@core/dictionary/dictionary.model';
+import { LABEL_MAX_LENGTHS } from '@core/words/word.constants';
 import { aPronunciation, aWord } from '@core/words/word.fixtures';
 
 import {
   buildSuggestions,
+  isTooLongForWord,
   newWordOffer,
   pickerCandidates,
   splitOnMatch,
@@ -74,7 +76,12 @@ describe('word picker utils', () => {
     expect(newWordOffer(entries, [lapin], 'LAPIN')).toBeNull();
     expect(newWordOffer(entries, [], 'lait')).toBeNull();
     expect(newWordOffer(entries, [], '')).toBeNull();
-    expect(newWordOffer(entries, [], 'x'.repeat(41))).toBeNull();
+    expect(newWordOffer(entries, [], 'x'.repeat(LABEL_MAX_LENGTHS.word + 1))).toBeNull();
+  });
+
+  it('tells a text too long to be a word, spaces around it ignored', () => {
+    expect(isTooLongForWord(` ${'x'.repeat(LABEL_MAX_LENGTHS.word)} `)).toBe(false);
+    expect(isTooLongForWord('x'.repeat(LABEL_MAX_LENGTHS.word + 1))).toBe(true);
   });
 
   it('names a suggestion for screen readers with its category and status', () => {

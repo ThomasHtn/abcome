@@ -159,6 +159,22 @@ describe('RecordingNewPage', () => {
     expect(element.querySelector('[aria-label="Garder ce son"]')).not.toBeNull();
     expect(element.querySelector('[aria-label="Écouter le son"]')).not.toBeNull();
     expect(element.textContent).toContain('0:02');
+    expect(element.textContent).toContain('Recommence autant que tu veux');
+    expect(element.textContent).not.toContain('Glisse les poignées');
+  });
+
+  it('explains a recording stopped by the 15 seconds cap, until the next one', async () => {
+    record.mockResolvedValueOnce({ ...clip, durationMs: 15_000 });
+    const fixture = render();
+    const element = fixture.nativeElement as HTMLElement;
+
+    await press(fixture, "Commencer l'enregistrement");
+    expect(element.textContent).toContain(
+      "15 secondes, c'est le maximum\u00A0: l'enregistrement s'est arrêté tout seul.",
+    );
+
+    await press(fixture, "Recommencer l'enregistrement");
+    expect(element.textContent).not.toContain("c'est le maximum");
   });
 
   it('trims the start of the sound and files the kept part as WAV', async () => {
@@ -205,7 +221,22 @@ describe('RecordingNewPage', () => {
 
     await press(fixture, "Commencer l'enregistrement");
 
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Le micro est bloqué');
+    const text = (fixture.nativeElement as HTMLElement).textContent;
+    expect(text).toContain('Le micro est bloqué');
+    expect(text).toContain(
+      'Sur iPhone\u00A0: ouvre Réglages, cherche «\u00A0Safari\u00A0», puis Micro.',
+    );
+  });
+
+  it('explains a microphone taken by a call or another app', async () => {
+    record.mockRejectedValue(new RecorderError('busy'));
+    const fixture = render();
+
+    await press(fixture, "Commencer l'enregistrement");
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Le micro est déjà utilisé',
+    );
   });
 
   it('files the sound under a stage of the word given in the URL, then another one', async () => {
@@ -214,7 +245,7 @@ describe('RecordingNewPage', () => {
 
     await press(fixture, "Commencer l'enregistrement");
     await press(fixture, 'Garder ce son');
-    expect(element.textContent).toContain('Que dit Côme sur ce son ?');
+    expect(element.textContent).toContain('Que dit Côme sur ce son\u00A0?');
     await press(fixture, 'apin');
 
     expect(uploads).toEqual([[11, 2400]]);

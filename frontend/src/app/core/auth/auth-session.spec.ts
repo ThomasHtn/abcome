@@ -77,13 +77,23 @@ describe('AuthSession', () => {
     expect(session.signedIn()).toBe(false);
   });
 
-  it('clears the local state at logout even when the server is unreachable', async () => {
+  it('stays signed in when the server cannot close the session, which would still be open', async () => {
     session.status.set('signed-in');
 
     const signOut = session.signOut();
     http.expectOne(API_ENDPOINTS.logout).error(new ProgressEvent('error'));
 
     await expect(signOut).rejects.toBeTruthy();
+    expect(session.status()).toBe('signed-in');
+  });
+
+  it('counts a session the server no longer knows as closed', async () => {
+    session.status.set('signed-in');
+
+    const signOut = session.signOut();
+    http.expectOne(API_ENDPOINTS.logout).flush(null, { status: 401, statusText: 'Unauthorized' });
+
+    await signOut;
     expect(session.status()).toBe('signed-out');
   });
 });

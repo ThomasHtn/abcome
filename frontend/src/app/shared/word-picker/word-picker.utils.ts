@@ -71,6 +71,13 @@ export function buildSuggestions(
 }
 
 /**
+ * Whether the typed text is longer than the API accepts for a word, so it cannot be offered as one.
+ */
+export function isTooLongForWord(query: string): boolean {
+  return query.trim().length > LABEL_MAX_LENGTHS.word;
+}
+
+/**
  * Label to offer as a new word ("ajouter quand même"), `null` when nothing is typed, the text is too
  * long, or the notebook or the dictionary already holds it.
  */
@@ -80,7 +87,7 @@ export function newWordOffer(
   query: string,
 ): string | null {
   const label = query.trim();
-  if (label === '' || label.length > LABEL_MAX_LENGTHS.word) {
+  if (label === '' || isTooLongForWord(label)) {
     return null;
   }
   const needle = normalizeText(label);

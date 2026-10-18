@@ -158,7 +158,64 @@ describe('WordDetailPage', () => {
       ],
     ]);
     expect(element.querySelector('.word-detail__no-sound')).toBeNull();
-    expect(element.textContent).toContain('Il le dit mieux !');
+    expect(element.textContent).toContain('Il le dit mieux\u00A0!');
+  });
+
+  it('tells assistive technologies that the word and sound menus open a dialog', () => {
+    const element = render().nativeElement as HTMLElement;
+    const menus = [
+      element.querySelector('[aria-label="Actions sur «\u00A0lapin\u00A0»"]'),
+      ...element.querySelectorAll('.stage-sounds__more'),
+    ];
+    expect(menus).toHaveLength(3);
+    expect(menus.map((menu) => menu?.getAttribute('aria-haspopup'))).toEqual([
+      'dialog',
+      'dialog',
+      'dialog',
+    ]);
+  });
+
+  it('says where the sounds of a removed stage go, and "Garder" goes back to the edits', async () => {
+    words.update(([word]) => [
+      {
+        ...word,
+        recordings: [...word.recordings, aRecording({ id: 9, wordId: 1, pronunciationId: 11 })],
+      },
+    ]);
+    const fixture = render();
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.word-detail__card')?.click();
+    await fixture.whenStable();
+    const field = element.querySelector<HTMLInputElement>('dialog[open] input[type="text"]');
+    if (field) {
+      field.value = 'apine';
+      field.dispatchEvent(new Event('input'));
+    }
+    await fixture.whenStable();
+    clickButton(element, 'Retirer cette prononciation');
+    await fixture.whenStable();
+    const confirm = element.querySelector('dialog[open]') as HTMLElement;
+    expect(confirm.textContent).toContain('Ses 2 sons seront rangés avec «\u00A0pin\u00A0».');
+
+    clickButton(confirm, 'Garder');
+    await fixture.whenStable();
+    const stage = element.querySelector('dialog[open]') as HTMLElement;
+    expect(stage.getAttribute('aria-label')).toBe('Modifier la prononciation');
+    expect(stage.querySelector<HTMLInputElement>('input[type="text"]')?.value).toBe('apine');
+  });
+
+  it('says nothing of sounds when the removed stage has none', async () => {
+    words.update(([word]) => [{ ...word, recordings: [] }]);
+    const fixture = render();
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('.word-detail__card')?.click();
+    await fixture.whenStable();
+    clickButton(element, 'Retirer cette prononciation');
+    await fixture.whenStable();
+
+    expect(element.querySelector('dialog[open]')?.textContent).not.toContain('rangé');
   });
 
   it('says how to record the first sound of a word without any', () => {
@@ -179,8 +236,13 @@ describe('WordDetailPage', () => {
     element.querySelector<HTMLButtonElement>('[aria-label^="Actions sur"]')?.click();
     await fixture.whenStable();
     const menu = element.querySelector('dialog[open]') as HTMLElement;
-    expect(menu.textContent).toContain('Renommer la phrase');
+    expect(menu.textContent).toContain('Modifier la phrase');
     expect(menu.textContent).toContain('Supprimer la phrase');
+    clickButton(menu, 'Modifier la phrase');
+    await fixture.whenStable();
+    expect(element.querySelector('dialog[open]')?.getAttribute('aria-label')).toBe(
+      'Modifier la phrase',
+    );
 
     const missing = render('99', 'sentence').nativeElement as HTMLElement;
     expect(missing.textContent).toContain("Cette phrase n'est pas dans le carnet");
@@ -200,7 +262,7 @@ describe('WordDetailPage', () => {
     clickButton(actions, 'Ranger avec une autre prononciation');
     await fixture.whenStable();
     const sheet = element.querySelector('dialog[open]') as HTMLElement;
-    expect(sheet.textContent).toContain('Avec quelle prononciation le ranger ?');
+    expect(sheet.textContent).toContain('Avec quelle prononciation le ranger\u00A0?');
     expect(sheet.querySelectorAll('.word-detail__row')).toHaveLength(1);
     clickButton(sheet, 'pin');
     await fixture.whenStable();
@@ -237,7 +299,7 @@ describe('WordDetailPage', () => {
     const element = fixture.nativeElement as HTMLElement;
     const play = vi.spyOn(TestBed.inject(Celebration), 'play');
 
-    clickButton(element, 'Il le dit mieux !');
+    clickButton(element, 'Il le dit mieux\u00A0!');
     await fixture.whenStable();
     expect(element.querySelector('dialog[open]')?.textContent).toContain('Nouvelle prononciation');
 
@@ -263,7 +325,7 @@ describe('WordDetailPage', () => {
    */
   async function saveNewStage(fixture: ComponentFixture<WordDetailPage>, spoken: string) {
     const element = fixture.nativeElement as HTMLElement;
-    clickButton(element, 'Il le dit mieux !');
+    clickButton(element, 'Il le dit mieux\u00A0!');
     await fixture.whenStable();
     const field = element.querySelector<HTMLInputElement>('dialog[open] input[type="text"]');
     if (field) {

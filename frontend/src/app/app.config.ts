@@ -4,11 +4,11 @@ import {
   withInterceptors,
   withXsrfConfiguration,
 } from '@angular/common/http';
-import { ApplicationConfig, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
-import { provideServiceWorker } from '@angular/service-worker';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
 
 import { unauthorizedInterceptor } from '@core/auth/unauthorized.interceptor';
+import { serverStatusInterceptor } from '@core/http/server-status.interceptor';
 
 import { routes } from './app.routes';
 
@@ -18,17 +18,17 @@ import { routes } from './app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withComponentInputBinding()),
+    // A new screen opens at its top; going back returns to where the list was left.
+    provideRouter(
+      routes,
+      withComponentInputBinding(),
+      withInMemoryScrolling({ scrollPositionRestoration: 'enabled' }),
+    ),
     // Same origin as the API: echoes Spring's `XSRF-TOKEN` cookie on every write (docs/spec.md).
     provideHttpClient(
       withFetch(),
       withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),
-      withInterceptors([unauthorizedInterceptor]),
+      withInterceptors([unauthorizedInterceptor, serverStatusInterceptor]),
     ),
-    // App assets only; API responses are never cached by the worker (ngsw-config.json).
-    provideServiceWorker('ngsw-worker.js', {
-      enabled: !isDevMode(),
-      registrationStrategy: 'registerWhenStable:30000',
-    }),
   ],
 };

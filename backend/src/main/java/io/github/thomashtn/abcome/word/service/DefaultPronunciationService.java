@@ -83,10 +83,11 @@ public class DefaultPronunciationService implements PronunciationService {
     @Override
     @Transactional
     public PronunciationResponse add(Long wordId, PronunciationRequest request) {
-        Word word = wordRepository.findById(wordId)
+        // Locked so a word deleted meanwhile answers 404, not a foreign key violation.
+        Word word = wordRepository.findForUpdateById(wordId)
             .orElseThrow(() -> new ResourceNotFoundException("Word not found."));
         WordLimits.checkSpoken(word.getKind(), request.spoken());
-        FamilyDates.assertNotInFuture(request.date(), clock);
+        FamilyDates.assertPlausible(request.date(), clock);
 
         Pronunciation saved = pronunciationRepository.save(new Pronunciation(
             wordId, request.spoken(), request.status(), request.date(), clock.instant()
@@ -107,7 +108,7 @@ public class DefaultPronunciationService implements PronunciationService {
         Pronunciation pronunciation = findEntity(id);
         wordRepository.findById(pronunciation.getWordId())
             .ifPresent(word -> WordLimits.checkSpoken(word.getKind(), request.spoken()));
-        FamilyDates.assertNotInFuture(request.date(), clock);
+        FamilyDates.assertPlausible(request.date(), clock);
 
         pronunciation.update(request.spoken(), request.status(), request.date());
         return findById(id);
@@ -117,7 +118,8 @@ public class DefaultPronunciationService implements PronunciationService {
      * Locks the word, refuses to delete its only stage, hands its sounds to a neighbour, then deletes.
      *
      * <p>The word lock makes concurrent deletions of its stages count one after the other, so two of
-     * them can never remove the last two stages together, and keeps a new sound off the stage.</p>
+     * them can never remove the last two stages together, and keeps a new sound off the stage. The
+     * stages are read once the lock is held, so a stage deleted meanwhile answers 404.</p>
      *
      * @param id stage identifier
      */
@@ -125,8 +127,12 @@ public class DefaultPronunciationService implements PronunciationService {
     @Transactional
     public void delete(Long id) {
         Pronunciation pronunciation = findEntity(id);
-        wordRepository.findForUpdateById(pronunciation.getWordId());
+        wordRepository.findForUpdateById(pronunciation.getWordId())
+            .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_MESSAGE));
         List<PronunciationResponse> stages = pronunciationRepository.findResponsesByWordId(pronunciation.getWordId());
+        if (stages.stream().noneMatch(stage -> stage.id().equals(id))) {
+            throw new ResourceNotFoundException(NOT_FOUND_MESSAGE);
+        }
         if (stages.size() <= 1) {
             throw new ConflictException(
                 LAST_PRONUNCIATION, "A word keeps at least one pronunciation: delete the word instead."

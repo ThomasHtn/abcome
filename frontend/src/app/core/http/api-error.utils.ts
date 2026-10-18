@@ -49,3 +49,11 @@ export function retryAfterSeconds(error: unknown): number | null {
 export function isNotFound(error: unknown): boolean {
   return error instanceof HttpErrorResponse && error.status === 404;
 }
+
+/**
+ * Whether a call found the server unreachable or failing (no network, proxy or server error) rather
+ * than an answer about the request itself.
+ */
+export function isServerFailure(error: unknown): boolean {
+  return error instanceof HttpErrorResponse && (error.status === 0 || error.status >= 500);
+}

@@ -23,7 +23,7 @@ export function loginErrorMessage(error: unknown): string {
 
 /**
  * Refusal message: a few seconds for a burst of sign-ins, else the lockout in whole minutes,
- * rounded up so the family never retries too early.
+ * rounded up so the family never retries too early; the lockout holds for every device of the home.
  */
 export function tooManyAttemptsMessage(seconds: number | null): string {
   if (seconds === null) {
@@ -33,7 +33,7 @@ export function tooManyAttemptsMessage(seconds: number | null): string {
     return LOGIN_MESSAGES.busy;
   }
   const minutes = Math.max(1, Math.ceil(seconds / 60));
-  return `Trop d'essais. Réessaie dans ${minutes} minute${minutes > 1 ? 's' : ''}.`;
+  return `Trop d'essais\u00A0: le carnet est bloqué sur ce réseau, pour toute la maison. Réessaie dans ${minutes} minute${minutes > 1 ? 's' : ''}.`;
 }
 
 /**

@@ -1,5 +1,26 @@
+<!-- Outage band above every screen, until a call succeeds again or the network comes back. Kept in
+     the page while hidden, so its live region announces the message and its icon is loaded online. -->
+<div class="app__outage flex items-center gap-2.5" role="alert" [hidden]="!serverStatus.problem()">
+  <svg class="app__outage-icon" app-icon name="triangle-alert" [size]="18"></svg>
+  @switch (serverStatus.problem()) {
+    @case ('offline') {
+      <p class="app__outage-text min-w-0 flex-1">
+        Pas de connexion internet. Le carnet se remettra à jour dès son retour.
+      </p>
+    }
+    @case ('server') {
+      <p class="app__outage-text min-w-0 flex-1">
+        Le carnet ne répond pas pour l'instant. Réessaie dans quelques minutes.
+      </p>
+      <button app-button type="button" variant="soft" size="sm" (click)="reload()">
+        Réessayer
+      </button>
+    }
+  }
+</div>
+
 <!-- Current screen, chosen by app.routes.ts, in the centred mobile column. -->
-<main class="app__screen">
+<main class="app__screen" [class.app__screen--below-outage]="serverStatus.problem()">
   <router-outlet />
 </main>
 

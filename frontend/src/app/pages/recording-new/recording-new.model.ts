@@ -8,9 +8,9 @@ export type RecordingPhase = 'ready' | 'recording' | 'review' | 'pick' | 'stage'
 
 /**
  * Why the microphone could not record: no recorder in this browser, access refused, no microphone,
- * or anything else.
+ * microphone taken by a call or another app, or anything else.
  */
-export type RecorderErrorKind = 'unsupported' | 'denied' | 'missing' | 'failed';
+export type RecorderErrorKind = 'unsupported' | 'denied' | 'missing' | 'busy' | 'failed';
 
 /**
  * A finished recording.

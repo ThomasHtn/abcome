@@ -1,4 +1,4 @@
-<app-bottom-sheet closable="false" [heading]="heading()" [(open)]="open">
+<app-bottom-sheet closable="false" alert [heading]="heading()" [(open)]="open">
   <!-- What the action implies. -->
   @if (message()) {
     <p class="confirm-sheet__message">{{ message() }}</p>

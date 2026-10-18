@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 import { Mascot } from '@shared/mascot/mascot';
-import { QuotePipe } from '@shared/quote/quote.pipe';
 
 import { HomeSummary } from '../home.model';
 
@@ -11,7 +10,7 @@ import { HomeSummary } from '../home.model';
 @Component({
   selector: 'app-home-summary',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [QuotePipe, Mascot],
+  imports: [Mascot],
   templateUrl: './home-summary.html',
   styleUrl: './home-summary.scss',
 })

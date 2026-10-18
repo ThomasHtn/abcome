@@ -10,9 +10,14 @@ import { QuotePipe } from '@shared/quote/quote.pipe';
 import { SearchField } from '@shared/search-field/search-field';
 import { StatusDot } from '@shared/status-dot/status-dot';
 
-import { WORD_PICKER_RECENT_COUNT } from './word-picker.constants';
+import { WORD_PICKER_RECENT_COUNT, WORD_TOO_LONG_MESSAGE } from './word-picker.constants';
 import { WordChoice, WordPickerEmptyState } from './word-picker.model';
-import { buildSuggestions, newWordOffer, suggestionName } from './word-picker.utils';
+import {
+  buildSuggestions,
+  isTooLongForWord,
+  newWordOffer,
+  suggestionName,
+} from './word-picker.utils';
 
 /**
  * Unique id per picker, linking its sections to their titles.
@@ -101,6 +106,16 @@ export class WordPicker {
   protected readonly offer = computed(() =>
     newWordOffer(this.entries(), this.words(), this.query()),
   );
+
+  /**
+   * Whether the typed text is too long to be offered as a new word.
+   */
+  protected readonly tooLong = computed(() => isTooLongForWord(this.query()));
+
+  /**
+   * Why a too long text is not offered as a new word.
+   */
+  protected readonly tooLongMessage = WORD_TOO_LONG_MESSAGE;
 
   /**
    * Notebook words shown before typing, with their current spoken form; empty in `frequent` mode.

@@ -37,6 +37,27 @@ describe('waveformLevels', () => {
   it('draws silence as flat bars', () => {
     expect(waveformLevels([0, 0, 0, 0], 2)).toEqual([0, 0]);
   });
+
+  it('draws a steady sound as full bars', () => {
+    expect(waveformLevels(Array<number>(20).fill(0.3), 10)).toEqual(Array<number>(10).fill(1));
+  });
+
+  it('caps one loud click instead of flattening the voice around it', () => {
+    const voice = Array.from({ length: 20 }, (_, index): number => (index % 2 === 0 ? 0.3 : -0.3));
+    voice[7] = 0.9;
+
+    expect(waveformLevels(voice, 20)).toEqual(Array<number>(20).fill(1));
+  });
+
+  it('keeps the background flat around a short word in a long sound', () => {
+    const samples = Array<number>(40).fill(0.01);
+    samples[20] = 0.8;
+
+    const levels = waveformLevels(samples, 40);
+
+    expect(levels[20]).toBe(1);
+    expect(levels[0]).toBeCloseTo(0.05);
+  });
 });
 
 describe('formatTenthsClock', () => {

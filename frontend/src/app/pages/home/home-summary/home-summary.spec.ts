@@ -11,7 +11,7 @@ const SUMMARY: HomeSummary = {
   countText: '3 mots',
   emptyHeadline: 'Le carnet attend son premier mot !',
   latestLabel: 'Dernier',
-  latest: 'tato',
+  latest: 'gâteau, dit «\u00A0tato\u00A0»',
   statusCounts: [
     { status: 'mastered', count: 1, label: '1 Bien dit' },
     { status: 'almost', count: 1, label: '1 Presque' },
@@ -34,7 +34,7 @@ describe('HomeSummaryCard', () => {
     const text = render(SUMMARY);
 
     expect(text).toContain('Côme a déjà dit 3 mots !');
-    expect(text).toContain('Dernier\u00A0: «\u00A0tato\u00A0»');
+    expect(text).toContain('Dernier\u00A0: gâteau, dit «\u00A0tato\u00A0»');
     expect(text).toContain('1 Bien dit');
   });
 

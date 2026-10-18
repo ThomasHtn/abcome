@@ -4,13 +4,15 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   input,
   signal,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
-import { formatLongDate, formatShortDateWithYear, todayIso } from '@core/date/date.utils';
+import { formatShortDateWithYear } from '@core/date/date.utils';
+import { Today } from '@core/date/today';
 import { Celebration } from '@core/feedback/celebration';
 import { ToastQueue } from '@core/feedback/toast-queue';
 import { apiErrorCode, isNotFound } from '@core/http/api-error.utils';
@@ -18,7 +20,13 @@ import { resourceValue } from '@core/http/resource.utils';
 import { quote } from '@core/text/text.utils';
 import { LABEL_MAX_LENGTHS } from '@core/words/word.constants';
 import { Pronunciation, Recording, Word, WordKind } from '@core/words/word.model';
-import { currentPronunciation, currentStatus, firstPronunciation } from '@core/words/word.utils';
+import {
+  currentPronunciation,
+  currentStatus,
+  entryPath,
+  firstPronunciation,
+  heirStage,
+} from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
 import { ActionBar } from '@shared/action-bar/action-bar';
 import { BottomSheet } from '@shared/bottom-sheet/bottom-sheet';
@@ -43,12 +51,13 @@ import { StatusDot } from '@shared/status-dot/status-dot';
 import { TextField } from '@shared/text-field/text-field';
 
 import { StageSounds } from './stage-sounds/stage-sounds';
-import { CONFIRM_SHEETS, KIND_COPY } from './word-detail.constants';
+import { CONFIRM_SHEETS, KIND_COPY, PARENT_SHEETS } from './word-detail.constants';
 import { MissingTarget, WordSheet } from './word-detail.model';
 import {
   gallerySounds,
   progressLabel,
   removeSoundText,
+  removeStageText,
   soundSheetCopy,
   stageDateLabel,
   timelineStages,
@@ -134,6 +143,13 @@ export class WordDetailPage {
   protected readonly loaded = computed(() => this.wordsApi.words.hasValue());
 
   /**
+   * Whether the notebook failed to load, so the page offers a retry instead of loading forever.
+   */
+  protected readonly failed = computed(
+    () => !this.wordsApi.words.hasValue() && !!this.wordsApi.words.error(),
+  );
+
+  /**
    * The word shown, `null` while loading or when the id is unknown.
    */
   protected readonly word = computed<Word | null>(() => {
@@ -160,21 +176,21 @@ export class WordDetailPage {
   /**
    * Today in Paris, to title the latest stage.
    */
-  protected readonly today = todayIso();
+  protected readonly today = inject(Today).iso;
 
   /**
    * Timeline, newest stage first, each stage with its sounds.
    */
   protected readonly stages = computed(() => {
     const word = this.word();
-    return word ? timelineStages(word, this.today) : [];
+    return word ? timelineStages(word, this.today()) : [];
   });
 
   /**
    * Every sound of the word, newest first, to name the one being deleted.
    */
   protected readonly sounds = computed(() =>
-    gallerySounds(this.word()?.recordings ?? [], this.today),
+    gallerySounds(this.word()?.recordings ?? [], this.today()),
   );
 
   /**
@@ -252,7 +268,7 @@ export class WordDetailPage {
    * Whether the stage form can be saved.
    */
   protected readonly draftReady = computed(() =>
-    isDraftReady(this.draft(), this.today, this.kind()),
+    isDraftReady(this.draft(), this.today(), this.kind()),
   );
 
   /**
@@ -266,7 +282,7 @@ export class WordDetailPage {
    * Example in the new stage's spoken field: what Côme said before.
    */
   protected readonly spokenPlaceholder = computed(() =>
-    this.editing() ? '' : `avant : ${this.current()?.spoken ?? ''}`,
+    this.editing() ? '' : `avant\u00A0: ${this.current()?.spoken ?? ''}`,
   );
 
   /**
@@ -286,14 +302,18 @@ export class WordDetailPage {
   );
 
   /**
-   * Consequence of the stage removal.
+   * Consequence of the stage removal, saying which stage keeps its sounds.
    */
   protected readonly removeStageMessage = computed(() => {
     const editing = this.editing();
-    return editing
-      ? `Cette prononciation du ${formatLongDate(editing.date)} sera effacée. ` +
-          'On ne pourra pas revenir en arrière.'
-      : '';
+    const word = this.word();
+    if (!editing || !word) {
+      return '';
+    }
+    const soundCount = word.recordings.filter(
+      (recording) => recording.pronunciationId === editing.id,
+    ).length;
+    return removeStageText(editing.date, soundCount, heirStage(word, editing.id)?.spoken);
   });
 
   /**
@@ -327,10 +347,24 @@ export class WordDetailPage {
   protected readonly shortDate = formatShortDateWithYear;
 
   /**
-   * Stops the jump timer when the page goes away.
+   * Stops the jump timer when the page goes away, and moves an entry opened under the other kind's
+   * path (`/mots/` for a sentence) to its own, so its wording and limits match.
    */
   constructor() {
     inject(DestroyRef).onDestroy(() => clearTimeout(this.jumpTimer));
+    effect(() => {
+      const word = this.word();
+      if (word && word.kind !== this.kind()) {
+        void this.router.navigateByUrl(entryPath(word), { replaceUrl: true });
+      }
+    });
+  }
+
+  /**
+   * Loads the notebook again after a failure.
+   */
+  protected retry(): void {
+    this.wordsApi.words.reload();
   }
 
   /**
@@ -355,12 +389,12 @@ export class WordDetailPage {
   }
 
   /**
-   * Follows a sheet closing itself (Escape, veil, close button); ignores the close of a sheet that
-   * another one just replaced.
+   * Follows a sheet closing itself (Escape, veil, "Garder"), back to the sheet it came from if any;
+   * ignores the close of a sheet that another one just replaced.
    */
   protected onSheetToggle(sheet: WordSheet, open: boolean): void {
     if (!open && this.sheet() === sheet) {
-      this.sheet.set(null);
+      this.sheet.set(PARENT_SHEETS[sheet] ?? null);
       this.sheetError.set(null);
     }
   }
@@ -370,7 +404,7 @@ export class WordDetailPage {
    */
   protected openNewStage(): void {
     this.editing.set(null);
-    this.draft.set(emptyDraft(this.current()?.status, this.today));
+    this.draft.set(emptyDraft(this.current()?.status, this.today()));
     this.open('stage');
   }
 
@@ -546,7 +580,16 @@ export class WordDetailPage {
     }
     await this.run(
       async () => {
-        await this.wordsApi.moveRecording(moving.id, target.id);
+        try {
+          await this.wordsApi.moveRecording(moving.id, target.id);
+        } catch (error) {
+          // A target stage deleted meanwhile is a 400, not a 404: refresh rather than retry forever.
+          if (apiErrorCode(error) === 'INVALID_REQUEST') {
+            this.handleMissing('stage');
+            return;
+          }
+          throw error;
+        }
         this.movingSound.set(null);
         this.sheet.set(null);
         this.toasts.show(`Son rangé avec ${quote(target.spoken)}`);

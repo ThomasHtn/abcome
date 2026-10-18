@@ -152,7 +152,7 @@ public class DefaultWordService implements WordService {
         String label = request.label();
         WordLimits.checkLabel(kind, label);
         WordLimits.checkSpoken(kind, firstStage.spoken());
-        FamilyDates.assertNotInFuture(firstStage.date(), clock);
+        FamilyDates.assertPlausible(firstStage.date(), clock);
 
         String normalizedLabel = Labels.normalize(label);
         if (kind == WordKind.WORD && wordRepository.existsByKindAndNormalizedLabel(kind, normalizedLabel)) {

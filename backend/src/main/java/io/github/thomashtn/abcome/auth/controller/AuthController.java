@@ -1,5 +1,6 @@
 package io.github.thomashtn.abcome.auth.controller;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.thomashtn.abcome.auth.dto.LoginRequest;
 import io.github.thomashtn.abcome.auth.service.AuthService;
 import io.github.thomashtn.abcome.shared.exception.ApiErrorResponse;
@@ -11,9 +12,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.session.web.http.CookieSerializer;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,18 +37,34 @@ public class AuthController {
     private final AuthService authService;
 
     /**
+     * Writes the session cookie, to renew its lifetime on each check.
+     */
+    private final CookieSerializer cookieSerializer;
+
+    /**
      * Creates the controller.
      *
-     * @param authService session service
+     * @param authService      session service
+     * @param cookieSerializer session cookie writer
      */
-    public AuthController(AuthService authService) {
+    @SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "CookieSerializer is the shared Spring Session bean, configured once at startup."
+    )
+    public AuthController(AuthService authService, CookieSerializer cookieSerializer) {
         this.authService = authService;
+        this.cookieSerializer = cookieSerializer;
     }
 
     /**
      * Tells the frontend whether it is signed in, and hands it the CSRF cookie for its next write.
      *
+     * <p>Spring Session writes its cookie only when the id changes, so its {@code Max-Age} would run
+     * from the login; rewriting it here, at each app start, makes the 30 days an idle timeout.</p>
+     *
      * @param csrfToken CSRF token of the request; reading it writes the {@code XSRF-TOKEN} cookie
+     * @param request   current request, holding the session
+     * @param response  response receiving the renewed session cookie
      * @return 204 inside a session
      */
     @GetMapping("/session")
@@ -53,11 +72,17 @@ public class AuthController {
     @ApiResponse(responseCode = "204", description = "Signed in.")
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: no valid session.",
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    public ResponseEntity<Void> session(CsrfToken csrfToken) {
+    public ResponseEntity<Void> session(
+        CsrfToken csrfToken, HttpServletRequest request, HttpServletResponse response
+    ) {
         // The token is deferred: without this read, the cookie would never reach a fresh visitor.
         csrfToken.getToken();
         if (!authService.isSignedIn()) {
             throw new UnauthorizedException("UNAUTHENTICATED", "Sign in to open the notebook.");
+        }
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            cookieSerializer.writeCookieValue(new CookieSerializer.CookieValue(request, response, session.getId()));
         }
         return ResponseEntity.noContent().build();
     }

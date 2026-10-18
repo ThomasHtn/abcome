@@ -2,6 +2,13 @@
 
 @use 'tools' as *;
 
+/* The screen fills the app column, so the goodbye and not-found screens centre in it. */
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
 /* Header row: back on the left, "⋯" on the right, clear of the notch. */
 .word-detail__header {
   padding: calc(1.75rem + var(--layout-safe-top)) var(--layout-gutter) 0.5rem;
@@ -305,6 +312,12 @@
   font-weight: 600;
   overflow-wrap: anywhere;
   hyphens: auto;
+}
+
+/* Why the notebook did not open. */
+.word-detail__failed {
+  color: var(--color-text-muted);
+  font-weight: 700;
 }
 
 /* Quiet loading line. */

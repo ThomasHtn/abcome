@@ -76,7 +76,7 @@ describe('WordNewPage', () => {
 
   it('asks for the word and offers the frequent words not said yet', () => {
     const element = render().nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Quel mot Côme a-t-il dit ?');
+    expect(element.textContent).toContain('Quel mot Côme a-t-il dit\u00A0?');
     const shortcuts = [...element.querySelectorAll('.word-picker__shortcut')];
     expect(shortcuts.map((button) => button.textContent?.trim())).toEqual(['papa']);
   });
@@ -102,6 +102,9 @@ describe('WordNewPage', () => {
     const save = element.querySelector<HTMLButtonElement>('app-action-bar button');
     expect(save?.disabled).toBe(true);
     expect(save?.textContent).toContain("Note d'abord comment il le dit");
+    expect(element.querySelector('app-mascot-bubble')?.textContent).toContain(
+      "Super\u00A0! Et comment Côme l'a dit\u00A0?",
+    );
 
     typeSpoken(element, ' papa ');
     await fixture.whenStable();
@@ -118,6 +121,25 @@ describe('WordNewPage', () => {
     expect(navigate).toHaveBeenCalledWith(['/mots', 2]);
   });
 
+  it('asks for the day once the spoken form is typed but the day is cleared', async () => {
+    const fixture = render();
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector<HTMLButtonElement>('.word-picker__shortcut')?.click();
+    await fixture.whenStable();
+
+    typeSpoken(element, 'papa');
+    const day = element.querySelector<HTMLInputElement>('input[type="date"]');
+    if (day) {
+      day.value = '';
+      day.dispatchEvent(new Event('change'));
+    }
+    await fixture.whenStable();
+
+    const save = element.querySelector<HTMLButtonElement>('app-action-bar button');
+    expect(save?.disabled).toBe(true);
+    expect(save?.textContent).toContain("Choisis d'abord le jour");
+  });
+
   it('sends a word Côme already says to its page instead of a duplicate', async () => {
     const fixture = render('lap');
     const element = fixture.nativeElement as HTMLElement;
@@ -125,6 +147,9 @@ describe('WordNewPage', () => {
     await fixture.whenStable();
 
     expect(element.textContent).toContain('Côme dit déjà «\u00A0lapin\u00A0»\u00A0!');
+    expect(element.querySelector('app-mascot-bubble')?.textContent).toContain(
+      'Côme le dit déjà\u00A0!',
+    );
     expect(element.querySelector('a[href="/mots/1"]')?.textContent).toContain('Voir sa page');
     expect(element.querySelector('app-action-bar')).toBeNull();
   });

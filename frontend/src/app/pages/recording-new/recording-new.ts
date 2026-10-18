@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { todayIso } from '@core/date/date.utils';
 import { DictionaryEntry } from '@core/dictionary/dictionary.model';
 import { DictionaryApi } from '@core/dictionary/dictionary-api';
 import { Celebration } from '@core/feedback/celebration';
@@ -27,7 +28,7 @@ import {
 import { quote } from '@core/text/text.utils';
 import { CATEGORY_LABELS } from '@core/words/word.constants';
 import { Pronunciation, PronunciationRequest, Word } from '@core/words/word.model';
-import { currentStatus } from '@core/words/word.utils';
+import { currentStatus, entryPath } from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
 import { ActionBar } from '@shared/action-bar/action-bar';
 import { AudioButton } from '@shared/audio-button/audio-button';
@@ -210,6 +211,13 @@ export class RecordingNewPage {
   });
 
   /**
+   * Whether the recorder stopped itself at the 15 s cap: it only reaches the cap when it did.
+   */
+  protected readonly capped = computed(
+    () => (this.recorded()?.durationMs ?? 0) >= RECORDING_MAX_DURATION_MS,
+  );
+
+  /**
    * Whether the kept part is shorter than the recording, which offers to undo the cut.
    */
   protected readonly trimmed = computed(() => {
@@ -298,7 +306,7 @@ export class RecordingNewPage {
    * Lapinou's instruction, or the microphone failure.
    */
   protected readonly instruction = computed(
-    () => this.error() ?? recordingInstruction(this.phase(), this.canTrim()),
+    () => this.error() ?? recordingInstruction(this.phase(), this.capped()),
   );
 
   /**
@@ -354,7 +362,12 @@ export class RecordingNewPage {
   /**
    * Whether the new word's first pronunciation, or the new stage, can be saved.
    */
-  protected readonly ready = computed(() => isDraftReady(this.draft()));
+  protected readonly ready = computed(() => isDraftReady(this.draft(), todayIso(), this.kind()));
+
+  /**
+   * Kind of the chosen entry, so a sentence's stage gets a sentence's length limit.
+   */
+  protected readonly kind = computed(() => this.targetWord()?.kind ?? 'word');
 
   /**
    * Text of the save button.
@@ -366,7 +379,11 @@ export class RecordingNewPage {
    */
   protected readonly done = computed(() => {
     const outcome = this.outcome();
-    return outcome ? { ...doneCopy(outcome), wordId: outcome.wordId } : null;
+    if (!outcome) {
+      return null;
+    }
+    const word = this.words().find((entry) => entry.id === outcome.wordId);
+    return { ...doneCopy(outcome), path: entryPath(word ?? { id: outcome.wordId, kind: 'word' }) };
   });
 
   /**
@@ -534,11 +551,11 @@ export class RecordingNewPage {
     const request = toPronunciationRequest(this.draft());
     this.saving.set(true);
     try {
-      this.pending ??= word
+      const pending = (this.pending ??= word
         ? { wordId: word.id, stageId: (await this.wordsApi.addPronunciation(word.id, request)).id }
-        : await this.createWord(target.label, request);
-      await this.wordsApi.addRecording(this.pending.stageId, clip.blob, clip.durationMs);
-      this.finish(word ? 'stage' : 'new', target.label, request.spoken, this.pending.wordId);
+        : await this.createWord(target.label, request));
+      await this.wordsApi.addRecording(pending.stageId, clip.blob, clip.durationMs);
+      this.finish(word ? 'stage' : 'new', target.label, request.spoken, pending.wordId);
       this.pending = null;
     } catch (error) {
       this.reportFailure(error, target.label);

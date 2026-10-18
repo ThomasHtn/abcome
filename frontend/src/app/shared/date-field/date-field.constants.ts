@@ -9,6 +9,11 @@ export const DATE_MISSING_MESSAGE = 'Choisis une date.';
 export const DATE_IN_FUTURE_MESSAGE = 'La date ne peut pas être dans le futur.';
 
 /**
+ * Message under a day before the notebook's first day, most likely a mistyped year.
+ */
+export const DATE_TOO_OLD_MESSAGE = "Cette date est bien ancienne\u00A0: vérifie l'année.";
+
+/**
  * Words for the two days families pick most, shown big instead of the date.
  */
 export const RELATIVE_DAYS = { today: "Aujourd'hui", yesterday: 'Hier' } as const;

@@ -67,14 +67,18 @@ export class AuthSession {
   }
 
   /**
-   * Closes the session; the local state is cleared even when the server cannot be reached.
+   * Closes the session; rejects and stays signed in when the server cannot close it (offline, down),
+   * since the session would still open the notebook. A 401 means it was already closed.
    */
   public async signOut(): Promise<void> {
     try {
       await firstValueFrom(this.http.post<void>(API_ENDPOINTS.logout, null));
-    } finally {
-      this.status.set('signed-out');
+    } catch (error) {
+      if (!(error instanceof HttpErrorResponse && error.status === HttpStatusCode.Unauthorized)) {
+        throw error;
+      }
     }
+    this.status.set('signed-out');
   }
 
   /**

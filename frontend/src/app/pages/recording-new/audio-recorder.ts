@@ -56,10 +56,23 @@ export class AudioRecorder {
   public readonly levels = signal<number[]>([]);
 
   /**
-   * Releases the microphone when the screen goes away, even mid-recording.
+   * Set once the screen is gone, so a microphone granted afterwards is handed straight back.
+   */
+  private disposed = false;
+
+  /**
+   * Releases the microphone when the screen goes away, even mid-recording or before it is granted;
+   * a clip still being finalised is dropped.
    */
   constructor() {
-    inject(DestroyRef).onDestroy(() => this.release());
+    inject(DestroyRef).onDestroy(() => {
+      this.disposed = true;
+      if (this.recorder) {
+        this.recorder.ondataavailable = null;
+        this.recorder.onstop = null;
+      }
+      this.release();
+    });
   }
 
   /**
@@ -74,6 +87,10 @@ export class AudioRecorder {
       });
     } catch (error) {
       throw new RecorderError(microphoneErrorKind(error));
+    }
+    if (this.disposed) {
+      this.release();
+      throw new RecorderError('failed');
     }
     return new Promise<RecordedClip>((resolve, reject) => this.start(mimeType, resolve, reject));
   }

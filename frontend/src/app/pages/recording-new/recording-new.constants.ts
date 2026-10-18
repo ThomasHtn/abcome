@@ -25,8 +25,11 @@ export const LEVEL_GAIN = 3;
  */
 export const RECORDER_ERROR_MESSAGES: Readonly<Record<RecorderErrorKind, string>> = {
   unsupported: 'Ce navigateur ne sait pas enregistrer de son. Essaie avec Safari ou Chrome à jour.',
-  denied: 'Le micro est bloqué. Autorise-le dans les réglages du navigateur, puis réessaie.',
+  denied:
+    'Le micro est bloqué. Sur iPhone\u00A0: ouvre Réglages, cherche «\u00A0Safari\u00A0», puis Micro. ' +
+    'Ailleurs\u00A0: les réglages du site, dans le navigateur.',
   missing: 'Aucun micro trouvé sur cet appareil.',
+  busy: 'Le micro est déjà utilisé (un appel, une autre appli). Libère-le puis réessaie.',
   failed: "L'enregistrement n'a pas marché. Réessaie.",
 };
 

@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 
-import { apiErrorCode, isNotFound, retryAfterSeconds } from './api-error.utils';
+import { apiErrorCode, isNotFound, isServerFailure, retryAfterSeconds } from './api-error.utils';
 
 describe('apiErrorCode', () => {
   it('reads a contract code from the problem body', () => {
@@ -38,5 +38,15 @@ describe('isNotFound', () => {
   it('only matches a 404', () => {
     expect(isNotFound(new HttpErrorResponse({ status: 404 }))).toBe(true);
     expect(isNotFound(new HttpErrorResponse({ status: 500 }))).toBe(false);
+  });
+});
+
+describe('isServerFailure', () => {
+  it('matches no answer and server or proxy errors, not an answer about the request', () => {
+    expect(isServerFailure(new HttpErrorResponse({ status: 0 }))).toBe(true);
+    expect(isServerFailure(new HttpErrorResponse({ status: 500 }))).toBe(true);
+    expect(isServerFailure(new HttpErrorResponse({ status: 502 }))).toBe(true);
+    expect(isServerFailure(new HttpErrorResponse({ status: 404 }))).toBe(false);
+    expect(isServerFailure('nope')).toBe(false);
   });
 });

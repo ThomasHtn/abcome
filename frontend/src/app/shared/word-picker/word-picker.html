@@ -38,6 +38,9 @@
         <svg app-icon name="circle-plus" [size]="22" [strokeWidth]="2.2"></svg>
         Pas dans le dictionnaire&nbsp;: ajouter {{ label | quote }} quand même
       </button>
+    } @else if (tooLong()) {
+      <!-- Too long to be a word: say why nothing is offered. -->
+      <p class="word-picker__too-long" role="status">{{ tooLongMessage }}</p>
     }
   } @else {
     <!-- Before typing: the notebook's recent words... -->

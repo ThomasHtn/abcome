@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, model } from '@angular/core';
 
+import { FIRST_NOTEBOOK_DAY } from '@core/date/date.constants';
 import { todayIso } from '@core/date/date.utils';
+import { Today } from '@core/date/today';
 import { Icon } from '@shared/icon/icon';
 
 import { dateDisplay, dateFieldError } from './date-field.utils';
@@ -37,12 +39,17 @@ export class DateField {
   /**
    * Latest day allowed: today, since nothing is said in the future (the API refuses it too).
    */
-  protected readonly max = todayIso();
+  protected readonly max = inject(Today).iso;
+
+  /**
+   * Earliest day allowed, as the API: the picker never offers a mistyped year.
+   */
+  protected readonly min = FIRST_NOTEBOOK_DAY;
 
   /**
    * Why the day cannot be saved, shown under the field; null when it can.
    */
-  public readonly error = computed(() => dateFieldError(this.value(), this.max));
+  public readonly error = computed(() => dateFieldError(this.value(), this.max()));
 
   /**
    * Whether the day cannot be saved, for a parent holding the field by reference.
@@ -52,7 +59,7 @@ export class DateField {
   /**
    * The day as shown in the box.
    */
-  protected readonly display = computed(() => dateDisplay(this.value(), this.max));
+  protected readonly display = computed(() => dateDisplay(this.value(), this.max()));
 
   /**
    * Id of the input.

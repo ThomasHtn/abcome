@@ -1,7 +1,9 @@
+import { DOCUMENT } from '@angular/common';
 import { HttpClient, httpResource } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 
-import { firstValueFrom } from 'rxjs';
+import { distinctUntilChanged, filter, firstValueFrom, map, skip } from 'rxjs';
 
 import { AuthSession } from '@core/auth/auth-session';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
@@ -26,7 +28,8 @@ import {
 } from './word.utils';
 
 /**
- * Words, their stages and sounds: one shared list for every screen, patched locally after each change.
+ * Words, their stages and sounds: one shared list for every screen, patched locally after each change
+ * and fetched again on every screen shown, so what another phone added appears like on a web page.
  * The list is small (hundreds of words), so it is loaded whole and a word page reads it from here.
  */
 @Service()
@@ -53,6 +56,28 @@ export class WordsApi {
    * Applies a change to the loaded list instead of fetching it again (see `resourcePatcher`).
    */
   private readonly patch = resourcePatcher(this.words);
+
+  /**
+   * Fetches the list again on each new screen (not the first, which loads it, nor a tab or search
+   * change, which only touch the query) and when the app comes back to the screen; a load already
+   * running is kept, and the shown list stays until the fresh one arrives.
+   */
+  constructor() {
+    const document = inject(DOCUMENT);
+    inject(Router)
+      .events.pipe(
+        filter((event) => event instanceof NavigationEnd),
+        map((event) => event.urlAfterRedirects.split(/[?#]/u)[0]),
+        distinctUntilChanged(),
+        skip(1),
+      )
+      .subscribe(() => this.words.reload());
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        this.words.reload();
+      }
+    });
+  }
 
   /**
    * Adds a word with its first stage; rejects with `WORD_ALREADY_EXISTS` on a duplicate.

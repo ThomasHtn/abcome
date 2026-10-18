@@ -21,7 +21,7 @@
   <!-- Tabs or search, then the status filters; one row on wider screens when they fit. -->
   <div class="home__controls flex flex-col md:flex-row md:flex-wrap md:items-center">
     @if (searchShown()) {
-      <!-- Open search in place of the tabs, focused only when opened by hand; the cross or Escape closes and clears it. -->
+      <!-- Open search in place of the tabs, focused only when opened by hand; the cross or Escape closes and clears it (Escape's native clearing would reopen it). -->
       <div class="pop flex items-center gap-2 md:w-80 md:flex-none">
         <app-search-field
           class="min-w-0 flex-1"
@@ -30,7 +30,7 @@
           [label]="searchLabel()"
           [value]="query()"
           (valueChange)="search($event)"
-          (keydown.escape)="closeSearch()"
+          (keydown.escape)="$event.preventDefault(); closeSearch()"
         />
         <button
           app-icon-button
@@ -102,8 +102,9 @@
       class="md:w-96 md:flex-none"
       label="Filtrer par couleur"
       fill
-      [options]="filterOptions"
-      [(value)]="filter"
+      [options]="filterOptions()"
+      [value]="filter()"
+      (valueChange)="selectFilter($event)"
     />
   </div>
 
@@ -112,7 +113,10 @@
     id="home-panel"
     class="home__panel home__panel--filtered flex flex-col"
     role="tabpanel"
-    [attr.aria-labelledby]="tab() === 'words' ? 'home-tab-words' : 'home-tab-sentences'"
+    [attr.aria-labelledby]="
+      searchShown() ? null : tab() === 'words' ? 'home-tab-words' : 'home-tab-sentences'
+    "
+    [attr.aria-label]="searchShown() ? (tab() === 'words' ? 'Mots' : 'Phrases') : null"
   >
     @switch (openListState()) {
       @case ('loading') {
@@ -121,7 +125,7 @@
       @case ('error') {
         <!-- The list could not be loaded: say so and offer a retry. -->
         <div class="home__message flex flex-col items-center gap-3" role="alert">
-          <p class="home__message-text">Le carnet n'a pas pu s'ouvrir. Vérifie la connexion.</p>
+          <p class="home__message-text">Le carnet n'a pas pu s'ouvrir.</p>
           <button
             app-button
             type="button"

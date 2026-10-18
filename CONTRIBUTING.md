@@ -24,7 +24,7 @@ Requirements: Java 25, Node 22, PostgreSQL 16+. Docker only for the backend test
 | Path | Role |
 |---|---|
 | `backend/` | Spring Boot REST API |
-| `frontend/` | Angular PWA served by nginx |
+| `frontend/` | Angular app served by nginx |
 | `docs/` | Spec and word dictionary |
 | `scripts/` | Versioned git hooks |
 | `docker-compose.prod.yml` | Production stack behind Traefik |

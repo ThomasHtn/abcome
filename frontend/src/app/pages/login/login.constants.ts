@@ -8,9 +8,10 @@ export const LOGIN_MESSAGES = {
   invalid: "Ce n'est pas le bon mot de passe, réessaie.",
 
   /**
-   * Locked out without a usable `Retry-After`.
+   * Locked out without a usable `Retry-After`; the lockout is per address, so the whole home shares it.
    */
-  tooManyAttempts: "Trop d'essais. Réessaie dans quelques minutes.",
+  tooManyAttempts:
+    "Trop d'essais\u00A0: le carnet est bloqué sur ce réseau, pour toute la maison. Réessaie dans quelques minutes.",
 
   /**
    * Too many sign-ins checked at the same moment: a matter of seconds, not a lockout.
@@ -21,6 +22,11 @@ export const LOGIN_MESSAGES = {
    * Network failure or unexpected answer.
    */
   unreachable: 'Impossible de joindre le carnet. Vérifie la connexion et réessaie.',
+
+  /**
+   * Shown before anything is tried: who holds the shared password.
+   */
+  hint: "C'est le mot de passe de la famille\u00A0: demande-le aux parents de Côme.",
 
   /**
    * Shown while Lapinou jumps, just before the home screen.

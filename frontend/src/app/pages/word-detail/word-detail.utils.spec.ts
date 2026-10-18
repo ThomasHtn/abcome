@@ -4,6 +4,7 @@ import {
   gallerySounds,
   progressLabel,
   removeSoundText,
+  removeStageText,
   soundSheetCopy,
   stageDateLabel,
   stageTitle,
@@ -34,7 +35,7 @@ describe('word-detail utils', () => {
     const stages = timelineStages(lapin, '2026-10-17');
     expect(stages.map((stage) => stage.caption)).toEqual([
       "Aujourd'hui · 17 oct. 2026",
-      '12 oct. 2026',
+      'Étape 2 · 12 oct. 2026',
       'Première fois · 16 sept. 2026',
     ]);
     expect(stages.map((stage) => [stage.latest, stage.oldest])).toEqual([
@@ -65,13 +66,26 @@ describe('word-detail utils', () => {
 
   it('names each stage button with what, how well, when, and the action', () => {
     expect(timelineStages(lapin, '2026-10-17')[2].ariaLabel).toBe(
-      'Première fois : pin, En route, le 16 septembre 2026. Modifier',
+      'Première fois\u00A0: pin, En route, le 16 septembre 2026. Modifier',
     );
   });
 
   it('words the main button after the current status', () => {
-    expect(progressLabel('almost')).toBe('Il le dit mieux !');
+    expect(progressLabel('almost')).toBe('Il le dit mieux\u00A0!');
     expect(progressLabel('mastered')).toBe('Ajouter une prononciation');
+  });
+
+  it('says where the sounds of a removed stage go, and nothing of sounds when it has none', () => {
+    expect(removeStageText('2026-10-12', 2, 'pin')).toBe(
+      'Cette prononciation du 12 octobre 2026 sera effacée. ' +
+        'Ses 2 sons seront rangés avec «\u00A0pin\u00A0». On ne pourra pas revenir en arrière.',
+    );
+    expect(removeStageText('2026-10-12', 1, 'pin')).toContain(
+      'Le son de cette prononciation sera rangé avec «\u00A0pin\u00A0».',
+    );
+    expect(removeStageText('2026-10-12', 0, 'pin')).toBe(
+      'Cette prononciation du 12 octobre 2026 sera effacée. On ne pourra pas revenir en arrière.',
+    );
   });
 
   it('labels the day of the first stage differently', () => {

@@ -50,6 +50,7 @@ describe('ConfirmSheet', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.textContent).toContain('Les mots de Côme restent enregistrés.');
+    expect(element.querySelector('dialog')?.getAttribute('role')).toBe('alertdialog');
     const [cancel, confirm] = element.querySelectorAll<HTMLButtonElement>('.grid button');
     expect(confirm.textContent?.trim()).toBe('Se déconnecter');
 

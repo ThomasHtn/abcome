@@ -1,5 +1,5 @@
 import { formatLongDate, formatShortDateWithYear } from '@core/date/date.utils';
-import { TRIM_SAMPLE_RATE } from '@core/recordings/recording.constants';
+import { RECORDING_MAX_DURATION_MS, TRIM_SAMPLE_RATE } from '@core/recordings/recording.constants';
 import { encodeWav, waveformLevels } from '@core/recordings/recording.utils';
 import { quote } from '@core/text/text.utils';
 import { STATUS_LABELS } from '@core/words/word.constants';
@@ -71,20 +71,23 @@ export function microphoneErrorKind(error: unknown): RecorderErrorKind {
   if (name === 'NotFoundError' || name === 'OverconstrainedError') {
     return 'missing';
   }
+  if (name === 'NotReadableError' || name === 'AbortError') {
+    return 'busy';
+  }
   return 'failed';
 }
 
 /**
- * Lapinou's instruction for each recording step.
+ * Lapinou's instruction for each recording step; `capped` explains a recording stopped by the 15 s cap.
  */
-export function recordingInstruction(phase: RecordingPhase, canTrim: boolean): string {
+export function recordingInstruction(phase: RecordingPhase, capped: boolean): string {
   switch (phase) {
     case 'recording':
       return "J'écoute… Touche le carré rouge quand il a fini.";
     case 'review':
-      return canTrim
-        ? 'Écoute le son. Glisse les poignées pour couper le début ou la fin.'
-        : 'Écoute le son. Pas réussi ? Recommence autant que tu veux.';
+      return capped
+        ? "15 secondes, c'est le maximum\u00A0: l'enregistrement s'est arrêté tout seul."
+        : 'Écoute le son. Pas réussi\u00A0? Recommence autant que tu veux.';
     default:
       return 'Prêt ? Touche le micro quand Côme commence à parler.';
   }
@@ -163,6 +166,7 @@ export function stageOptions(word: Word): StageOption[] {
 
 /**
  * Decodes a fresh recording to mono samples so it can be trimmed; `null` where the browser cannot.
+ * Cut at the API's longest sound: the recorder stops a few ms late, and a trim must stay accepted.
  */
 export async function decodeClip(blob: Blob): Promise<DecodedClip | null> {
   if (typeof OfflineAudioContext === 'undefined') {
@@ -171,10 +175,12 @@ export async function decodeClip(blob: Blob): Promise<DecodedClip | null> {
   try {
     const context = new OfflineAudioContext(1, 1, TRIM_SAMPLE_RATE);
     const audio = await context.decodeAudioData(await blob.arrayBuffer());
+    const maxSamples = Math.floor((RECORDING_MAX_DURATION_MS / 1000) * audio.sampleRate);
+    const samples = audio.getChannelData(0).subarray(0, maxSamples);
     return {
-      samples: audio.getChannelData(0),
+      samples,
       sampleRate: audio.sampleRate,
-      durationMs: audio.duration * 1000,
+      durationMs: (samples.length / audio.sampleRate) * 1000,
     };
   } catch {
     return null;

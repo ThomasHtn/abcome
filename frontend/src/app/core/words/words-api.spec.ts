@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 
 import { AuthSession } from '@core/auth/auth-session';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
@@ -15,7 +16,11 @@ describe('WordsApi', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: '**', children: [] }]),
+      ],
     });
     api = TestBed.inject(WordsApi);
     http = TestBed.inject(HttpTestingController);
@@ -44,6 +49,39 @@ describe('WordsApi', () => {
   it('loads the list once signed in', async () => {
     await loadList();
     expect(api.words.value()?.map((word) => word.label)).toEqual(['lapin']);
+  });
+
+  it('fetches the list again on every screen shown, keeping the old one meanwhile', async () => {
+    await TestBed.inject(Router).navigateByUrl('/');
+    await loadList();
+
+    await TestBed.inject(Router).navigateByUrl('/mots/1');
+    TestBed.tick();
+
+    expect(api.words.value()?.map((word) => word.label)).toEqual(['lapin']);
+    http.expectOne(API_ENDPOINTS.words).flush([aWord(), aWord({ id: 2, label: 'chat' })]);
+    await new Promise((resolve) => setTimeout(resolve));
+    TestBed.tick();
+    expect(api.words.value()?.map((word) => word.label)).toEqual(['lapin', 'chat']);
+  });
+
+  it('keeps the list on a tab or search change, which only touches the query', async () => {
+    await TestBed.inject(Router).navigateByUrl('/');
+    await loadList();
+
+    await TestBed.inject(Router).navigateByUrl('/?onglet=phrases&q=ch');
+    TestBed.tick();
+
+    http.expectNone(API_ENDPOINTS.words);
+  });
+
+  it('fetches the list again when the app comes back to the screen', async () => {
+    await loadList();
+
+    document.dispatchEvent(new Event('visibilitychange'));
+    TestBed.tick();
+
+    http.expectOne(API_ENDPOINTS.words).flush([aWord()]);
   });
 
   it('appends a created word to the loaded list without fetching it again', async () => {

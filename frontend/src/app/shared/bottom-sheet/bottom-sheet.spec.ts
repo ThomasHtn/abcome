@@ -28,6 +28,26 @@ class Host {
   public readonly error = signal<string | null>(null);
 }
 
+/**
+ * Hosts a sheet the screen removes while it is open, as a sheet that closes by leaving the page does.
+ */
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [BottomSheet],
+  template: `<button type="button" (click)="shown.set(true)">Ajouter une phrase</button>
+    @if (shown()) {
+      <app-bottom-sheet heading="Nouvelle phrase" [open]="true"
+        ><input aria-label="Sens"
+      /></app-bottom-sheet>
+    }`,
+})
+class RemovingHost {
+  /**
+   * Whether the sheet is in the page.
+   */
+  public readonly shown = signal(false);
+}
+
 describe('BottomSheet', () => {
   beforeAll(() => {
     // jsdom has no modal dialogs: stand in with the `open` attribute and the close event.
@@ -114,6 +134,23 @@ describe('BottomSheet', () => {
     expect(document.activeElement).toBe(element.querySelector('input'));
 
     dialogOf(fixture).querySelector<HTMLButtonElement>('button[aria-label="Fermer"]')?.click();
+    TestBed.tick();
+    expect(document.activeElement).toBe(opener);
+  });
+
+  it('gives focus back to the opener when the screen removes it while open', () => {
+    const fixture = TestBed.createComponent(RemovingHost);
+    fixture.detectChanges();
+    const opener = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      'button',
+    );
+    opener?.focus();
+
+    opener?.click();
+    TestBed.tick();
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Sens');
+
+    fixture.componentInstance.shown.set(false);
     TestBed.tick();
     expect(document.activeElement).toBe(opener);
   });

@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { DictionaryEntry } from '@core/dictionary/dictionary.model';
+import { LABEL_MAX_LENGTHS } from '@core/words/word.constants';
 import { aWord } from '@core/words/word.fixtures';
 import { Word } from '@core/words/word.model';
 
@@ -71,6 +72,15 @@ describe('WordPicker', () => {
     expect(offer?.textContent).toContain('ajouter «\u00A0Lulu\u00A0» quand même');
     offer?.click();
     expect(picks).toEqual([{ label: 'Lulu', category: 'custom', word: null }]);
+  });
+
+  it('says how long a word can be instead of offering a longer one', () => {
+    const { element } = render('x'.repeat(LABEL_MAX_LENGTHS.word + 1));
+    expect(element.querySelector('.word-picker__offer')).toBeNull();
+    expect(element.querySelector('.word-picker__too-long')?.textContent).toBe(
+      `Un mot fait ${LABEL_MAX_LENGTHS.word} caractères au plus.`,
+    );
+    expect(render('Lulu').element.querySelector('.word-picker__too-long')).toBeNull();
   });
 
   it('shows the frequent words not said yet before anything is typed', () => {

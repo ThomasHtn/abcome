@@ -1,4 +1,9 @@
 /**
+ * Earliest day the notebook accepts, as the API: catches a mistyped year (0202).
+ */
+export const FIRST_NOTEBOOK_DAY = '2020-01-01';
+
+/**
  * Time zone of the family, so "today" never flips at midnight UTC.
  */
 export const FAMILY_TIME_ZONE = 'Europe/Paris';

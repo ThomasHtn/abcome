@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { TOAST_DURATION_MS } from './feedback.constants';
+import { TOAST_DURATIONS_MS } from './feedback.constants';
 import { ToastQueue } from './toast-queue';
 
 describe('ToastQueue', () => {
@@ -14,7 +14,18 @@ describe('ToastQueue', () => {
     toasts.show('Phrase ajoutée');
     expect(toasts.current()?.text).toBe('Phrase ajoutée');
 
-    vi.advanceTimersByTime(TOAST_DURATION_MS);
+    vi.advanceTimersByTime(TOAST_DURATIONS_MS.success);
+    expect(toasts.current()).toBeNull();
+  });
+
+  it('keeps a failure on screen longer, so its advice can be read', () => {
+    const toasts = TestBed.inject(ToastQueue);
+
+    toasts.show("Le son n'a pas pu être enregistré, réessaie.", 'error');
+    vi.advanceTimersByTime(TOAST_DURATIONS_MS.success);
+    expect(toasts.current()?.tone).toBe('error');
+
+    vi.advanceTimersByTime(TOAST_DURATIONS_MS.error - TOAST_DURATIONS_MS.success);
     expect(toasts.current()).toBeNull();
   });
 });

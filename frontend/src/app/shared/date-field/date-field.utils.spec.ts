@@ -1,10 +1,19 @@
-import { DATE_IN_FUTURE_MESSAGE, DATE_MISSING_MESSAGE } from './date-field.constants';
+import {
+  DATE_IN_FUTURE_MESSAGE,
+  DATE_MISSING_MESSAGE,
+  DATE_TOO_OLD_MESSAGE,
+} from './date-field.constants';
 import { dateDisplay, dateFieldError } from './date-field.utils';
 
 describe('dateFieldError', () => {
-  it('accepts today and any past day', () => {
+  it("accepts today and any past day since the notebook's first day", () => {
     expect(dateFieldError('2026-10-17', '2026-10-17')).toBeNull();
     expect(dateFieldError('2025-01-01', '2026-10-17')).toBeNull();
+    expect(dateFieldError('2020-01-01', '2026-10-17')).toBeNull();
+  });
+
+  it("flags a day before the notebook's first day, most likely a mistyped year", () => {
+    expect(dateFieldError('0202-10-12', '2026-10-17')).toBe(DATE_TOO_OLD_MESSAGE);
   });
 
   it('asks for a date when the field is empty', () => {

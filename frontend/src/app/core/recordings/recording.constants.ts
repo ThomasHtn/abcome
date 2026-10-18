@@ -23,6 +23,18 @@ export const RECORDING_MIME_TYPES: readonly string[] = [
 export const WAVEFORM_BAR_COUNT = 48;
 
 /**
+ * Percentile of the bar peaks drawn full: a few louder bars, like a click, are capped instead of
+ * shrinking the voice.
+ */
+export const WAVEFORM_REFERENCE_PERCENTILE = 0.9;
+
+/**
+ * Share of the loudest peak the full height never goes under, so a short word in a long sound keeps
+ * its silence flat.
+ */
+export const WAVEFORM_MIN_REFERENCE = 0.25;
+
+/**
  * Rate the audio is decoded at for its waveform: enough for loudness, cheap to scan, accepted by Safari.
  */
 export const WAVEFORM_SAMPLE_RATE = 22_050;

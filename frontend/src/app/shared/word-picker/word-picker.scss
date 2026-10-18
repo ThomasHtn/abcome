@@ -1,4 +1,4 @@
-/* Word search: suggestion card, "add anyway" offer, recent words and frequent shortcuts. */
+/* Word search: suggestion card, "add anyway" offer or its too-long line, recent words and frequent shortcuts. */
 
 @use 'tools' as *;
 
@@ -76,6 +76,14 @@
   @include motion {
     animation: word-picker-slide var(--duration-fade) ease-out both;
   }
+}
+
+/* Muted line standing in for the offer when the text is too long to be a word. */
+.word-picker__too-long {
+  padding-inline: 0.25rem;
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  font-weight: 700;
 }
 
 /* Small capital section titles ("Ses mots", "Mots fréquents à cet âge"). */

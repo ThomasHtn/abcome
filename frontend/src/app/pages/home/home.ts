@@ -15,9 +15,10 @@ import { Router, RouterLink } from '@angular/router';
 
 import { LOGIN_ROUTE } from '@core/auth/auth.constants';
 import { AuthSession } from '@core/auth/auth-session';
+import { ToastQueue } from '@core/feedback/toast-queue';
 import { resourceValue } from '@core/http/resource.utils';
 import { Word } from '@core/words/word.model';
-import { entriesOfKind } from '@core/words/word.utils';
+import { entriesOfKind, findWordByLabel } from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
 import { ActionBar } from '@shared/action-bar/action-bar';
 import { Button } from '@shared/button/button';
@@ -28,11 +29,20 @@ import { IconButton } from '@shared/icon-button/icon-button';
 import { QuotePipe } from '@shared/quote/quote.pipe';
 import { SearchField } from '@shared/search-field/search-field';
 
-import { SEARCH_PARAM, SENTENCES_TAB_PARAM, STATUS_FILTER_OPTIONS } from './home.constants';
+import {
+  FILTER_PARAM,
+  FILTER_PARAM_VALUES,
+  SEARCH_PARAM,
+  SENTENCE_STATUS_FILTER_OPTIONS,
+  SENTENCES_TAB_PARAM,
+  STATUS_FILTER_OPTIONS,
+  SUMMARY_PENDING_HEADLINE,
+} from './home.constants';
 import { HomeTab, ListState, StatusFilter } from './home.model';
 import {
   emptySentencesMessage,
   emptyWordsMessage,
+  filterFromParam,
   groupByMonth,
   listState,
   sentencesSummary,
@@ -79,6 +89,11 @@ export class HomePage {
   private readonly router = inject(Router);
 
   /**
+   * Says when the logout failed.
+   */
+  private readonly toasts = inject(ToastQueue);
+
+  /**
    * Schedules the focus move back to the magnifier once the tabs are rendered again.
    */
   private readonly injector = inject(Injector);
@@ -116,6 +131,11 @@ export class HomePage {
   public readonly q = input<string>();
 
   /**
+   * `?filtre=` from the URL: the status filter, kept there so coming back from a word keeps it.
+   */
+  public readonly filtre = input<string>();
+
+  /**
    * Open tab.
    */
   protected readonly tab = computed<HomeTab>(() => tabFromParam(this.onglet()));
@@ -143,14 +163,16 @@ export class HomePage {
   );
 
   /**
-   * Status filter of the open tab, kept across tabs.
+   * Status filter, kept across tabs, following `?filtre=`.
    */
-  protected readonly filter = signal<StatusFilter>('all');
+  protected readonly filter = linkedSignal(() => filterFromParam(this.filtre()));
 
   /**
-   * Status filter chips.
+   * Status filter chips, "Tous" on the words and "Toutes" on the sentences.
    */
-  protected readonly filterOptions = STATUS_FILTER_OPTIONS;
+  protected readonly filterOptions = computed(() =>
+    this.tab() === 'words' ? STATUS_FILTER_OPTIONS : SENTENCE_STATUS_FILTER_OPTIONS,
+  );
 
   /**
    * Every word and sentence, empty until loaded.
@@ -170,11 +192,15 @@ export class HomePage {
   protected readonly sentences = computed(() => entriesOfKind(this.entries(), 'sentence'));
 
   /**
-   * Mascot card for the open tab.
+   * Mascot card for the open tab; a greeting rather than "no word yet" until the list is there.
    */
-  protected readonly summary = computed(() =>
-    this.tab() === 'words' ? wordsSummary(this.words()) : sentencesSummary(this.sentences()),
-  );
+  protected readonly summary = computed(() => {
+    const summary =
+      this.tab() === 'words' ? wordsSummary(this.words()) : sentencesSummary(this.sentences());
+    return this.openListState() === 'ready'
+      ? summary
+      : { ...summary, emptyHeadline: SUMMARY_PENDING_HEADLINE };
+  });
 
   /**
    * Word cards matching the search and filter, by month of first-said date.
@@ -210,9 +236,13 @@ export class HomePage {
   );
 
   /**
-   * Search trimmed, for the "Ajouter « q »" link.
+   * Search trimmed, for the "Ajouter « q »" link; empty when the word is already there, hidden by
+   * the color filter.
    */
-  protected readonly trimmedQuery = computed(() => this.query().trim());
+  protected readonly trimmedQuery = computed(() => {
+    const search = this.query().trim();
+    return findWordByLabel(this.words(), search) ? '' : search;
+  });
 
   /**
    * Whether the new sentence sheet is shown.
@@ -238,7 +268,22 @@ export class HomePage {
     }
     this.query.set('');
     void this.router.navigate([], {
-      queryParams: { onglet: tab === 'sentences' ? SENTENCES_TAB_PARAM : null },
+      queryParams: {
+        onglet: tab === 'sentences' ? SENTENCES_TAB_PARAM : null,
+        [FILTER_PARAM]: this.filterParam(),
+      },
+      replaceUrl: true,
+    });
+  }
+
+  /**
+   * Filters the list and mirrors the filter in the URL, without a history entry.
+   */
+  protected selectFilter(filter: StatusFilter): void {
+    this.filter.set(filter);
+    void this.router.navigate([], {
+      queryParams: { [FILTER_PARAM]: this.filterParam() },
+      queryParamsHandling: 'merge',
       replaceUrl: true,
     });
   }
@@ -275,16 +320,30 @@ export class HomePage {
   }
 
   /**
-   * Closes the session and returns to the login screen.
+   * Closes the session and returns to the login screen; when the server cannot close it, stays in
+   * the notebook and says so, since the session would still open it.
    */
   protected async logout(): Promise<void> {
     this.loggingOut.set(true);
     try {
       await this.session.signOut();
+      void this.router.navigateByUrl(LOGIN_ROUTE);
+    } catch {
+      this.toasts.show(
+        "La déconnexion n'a pas pu se faire. Vérifie la connexion et réessaie.",
+        'error',
+      );
     } finally {
       this.loggingOut.set(false);
       this.logoutOpen.set(false);
-      void this.router.navigateByUrl(LOGIN_ROUTE);
     }
+  }
+
+  /**
+   * Value of `?filtre=` for the current filter, `null` (no parameter) for every status.
+   */
+  private filterParam(): string | null {
+    const filter = this.filter();
+    return filter === 'all' ? null : FILTER_PARAM_VALUES[filter];
   }
 }

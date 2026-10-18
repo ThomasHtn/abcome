@@ -1,4 +1,4 @@
-/* Root component: one full-height mobile column every screen fills. */
+/* Root component: one full-height mobile column every screen fills, under the outage band. */
 
 @use 'tools' as *;
 
@@ -22,4 +22,32 @@
 
   /* Safety net: a stray overflow (a scaled tile, a shadow) never makes the page scroll sideways. */
   overflow-x: clip;
+}
+
+/* Outage band: red like "En route", on top of the column, clear of the notch. */
+.app__outage {
+  max-inline-size: var(--layout-max-width);
+  margin-inline: auto;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  padding: calc(0.75rem + var(--layout-safe-top)) var(--layout-gutter) 0.75rem;
+  background-color: var(--color-learning-bg);
+  color: var(--color-learning-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+/* Its sentence. */
+.app__outage-text {
+  margin: 0;
+}
+
+/* Its warning sign, never squeezed. */
+.app__outage-icon {
+  flex: none;
+}
+
+/* The band already clears the notch, so the screen under it does not do it again. */
+.app__screen--below-outage {
+  --layout-safe-top: 0px;
 }

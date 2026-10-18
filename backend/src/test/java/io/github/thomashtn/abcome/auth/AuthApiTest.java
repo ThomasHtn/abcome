@@ -68,6 +68,22 @@ class AuthApiTest extends PostgreSqlIntegrationTest {
     }
 
     @Test
+    @DisplayName("Renews the session cookie for 30 days at each session check, so only 30 idle days sign out")
+    void renewsSessionCookieOnCheck() throws Exception {
+        Cookie session = signIn();
+
+        String setCookie = mockMvc().perform(get("/api/auth/session").cookie(session))
+            .andExpect(status().isNoContent())
+            .andReturn().getResponse().getHeaders(HttpHeaders.SET_COOKIE).stream()
+            .filter(header -> header.startsWith(SESSION_COOKIE + "="))
+            .findFirst().orElse("");
+
+        assertThat(setCookie)
+            .startsWith(SESSION_COOKIE + "=" + session.getValue() + ";")
+            .contains("Path=/", "Secure", "HttpOnly", "SameSite=Strict", "Max-Age=2592000");
+    }
+
+    @Test
     @DisplayName("Refuses a wrong password with 401 INVALID_CREDENTIALS and no session")
     void refusesWrongPassword() throws Exception {
         login("not the password", "203.0.113.11")

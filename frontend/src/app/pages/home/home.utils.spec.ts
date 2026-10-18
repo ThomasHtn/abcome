@@ -149,10 +149,10 @@ describe('sentences as cards', () => {
 });
 
 describe('summaries', () => {
-  it('counts words per current status and quotes the newest one', () => {
+  it('counts words per current status and names the newest one with how it is said', () => {
     const summary = wordsSummary([MAMAN, LAPIN, GATEAU]);
     expect(summary.countText).toBe('3 mots');
-    expect(summary.latest).toBe('tato');
+    expect(summary.latest).toBe('gâteau, dit «\u00A0tato\u00A0»');
     expect(summary.statusCounts?.map((count) => count.label)).toEqual([
       '1 Bien dit',
       '1 Presque',
@@ -175,7 +175,7 @@ describe('summaries', () => {
     expect(summary).toMatchObject({
       countText: '2 phrases',
       latestLabel: 'Dernière',
-      latest: 'a pu ato',
+      latest: "Il n'y a plus de gâteau, dite «\u00A0a pu ato\u00A0»",
     });
     expect(summary.statusCounts?.map((count) => count.label)).toEqual([
       '0 Bien dit',

@@ -35,7 +35,8 @@
       required
       [id]="id"
       [value]="value()"
-      [max]="max"
+      [min]="min"
+      [max]="max()"
       [attr.aria-invalid]="invalid()"
       [attr.aria-describedby]="describedBy()"
       (change)="onChange($event)"

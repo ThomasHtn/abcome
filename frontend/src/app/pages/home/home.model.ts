@@ -35,7 +35,7 @@ export interface HomeSummary {
   latestLabel: string;
 
   /**
-   * What Côme said last, `null` while the notebook is empty.
+   * The latest entry and how Côme says it ("renard, dit « enard »"), `null` while the tab is empty.
    */
   latest: string | null;
 

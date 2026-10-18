@@ -12,6 +12,7 @@
       <button
         class="stage-sounds__more"
         type="button"
+        aria-haspopup="dialog"
         [attr.aria-label]="sound.actionsLabel"
         (click)="actions.emit(sound.recording)"
       >

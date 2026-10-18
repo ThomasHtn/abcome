@@ -64,6 +64,12 @@ describe('LoginPage', () => {
     expect(button.disabled).toBe(false);
   });
 
+  it('tells who to ask for the shared password, as the field description', () => {
+    const element = render();
+
+    expect(element.querySelector('#login-help')!.textContent).toContain(LOGIN_MESSAGES.hint);
+  });
+
   it('shows the mascot hiding his eyes while a hidden password is typed', () => {
     const element = render();
     const input = type(element, 'secret');

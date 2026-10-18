@@ -13,7 +13,7 @@
     }
 
     @if (summary().latest; as latest) {
-      <p class="home-summary__latest">{{ summary().latestLabel }}&nbsp;: {{ latest | quote }}</p>
+      <p class="home-summary__latest">{{ summary().latestLabel }}&nbsp;: {{ latest }}</p>
     }
 
     @if (summary().statusCounts; as counts) {

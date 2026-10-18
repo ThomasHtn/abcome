@@ -113,6 +113,16 @@ class WordApiTest extends NotebookApiTest {
     }
 
     @Test
+    @DisplayName("Refuses a first stage dated before 2020, a mistyped year, with 400 INVALID_REQUEST")
+    void refusesMistypedYear() throws Exception {
+        postWord(wordJson("lapin", "pin", "learning", "0202-10-12"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+        postWord(wordJson("lapin", "pin", "learning", "2020-01-01"))
+            .andExpect(status().isCreated());
+    }
+
+    @Test
     @DisplayName("Lists every word with all its stages, oldest stage first")
     void listsWords() throws Exception {
         long lapin = createWord("lapin", "pin", "learning", "2026-09-16");

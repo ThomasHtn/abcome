@@ -6,7 +6,10 @@
 :host {
   --action-bar-max-width: var(--layout-reading-width);
 
-  display: block;
+  /* Fills the app column, so the record and closing steps can centre their content. */
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   inline-size: 100%;
   max-inline-size: var(--layout-reading-width);
   margin-inline: auto;
@@ -169,7 +172,7 @@
   color: var(--color-success-text);
 }
 
-/* What retrying does. */
+/* Muted note: how to trim under the waveform, what retrying does under the controls. */
 .recording-new__note {
   color: var(--color-text-muted);
   font-size: var(--text-meta);

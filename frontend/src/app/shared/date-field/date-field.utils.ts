@@ -1,15 +1,18 @@
+import { FIRST_NOTEBOOK_DAY } from '@core/date/date.constants';
 import { addDays, formatWeekdayDate, todayIso } from '@core/date/date.utils';
 
 import {
   DATE_EMPTY_TEXT,
   DATE_IN_FUTURE_MESSAGE,
   DATE_MISSING_MESSAGE,
+  DATE_TOO_OLD_MESSAGE,
   RELATIVE_DAYS,
 } from './date-field.constants';
 import { DateDisplay } from './date-field.model';
 
 /**
- * Why a `yyyy-MM-dd` day cannot be saved, or null when it can: empty, or later than today in Paris.
+ * Why a `yyyy-MM-dd` day cannot be saved, or null when it can: empty, later than today in Paris, or
+ * before the notebook's first day (a mistyped year).
  * Screens call it on their own value to disable their save button.
  */
 export function dateFieldError(value: string, today: string = todayIso()): string | null {
@@ -17,7 +20,10 @@ export function dateFieldError(value: string, today: string = todayIso()): strin
     return DATE_MISSING_MESSAGE;
   }
   // ISO days compare as text.
-  return value > today ? DATE_IN_FUTURE_MESSAGE : null;
+  if (value > today) {
+    return DATE_IN_FUTURE_MESSAGE;
+  }
+  return value < FIRST_NOTEBOOK_DAY ? DATE_TOO_OLD_MESSAGE : null;
 }
 
 /**

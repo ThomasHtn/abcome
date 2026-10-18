@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
+import { Today } from '@core/date/today';
 import { DictionaryEntry } from '@core/dictionary/dictionary.model';
 import { DictionaryApi } from '@core/dictionary/dictionary-api';
 import { Celebration } from '@core/feedback/celebration';
@@ -18,7 +19,7 @@ import { resourceValue } from '@core/http/resource.utils';
 import { quote } from '@core/text/text.utils';
 import { CATEGORY_LABELS } from '@core/words/word.constants';
 import { Word } from '@core/words/word.model';
-import { currentStatus, findWordByLabel } from '@core/words/word.utils';
+import { currentStatus, entriesOfKind, findWordByLabel } from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
 import { ActionBar } from '@shared/action-bar/action-bar';
 import { Button } from '@shared/button/button';
@@ -37,7 +38,7 @@ import { WordPicker } from '@shared/word-picker/word-picker';
 import { WordChoice } from '@shared/word-picker/word-picker.model';
 
 import { CATEGORY_ICONS } from './word-new.constants';
-import { wordNewQuestion } from './word-new.utils';
+import { saveBlocker, wordNewQuestion } from './word-new.utils';
 
 /**
  * Add-word screen: find the word in the dictionary (or type a new one), note how Côme said it and
@@ -87,6 +88,11 @@ export class WordNewPage {
   private readonly celebration = inject(Celebration);
 
   /**
+   * Today in Paris, the latest day the first stage can be dated.
+   */
+  private readonly today = inject(Today).iso;
+
+  /**
    * `?mot=` query parameter, prefilling the search (home's "Ajouter « x » à ses mots").
    */
   public readonly mot = input<string>();
@@ -97,10 +103,10 @@ export class WordNewPage {
   protected readonly query = linkedSignal(() => this.mot() ?? '');
 
   /**
-   * The notebook's words.
+   * The notebook's words, without its sentences: this page only adds words.
    */
-  protected readonly words = computed<readonly Word[]>(
-    () => resourceValue(this.wordsApi.words, []) ?? [],
+  protected readonly words = computed<readonly Word[]>(() =>
+    entriesOfKind(resourceValue(this.wordsApi.words, []) ?? [], 'word'),
   );
 
   /**
@@ -137,13 +143,23 @@ export class WordNewPage {
    * Whether the word can be saved.
    */
   protected readonly ready = computed(
-    () => this.choice() !== null && this.existing() === null && isDraftReady(this.draft()),
+    () =>
+      this.choice() !== null &&
+      this.existing() === null &&
+      isDraftReady(this.draft(), this.today()),
   );
+
+  /**
+   * Save button text while the word cannot be saved, naming what is missing.
+   */
+  protected readonly blocker = computed(() => saveBlocker(this.draft(), this.today()));
 
   /**
    * Lapinou's question.
    */
-  protected readonly question = computed(() => wordNewQuestion(this.choice()));
+  protected readonly question = computed(() =>
+    wordNewQuestion(this.choice(), this.existing() !== null),
+  );
 
   /**
    * French category names.

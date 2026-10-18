@@ -8,6 +8,7 @@ import { KindCopy, WordSheet } from './word-detail.model';
 export const KIND_COPY: Readonly<Record<WordKind, KindCopy>> = {
   word: {
     theNoun: 'le mot',
+    renameAction: 'Renommer le mot',
     deletedSuffix: 'a été supprimé',
     notFound: "Ce mot n'est pas dans le carnet",
     loading: 'Chargement du mot…',
@@ -22,6 +23,7 @@ export const KIND_COPY: Readonly<Record<WordKind, KindCopy>> = {
   },
   sentence: {
     theNoun: 'la phrase',
+    renameAction: 'Modifier la phrase',
     deletedSuffix: 'a été supprimée',
     notFound: "Cette phrase n'est pas dans le carnet",
     loading: 'Chargement de la phrase…',
@@ -45,6 +47,14 @@ export const CONFIRM_SHEETS: readonly WordSheet[] = [
   'delete',
   'remove-sound',
 ];
+
+/**
+ * Sheet that a confirmation goes back to on "Garder", so the edits in progress there are kept.
+ */
+export const PARENT_SHEETS: Readonly<Partial<Record<WordSheet, WordSheet>>> = {
+  'remove-stage': 'stage',
+  'last-stage': 'stage',
+};
 
 /**
  * Beyond this many characters, the word's title takes the smaller "long" size.

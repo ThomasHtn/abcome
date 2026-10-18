@@ -38,17 +38,15 @@ export function timelineStages(word: Word, today: string): TimelineStage[] {
     .map((pronunciation, index) => {
       const title = stageTitle(index, stages.length, pronunciation.date, today);
       const date = formatShortDateWithYear(pronunciation.date);
-      const latest = index === stages.length - 1;
-      const oldest = index === 0;
       return {
         pronunciation,
         title,
-        caption: oldest || latest ? `${title} · ${date}` : date,
+        caption: `${title} · ${date}`,
         ariaLabel:
-          `${title} : ${pronunciation.spoken}, ${STATUS_LABELS[pronunciation.status]}, ` +
+          `${title}\u00A0: ${pronunciation.spoken}, ${STATUS_LABELS[pronunciation.status]}, ` +
           `le ${formatLongDate(pronunciation.date)}. Modifier`,
-        latest,
-        oldest,
+        latest: index === stages.length - 1,
+        oldest: index === 0,
         sounds: sounds.filter((sound) => sound.recording.pronunciationId === pronunciation.id),
         soundsLabel: `Sons de ${quote(pronunciation.spoken)}`,
       };
@@ -60,7 +58,7 @@ export function timelineStages(word: Word, today: string): TimelineStage[] {
  * Main button: "Il le dit mieux !" while there is progress to make, a plain add once mastered.
  */
 export function progressLabel(status: PronunciationStatus): string {
-  return status === 'mastered' ? 'Ajouter une prononciation' : 'Il le dit mieux !';
+  return status === 'mastered' ? 'Ajouter une prononciation' : 'Il le dit mieux\u00A0!';
 }
 
 /**
@@ -129,4 +127,25 @@ export function removeSoundText(sound: GallerySound, spoken: string): string {
     `Le son enregistré le ${sound.recordedOn}, où Côme dit ${quote(spoken)}, sera effacé. ` +
     'On ne pourra pas revenir en arrière.'
   );
+}
+
+/**
+ * Consequence of removing a stage: the API keeps its sounds and files them under `heirSpoken`'s stage,
+ * so the family knows where to find them; no word on sounds when there is none.
+ */
+export function removeStageText(
+  date: string,
+  soundCount: number,
+  heirSpoken: string | undefined,
+): string {
+  const sentences = [`Cette prononciation du ${formatLongDate(date)} sera effacée.`];
+  if (soundCount > 0 && heirSpoken !== undefined) {
+    sentences.push(
+      soundCount === 1
+        ? `Le son de cette prononciation sera rangé avec ${quote(heirSpoken)}.`
+        : `Ses ${soundCount} sons seront rangés avec ${quote(heirSpoken)}.`,
+    );
+  }
+  sentences.push('On ne pourra pas revenir en arrière.');
+  return sentences.join(' ');
 }

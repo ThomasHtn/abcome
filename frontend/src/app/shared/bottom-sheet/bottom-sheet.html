@@ -4,6 +4,7 @@
   #dialog
   class="bottom-sheet"
   [attr.aria-label]="heading()"
+  [attr.role]="alert() ? 'alertdialog' : null"
   (close)="onNativeClose()"
   (click)="onDialogClick($event)"
 >

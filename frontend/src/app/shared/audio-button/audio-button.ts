@@ -11,6 +11,7 @@ import {
   untracked,
 } from '@angular/core';
 
+import { ToastQueue } from '@core/feedback/toast-queue';
 import { Icon } from '@shared/icon/icon';
 
 /**
@@ -21,6 +22,16 @@ const ICON_SIZES = {
   md: { play: 22, stop: 18 },
   lg: { play: 40, stop: 34 },
 } as const;
+
+/**
+ * Toast of a sound the device cannot play (a WebM on an old iPhone) or that did not download.
+ */
+const PLAYBACK_FAILURE = "Ce son n'a pas pu être lu sur cet appareil.";
+
+/**
+ * Stops the sound playing now, so starting another one cuts it: one sound at a time on a screen.
+ */
+let stopPlaying: (() => void) | null = null;
 
 /**
  * Round lavender play/stop button for a recording (a word's sound, or a fresh recording's blob URL).
@@ -34,6 +45,11 @@ const ICON_SIZES = {
   styleUrl: './audio-button.scss',
 })
 export class AudioButton {
+  /**
+   * Tells a playback failure.
+   */
+  private readonly toasts = inject(ToastQueue);
+
   /**
    * Player of the current source, created on first play.
    */
@@ -92,6 +108,11 @@ export class AudioButton {
   }
 
   /**
+   * Stops this button's sound, registered as `stopPlaying` while it plays.
+   */
+  private readonly stopper = (): void => this.stop();
+
+  /**
    * Plays from the start, or stops when already playing.
    */
   protected async toggle(): Promise<void> {
@@ -99,24 +120,46 @@ export class AudioButton {
       this.stop();
       return;
     }
+    stopPlaying?.();
+    stopPlaying = this.stopper;
     this.audio ??= this.createPlayer();
     this.audio.currentTime = 0;
     this.setPlaying(true);
     try {
       await this.audio.play();
-    } catch {
-      // Unplayable source or autoplay refusal: back to the play icon rather than a stuck stop icon.
-      this.setPlaying(false);
+    } catch (error) {
+      // A stop or another sound interrupting the start is not a failure.
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        this.setPlaying(false);
+      } else {
+        this.fail();
+      }
     }
   }
 
   /**
-   * Player wired to come back to "play" at the end of the sound.
+   * Player wired to come back to "play" at the end of the sound, or on a failure while playing.
    */
   private createPlayer(): HTMLAudioElement {
     const audio = new Audio(this.src());
     audio.addEventListener('ended', () => this.setPlaying(false));
+    audio.addEventListener('error', () => {
+      if (audio === this.audio) {
+        this.fail();
+      }
+    });
     return audio;
+  }
+
+  /**
+   * Back to the play icon with a toast, once per tap: the error event and the refused play both land here.
+   */
+  private fail(): void {
+    if (!this.playing()) {
+      return;
+    }
+    this.setPlaying(false);
+    this.toasts.show(PLAYBACK_FAILURE, 'error');
   }
 
   /**
@@ -144,6 +187,9 @@ export class AudioButton {
     }
     this.playing.set(playing);
     this.playingChange.emit(playing);
+    if (!playing && stopPlaying === this.stopper) {
+      stopPlaying = null;
+    }
     cancelAnimationFrame(this.frame);
     this.frame = 0;
     if (playing) {

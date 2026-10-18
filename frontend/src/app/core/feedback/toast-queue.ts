@@ -1,6 +1,6 @@
 import { Service, signal } from '@angular/core';
 
-import { TOAST_DURATION_MS } from './feedback.constants';
+import { TOAST_DURATIONS_MS } from './feedback.constants';
 import { Toast } from './feedback.model';
 
 /**
@@ -24,12 +24,12 @@ export class ToastQueue {
   public readonly current = signal<Toast | null>(null);
 
   /**
-   * Shows `text` for a couple of seconds.
+   * Shows `text` for a couple of seconds, longer for a failure.
    */
   public show(text: string, tone: Toast['tone'] = 'success'): void {
     clearTimeout(this.timer);
     this.current.set({ id: this.nextId++, text, tone });
-    this.timer = setTimeout(() => this.current.set(null), TOAST_DURATION_MS);
+    this.timer = setTimeout(() => this.current.set(null), TOAST_DURATIONS_MS[tone]);
   }
 
   /**

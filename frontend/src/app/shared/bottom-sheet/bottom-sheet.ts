@@ -4,6 +4,7 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -79,9 +80,20 @@ export class BottomSheet {
   public readonly error = input<string | null>(null);
 
   /**
-   * Mirrors `open` onto the native dialog.
+   * Announces the sheet as an `alertdialog`: a question to answer before going on (a confirmation).
+   */
+  public readonly alert = input(false, { transform: booleanAttribute });
+
+  /**
+   * Mirrors `open` onto the native dialog, and gives the focus back when the screen removes the
+   * sheet while open (a sheet that closes itself by leaving the page), which fires no `close`.
    */
   constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      if (this.dialog().nativeElement.open) {
+        this.restoreFocus();
+      }
+    });
     // Mirrors `open` onto the dialog; `showModal` is what makes the rest of the page inert.
     effect(() => {
       const dialog = this.dialog().nativeElement;
@@ -108,10 +120,7 @@ export class BottomSheet {
    */
   protected onNativeClose(): void {
     this.open.set(false);
-    if (this.opener?.isConnected) {
-      this.opener.focus();
-    }
-    this.opener = null;
+    this.restoreFocus();
   }
 
   /**
@@ -121,6 +130,16 @@ export class BottomSheet {
     if (event.target === this.dialog().nativeElement) {
       this.close();
     }
+  }
+
+  /**
+   * Focuses the element that opened the sheet again, if it is still on the page.
+   */
+  private restoreFocus(): void {
+    if (this.opener?.isConnected) {
+      this.opener.focus();
+    }
+    this.opener = null;
   }
 
   /**

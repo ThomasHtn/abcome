@@ -37,9 +37,11 @@ describe('recording-new utils', () => {
     expect(summarizeLevels([], 2)).toEqual([0, 0]);
   });
 
-  it('tells a refused microphone from a missing one', () => {
+  it('tells a refused microphone from a missing or busy one', () => {
     expect(microphoneErrorKind(new DOMException('no', 'NotAllowedError'))).toBe('denied');
     expect(microphoneErrorKind(new DOMException('none', 'NotFoundError'))).toBe('missing');
+    expect(microphoneErrorKind(new DOMException('taken', 'NotReadableError'))).toBe('busy');
+    expect(microphoneErrorKind(new DOMException('stopped', 'AbortError'))).toBe('busy');
     expect(microphoneErrorKind(new Error('boom'))).toBe('failed');
     expect(microphoneErrorKind('weird')).toBe('failed');
   });
@@ -48,7 +50,9 @@ describe('recording-new utils', () => {
     expect(recordingInstruction('ready', false)).toContain('Touche le micro');
     expect(recordingInstruction('recording', false)).toContain('carré rouge');
     expect(recordingInstruction('review', false)).toContain('Recommence autant que tu veux');
-    expect(recordingInstruction('review', true)).toContain('Glisse les poignées');
+    expect(recordingInstruction('review', true)).toBe(
+      "15 secondes, c'est le maximum\u00A0: l'enregistrement s'est arrêté tout seul.",
+    );
     expect(recordingTitle('ready', true)).toBe('Enregistrer un son');
     expect(recordingTitle('pick', true)).toBe('Associer le son');
     expect(recordingTitle('done', true)).toBe("C'est fait");

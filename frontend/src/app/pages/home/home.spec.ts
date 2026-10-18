@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
 import { AuthSession } from '@core/auth/auth-session';
+import { ToastQueue } from '@core/feedback/toast-queue';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
 import { aPronunciation, aWord } from '@core/words/word.fixtures';
 
@@ -130,6 +131,27 @@ describe('HomePage', () => {
     expect(element.querySelectorAll('app-word-card')).toHaveLength(2);
   });
 
+  it('says the notebook did not open, with a retry, and does not call it empty', async () => {
+    const fixture = TestBed.createComponent(HomePage);
+    fixture.detectChanges();
+    http
+      .expectOne(API_ENDPOINTS.words)
+      .flush(null, { status: 503, statusText: 'Service Unavailable' });
+    await new Promise((resolve) => setTimeout(resolve));
+    fixture.detectChanges();
+
+    expect(text(fixture)).toContain("Le carnet n'a pas pu s'ouvrir.");
+    expect(text(fixture)).toContain('Coucou\u00A0!');
+    expect(text(fixture)).not.toContain('premier mot');
+
+    const retry = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')].find(
+      (button) => button.textContent?.trim() === 'Réessayer',
+    );
+    retry?.click();
+    TestBed.tick();
+    http.expectOne(API_ENDPOINTS.words).flush(ENTRIES);
+  });
+
   it('titles the list by month, newest first, each month holding its words', async () => {
     const fixture = await render();
     const element = fixture.nativeElement as HTMLElement;
@@ -220,6 +242,33 @@ describe('HomePage', () => {
     expect(text(fixture)).toContain('«\u00A0ka\u00A0»');
   });
 
+  it('keeps the status filter in the URL, so coming back from a word finds it', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    [...element.querySelectorAll<HTMLButtonElement>('.filter-chips__chip')]
+      .find((chip) => chip.textContent?.trim() === 'En route')!
+      .click();
+
+    expect(navigate).toHaveBeenCalledWith(
+      [],
+      expect.objectContaining({ queryParams: { filtre: 'en-route' } }),
+    );
+
+    fixture.componentRef.setInput('filtre', 'presque');
+    fixture.detectChanges();
+    expect(element.querySelectorAll('app-word-card')).toHaveLength(1);
+    expect(text(fixture)).toContain('lapin');
+  });
+
+  it('agrees the "all" filter with the sentences', async () => {
+    const fixture = await render('phrases');
+
+    expect(text(fixture)).toContain('Toutes');
+    expect(text(fixture)).not.toContain('Tous');
+  });
+
   it('shows the sentences tab from the URL, linking to their pages, and opens the sheet to add one', async () => {
     const fixture = await render('phrases');
     const element = fixture.nativeElement as HTMLElement;
@@ -248,8 +297,26 @@ describe('HomePage', () => {
 
     expect(navigate).toHaveBeenCalledWith(
       [],
-      expect.objectContaining({ queryParams: { onglet: 'phrases' } }),
+      expect.objectContaining({ queryParams: { onglet: 'phrases', filtre: null } }),
     );
+  });
+
+  it('stays in the notebook and says so when the logout cannot reach the server', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    element.querySelector<HTMLButtonElement>('button[aria-label="Se déconnecter"]')!.click();
+    fixture.detectChanges();
+    [...element.querySelectorAll<HTMLButtonElement>('app-confirm-sheet button')]
+      .find((button) => button.textContent?.trim() === 'Se déconnecter')!
+      .click();
+    http.expectOne(API_ENDPOINTS.logout).error(new ProgressEvent('error'));
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(TestBed.inject(AuthSession).signedIn()).toBe(true);
+    expect(navigate).not.toHaveBeenCalled();
+    expect(TestBed.inject(ToastQueue).current()?.tone).toBe('error');
   });
 
   it('logs out after confirmation and returns to the login screen', async () => {

@@ -2,7 +2,7 @@ import { Resource } from '@angular/core';
 
 import { dayAndMonth, formatLongDate, formatMonthYear } from '@core/date/date.utils';
 import { quote } from '@core/text/text.utils';
-import { STATUS_LABELS } from '@core/words/word.constants';
+import { PRONUNCIATION_STATUSES, STATUS_LABELS } from '@core/words/word.constants';
 import { Word } from '@core/words/word.model';
 import {
   countByStatus,
@@ -13,7 +13,7 @@ import {
   wordMatchesQuery,
 } from '@core/words/word.utils';
 
-import { SENTENCES_TAB_PARAM, SUMMARY_STATUS_ORDER } from './home.constants';
+import { FILTER_PARAM_VALUES, SENTENCES_TAB_PARAM, SUMMARY_STATUS_ORDER } from './home.constants';
 import {
   HomeSummary,
   HomeTab,
@@ -28,6 +28,13 @@ import {
  */
 export function tabFromParam(param: string | null | undefined): HomeTab {
   return param === SENTENCES_TAB_PARAM ? 'sentences' : 'words';
+}
+
+/**
+ * Status filter named by `?filtre=`; anything unknown means every status.
+ */
+export function filterFromParam(param: string | null | undefined): StatusFilter {
+  return PRONUNCIATION_STATUSES.find((status) => FILTER_PARAM_VALUES[status] === param) ?? 'all';
 }
 
 /**
@@ -94,6 +101,7 @@ function summaryOf(
   noun: string,
   emptyHeadline: string,
   latestLabel: string,
+  spokenVerb: string,
 ): HomeSummary {
   const [latest] = sortByFirstSaidDesc(entries);
   return {
@@ -101,7 +109,9 @@ function summaryOf(
     countText: countWithNoun(entries.length, noun),
     emptyHeadline,
     latestLabel,
-    latest: latest ? currentPronunciation(latest).spoken : null,
+    latest: latest
+      ? `${latest.label}, ${spokenVerb} ${quote(currentPronunciation(latest).spoken)}`
+      : null,
     statusCounts:
       entries.length === 0
         ? null
@@ -116,14 +126,20 @@ function summaryOf(
  * Mascot card of the words tab.
  */
 export function wordsSummary(words: readonly Word[]): HomeSummary {
-  return summaryOf(words, 'mot', 'Le carnet attend son premier mot !', 'Dernier');
+  return summaryOf(words, 'mot', 'Le carnet attend son premier mot !', 'Dernier', 'dit');
 }
 
 /**
  * Mascot card of the sentences tab.
  */
 export function sentencesSummary(sentences: readonly Word[]): HomeSummary {
-  return summaryOf(sentences, 'phrase', 'Le carnet attend sa première phrase !', 'Dernière');
+  return summaryOf(
+    sentences,
+    'phrase',
+    'Le carnet attend sa première phrase !',
+    'Dernière',
+    'dite',
+  );
 }
 
 /**

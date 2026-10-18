@@ -1,6 +1,6 @@
 # ABCome
 
-Mobile-first PWA where family members log a toddler's first words and sentences, track how each pronunciation evolves and keep short audio recordings.
+Mobile-first web app, installable as a home-screen shortcut, where family members log a toddler's first words and sentences, track how each pronunciation evolves and keep short audio recordings.
 
 ## Documentation
 
@@ -10,7 +10,7 @@ Mobile-first PWA where family members log a toddler's first words and sentences,
 
 ## Stack
 
-- Frontend: Angular 22 PWA, Tailwind 4 + SCSS, served by nginx.
+- Frontend: Angular 22, Tailwind 4 + SCSS, served by nginx.
 - Backend: Spring Boot 4 on Java 25.
 - Database: PostgreSQL 17, recordings stored as `bytea`.
 - Auth: one shared family passphrase (Argon2id hash), session cookie, CSRF.

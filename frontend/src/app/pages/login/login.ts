@@ -97,10 +97,10 @@ export class LoginPage {
   );
 
   /**
-   * Line under the field: the error, the success, or nothing.
+   * Line under the field: the error, the success, or who to ask for the password.
    */
   protected readonly helpText = computed(
-    () => this.error() ?? (this.succeeded() ? LOGIN_MESSAGES.success : ''),
+    () => this.error() ?? (this.succeeded() ? LOGIN_MESSAGES.success : LOGIN_MESSAGES.hint),
   );
 
   /**

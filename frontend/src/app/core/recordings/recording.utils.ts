@@ -1,4 +1,9 @@
-import { RECORDING_MIME_TYPES, TRIMMED_MIME_TYPE } from './recording.constants';
+import {
+  RECORDING_MIME_TYPES,
+  TRIMMED_MIME_TYPE,
+  WAVEFORM_MIN_REFERENCE,
+  WAVEFORM_REFERENCE_PERCENTILE,
+} from './recording.constants';
 
 /**
  * Size of the RIFF header before the samples of a mono PCM WAV.
@@ -27,8 +32,8 @@ export function formatRecordingClock(durationMs: number): string {
 }
 
 /**
- * Waveform of decoded samples: the peak of each of `count` slices, scaled so the loudest bar is full;
- * silence everywhere gives flat bars.
+ * Waveform of decoded samples: the peak of each of `count` slices, scaled on a loud bar but not the
+ * loudest, so one click does not flatten the voice; louder bars are capped full, silence stays flat.
  */
 export function waveformLevels(samples: ArrayLike<number>, count: number): number[] {
   const peaks = Array.from({ length: count }, (_, bar) => {
@@ -40,8 +45,21 @@ export function waveformLevels(samples: ArrayLike<number>, count: number): numbe
     }
     return peak;
   });
-  const loudest = Math.max(...peaks);
-  return loudest > 0 ? peaks.map((peak) => peak / loudest) : peaks;
+  const reference = waveformReference(peaks);
+  return reference > 0 ? peaks.map((peak) => Math.min(1, peak / reference)) : peaks;
+}
+
+/**
+ * Peak drawn full: the 90th percentile of the bars, yet at least a share of the loudest, so the
+ * background noise of a short word in a long sound is not blown up to full bars.
+ */
+function waveformReference(peaks: readonly number[]): number {
+  if (peaks.length === 0) {
+    return 0;
+  }
+  const sorted = [...peaks].sort((a, b) => a - b);
+  const rank = Math.max(0, Math.ceil(WAVEFORM_REFERENCE_PERCENTILE * sorted.length) - 1);
+  return Math.max(sorted[rank], sorted[sorted.length - 1] * WAVEFORM_MIN_REFERENCE);
 }
 
 /**
