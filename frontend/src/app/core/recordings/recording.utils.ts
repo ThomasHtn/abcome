@@ -88,3 +88,11 @@ export function encodeWav(samples: Float32Array, sampleRate: number): Blob {
 function writeAscii(view: DataView, offset: number, text: string): void {
   [...text].forEach((char, index) => view.setUint8(offset + index, char.charCodeAt(0)));
 }
+
+/**
+ * A sound's length in words ("3 secondes"), rounded to the second and never under one.
+ */
+export function formatDurationInWords(durationMs: number): string {
+  const seconds = Math.max(1, Math.round(durationMs / 1000));
+  return `${seconds} ${seconds < 2 ? 'seconde' : 'secondes'}`;
+}

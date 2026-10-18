@@ -45,6 +45,17 @@
   box-shadow: none;
 }
 
+/* Icon alone, no tile nor shadow, so a rare action stays out of the way; same touch target. */
+:host(.icon-button--ghost) {
+  background-color: transparent;
+  box-shadow: none;
+
+  /* A faint tile shows under a hovering pointer, so it still reads as a button. */
+  @include hover {
+    background-color: tint(ink, 6%);
+  }
+}
+
 /* Compact row action (sound rows, stage cards): 44 px rounded tile, still a full touch target. */
 :host(.icon-button--sm) {
   inline-size: 2.75rem;

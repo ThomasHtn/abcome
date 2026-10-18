@@ -28,6 +28,8 @@ describe('French date formats', () => {
 
   it('prints the long form', () => {
     expect(formatLongDate('2026-09-16')).toBe('16 septembre 2026');
+    expect(formatLongDate('2026-09-16', 2026)).toBe('16 septembre');
+    expect(formatLongDate('2025-09-16', 2026)).toBe('16 septembre 2025');
   });
 
   it('splits the card tile into day and dot-less month', () => {

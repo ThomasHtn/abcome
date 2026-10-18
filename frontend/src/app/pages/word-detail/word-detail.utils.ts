@@ -5,14 +5,14 @@ import {
   todayIso,
 } from '@core/date/date.utils';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
-import { formatRecordingClock } from '@core/recordings/recording.utils';
+import { formatDurationInWords } from '@core/recordings/recording.utils';
 import { quote } from '@core/text/text.utils';
 import { STATUS_LABELS } from '@core/words/word.constants';
 import { PronunciationStatus, Recording, Word } from '@core/words/word.model';
 import { sortPronunciations } from '@core/words/word.utils';
 
 import { LONG_TITLE_LENGTH, VERY_LONG_TITLE_LENGTH } from './word-detail.constants';
-import { GallerySound, TimelineStage, TitleLength } from './word-detail.model';
+import { GallerySound, SoundSheetCopy, TimelineStage, TitleLength } from './word-detail.model';
 
 /**
  * Title of the stage at `index` (oldest first) among `count`: the first time, the latest, or its rank.
@@ -33,7 +33,7 @@ export function stageTitle(index: number, count: number, date: string, today: st
  */
 export function timelineStages(word: Word, today: string): TimelineStage[] {
   const stages = sortPronunciations(word.pronunciations);
-  const sounds = gallerySounds(word.recordings);
+  const sounds = gallerySounds(word.recordings, today);
   return stages
     .map((pronunciation, index) => {
       const title = stageTitle(index, stages.length, pronunciation.date, today);
@@ -78,23 +78,25 @@ export function turnedMastered(before: PronunciationStatus, after: Pronunciation
 }
 
 /**
- * The word's sounds, in the API order (newest first), dated in the family's zone.
+ * The word's sounds, in the API order (newest first), dated in the family's zone; the year is said
+ * only when it is not the one of `today`.
  */
-export function gallerySounds(recordings: readonly Recording[]): GallerySound[] {
+export function gallerySounds(recordings: readonly Recording[], today: string): GallerySound[] {
+  const currentYear = Number.parseInt(today.slice(0, 4), 10);
   return recordings.map((recording) => {
     const day = todayIso(new Date(recording.createdAt));
-    // Rounded to the nearest second, at least one, so a short sound never reads "0:00".
-    const length = formatRecordingClock(
-      Math.max(1, Math.round(recording.durationMs / 1000)) * 1000,
-    );
-    const description = `du ${formatLongDate(day)} (${length})`;
+    const recordedOn = formatLongDate(day, currentYear);
+    const length = formatDurationInWords(recording.durationMs);
+    // The length tells apart two sounds of the same day.
+    const name = `le son enregistré le ${recordedOn}, ${length}`;
     return {
       recording,
       src: API_ENDPOINTS.recording(recording.id),
       day: formatShortDate(day),
-      description,
-      listenLabel: `Écouter le son ${description}`,
-      actionsLabel: `Actions sur le son ${description}`,
+      recordedOn,
+      length,
+      listenLabel: `Écouter ${name}`,
+      actionsLabel: `Actions sur ${name}`,
     };
   });
 }
@@ -107,4 +109,24 @@ export function titleLength(label: string): TitleLength {
     return 'very-long';
   }
   return label.length > LONG_TITLE_LENGTH ? 'long' : 'normal';
+}
+
+/**
+ * Actions sheet of a sound: named by its day, described by what Côme says on it and its length.
+ */
+export function soundSheetCopy(sound: GallerySound, spoken: string): SoundSheetCopy {
+  return {
+    heading: `Son enregistré le ${sound.recordedOn}`,
+    text: `Côme y dit ${quote(spoken)}. Il dure ${sound.length}.`,
+  };
+}
+
+/**
+ * Consequence of deleting a sound, naming it the way the actions sheet does.
+ */
+export function removeSoundText(sound: GallerySound, spoken: string): string {
+  return (
+    `Le son enregistré le ${sound.recordedOn}, où Côme dit ${quote(spoken)}, sera effacé. ` +
+    'On ne pourra pas revenir en arrière.'
+  );
 }

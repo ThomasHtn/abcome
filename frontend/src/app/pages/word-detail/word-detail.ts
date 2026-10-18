@@ -48,6 +48,8 @@ import { MissingTarget, WordSheet } from './word-detail.model';
 import {
   gallerySounds,
   progressLabel,
+  removeSoundText,
+  soundSheetCopy,
   stageDateLabel,
   timelineStages,
   titleLength,
@@ -171,7 +173,9 @@ export class WordDetailPage {
   /**
    * Every sound of the word, newest first, to name the one being deleted.
    */
-  protected readonly sounds = computed(() => gallerySounds(this.word()?.recordings ?? []));
+  protected readonly sounds = computed(() =>
+    gallerySounds(this.word()?.recordings ?? [], this.today),
+  );
 
   /**
    * Sound whose "⋮" was tapped, kept while its actions, move or deletion are open; `null` otherwise.
@@ -179,11 +183,13 @@ export class WordDetailPage {
   protected readonly actionSound = signal<Recording | null>(null);
 
   /**
-   * Day and length of that sound, under the actions sheet's title.
+   * Title and description of that sound's actions sheet.
    */
-  protected readonly actionSoundDescription = computed(() => {
+  protected readonly actionSoundCopy = computed(() => {
     const sound = this.sounds().find((item) => item.recording.id === this.actionSound()?.id);
-    return sound?.description ?? '';
+    return sound
+      ? soundSheetCopy(sound, this.spokenOn(sound.recording))
+      : { heading: '', text: '' };
   });
 
   /**
@@ -204,14 +210,12 @@ export class WordDetailPage {
   protected readonly removingSound = signal<Recording | null>(null);
 
   /**
-   * Consequence of the sound deletion, naming its day and length.
+   * Consequence of the sound deletion, naming its day and what Côme says on it.
    */
   protected readonly removeSoundMessage = computed(() => {
     const removing = this.removingSound();
     const sound = this.sounds().find((item) => item.recording.id === removing?.id);
-    return sound
-      ? `Le son ${sound.description} sera effacé. On ne pourra pas revenir en arrière.`
-      : '';
+    return sound ? removeSoundText(sound, this.spokenOn(sound.recording)) : '';
   });
 
   /**
@@ -547,7 +551,7 @@ export class WordDetailPage {
         this.sheet.set(null);
         this.toasts.show(`Son rangé avec ${quote(target.spoken)}`);
       },
-      "Le son n'a pas pu être déplacé, réessaie.",
+      "Le son n'a pas pu être rangé, réessaie.",
       'sound',
     );
   }
@@ -646,5 +650,15 @@ export class WordDetailPage {
     } else if (missing === 'sound') {
       this.toasts.show('Ce son avait déjà été supprimé.');
     }
+  }
+
+  /**
+   * What Côme says on a sound: the spoken form of the stage it is filed under.
+   */
+  private spokenOn(recording: Recording): string {
+    const stage = this.word()?.pronunciations.find(
+      (pronunciation) => pronunciation.id === recording.pronunciationId,
+    );
+    return stage?.spoken ?? '';
   }
 }

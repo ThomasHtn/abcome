@@ -65,9 +65,14 @@ export interface GallerySound {
   day: string;
 
   /**
-   * Its day and length in words, for labels and confirmations ("du 17 octobre 2026 (0:03)").
+   * Day it was recorded, in full, for the sheets and labels ("17 octobre", the year when not this one).
    */
-  description: string;
+  recordedOn: string;
+
+  /**
+   * Its length in words ("3 secondes").
+   */
+  length: string;
 
   /**
    * Screen reader name of its play button.
@@ -166,3 +171,18 @@ export type WordSheet =
   | 'sound'
   | 'move-sound'
   | 'remove-sound';
+
+/**
+ * Wording of the actions sheet of one sound.
+ */
+export interface SoundSheetCopy {
+  /**
+   * Title naming the sound by its day ("Son enregistré le 17 octobre 2026").
+   */
+  heading: string;
+
+  /**
+   * What is heard on it and how long it lasts ("Côme y dit « apin ». Il dure 3 secondes.").
+   */
+  text: string;
+}

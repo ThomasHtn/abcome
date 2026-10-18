@@ -31,4 +31,12 @@ describe('IconButton', () => {
     expect(button?.classList).toContain('icon-button--danger');
     expect(button?.classList).toContain('icon-button--sm');
   });
+
+  it('draws the icon alone with the ghost tone', () => {
+    const fixture = TestBed.createComponent(IconButton);
+    fixture.componentRef.setInput('tone', 'ghost');
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).classList).toContain('icon-button--ghost');
+  });
 });

@@ -18,7 +18,7 @@ describe('StageSounds', () => {
     const newest = aRecording({ id: 2, createdAt: '2026-10-17T09:00:00Z', durationMs: 3000 });
     const oldest = aRecording({ id: 1, createdAt: '2026-10-12T09:00:00Z', durationMs: 5000 });
     const fixture = TestBed.createComponent(StageSounds);
-    fixture.componentRef.setInput('sounds', gallerySounds([newest, oldest]));
+    fixture.componentRef.setInput('sounds', gallerySounds([newest, oldest], '2026-10-18'));
     fixture.componentRef.setInput('label', 'Sons de « apin »');
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
@@ -31,7 +31,9 @@ describe('StageSounds', () => {
     );
     expect(lengths).toEqual(['0:03', '0:05']);
 
-    element.querySelector<HTMLButtonElement>('[aria-label^="Actions sur le son du 12"]')!.click();
+    element
+      .querySelector<HTMLButtonElement>('[aria-label^="Actions sur le son enregistré le 12"]')!
+      .click();
     expect(asked).toEqual([oldest]);
   });
 });

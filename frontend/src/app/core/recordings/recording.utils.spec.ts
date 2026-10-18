@@ -1,5 +1,6 @@
 import {
   encodeWav,
+  formatDurationInWords,
   formatRecordingClock,
   formatTenthsClock,
   pickRecordingMimeType,
@@ -62,5 +63,13 @@ describe('encodeWav', () => {
     expect([44, 46, 48, 50].map((offset) => view.getInt16(offset, true))).toEqual([
       0, 32_767, -32_768, 32_767,
     ]);
+  });
+});
+
+describe('formatDurationInWords', () => {
+  it('says the length in whole seconds, one at least', () => {
+    expect(formatDurationInWords(3_400)).toBe('3 secondes');
+    expect(formatDurationInWords(1_200)).toBe('1 seconde');
+    expect(formatDurationInWords(300)).toBe('1 seconde');
   });
 });

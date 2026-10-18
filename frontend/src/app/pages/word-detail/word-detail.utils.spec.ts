@@ -3,6 +3,8 @@ import { aPronunciation, aRecording, aWord } from '@core/words/word.fixtures';
 import {
   gallerySounds,
   progressLabel,
+  removeSoundText,
+  soundSheetCopy,
   stageDateLabel,
   stageTitle,
   timelineStages,
@@ -84,16 +86,23 @@ describe('word-detail utils', () => {
   });
 
   it('dates each sound in Paris and rounds its length, keeping the API order', () => {
-    const sounds = gallerySounds([
-      aRecording({ id: 2, createdAt: '2026-10-16T22:30:00Z', durationMs: 3400 }),
-      aRecording({ id: 1, createdAt: '2026-09-16T08:00:00Z', durationMs: 300 }),
-    ]);
+    const sounds = gallerySounds(
+      [
+        aRecording({ id: 2, createdAt: '2026-10-16T22:30:00Z', durationMs: 3400 }),
+        aRecording({ id: 1, createdAt: '2025-09-16T08:00:00Z', durationMs: 300 }),
+      ],
+      '2026-10-18',
+    );
 
     expect(sounds.map((sound) => sound.recording.id)).toEqual([2, 1]);
     expect(sounds[0].src).toBe('/api/recordings/2');
     expect(sounds[0].day).toBe('17 oct.');
-    expect(sounds[0].listenLabel).toBe('Écouter le son du 17 octobre 2026 (0:03)');
-    expect(sounds[0].actionsLabel).toBe('Actions sur le son du 17 octobre 2026 (0:03)');
+    expect(sounds[0].recordedOn).toBe('17 octobre');
+    expect(sounds[1].recordedOn).toBe('16 septembre 2025');
+    expect(sounds[0].length).toBe('3 secondes');
+    expect(sounds[0].listenLabel).toBe('Écouter le son enregistré le 17 octobre, 3 secondes');
+    expect(sounds[0].actionsLabel).toBe('Actions sur le son enregistré le 17 octobre, 3 secondes');
+    expect(sounds[1].length).toBe('1 seconde');
     expect(sounds[1].day).toBe('16 sept.');
   });
 });
@@ -108,5 +117,21 @@ describe('titleLength', () => {
     expect(titleLength('a'.repeat(13))).toBe('long');
     expect(titleLength('a'.repeat(22))).toBe('long');
     expect(titleLength('anticonstitutionnellement')).toBe('very-long');
+  });
+
+  it('names a sound by its day and says what Côme says on it', () => {
+    const [sound] = gallerySounds(
+      [aRecording({ id: 2, createdAt: '2026-10-16T22:30:00Z', durationMs: 3400 })],
+      '2026-10-18',
+    );
+
+    expect(soundSheetCopy(sound, 'apin')).toEqual({
+      heading: 'Son enregistré le 17 octobre',
+      text: 'Côme y dit «\u00A0apin\u00A0». Il dure 3 secondes.',
+    });
+    expect(removeSoundText(sound, 'apin')).toBe(
+      'Le son enregistré le 17 octobre, où Côme dit «\u00A0apin\u00A0», sera effacé. ' +
+        'On ne pourra pas revenir en arrière.',
+    );
   });
 });

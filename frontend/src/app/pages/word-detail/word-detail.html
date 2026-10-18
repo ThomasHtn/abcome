@@ -220,11 +220,11 @@
 
   <!-- Actions of one sound, behind its "⋮". -->
   <app-bottom-sheet
-    heading="Ce son"
+    [heading]="actionSoundCopy().heading"
     [open]="sheet() === 'sound'"
     (openChange)="onSheetToggle('sound', $event)"
   >
-    <p class="word-detail__sheet-text">Le son {{ actionSoundDescription() }}</p>
+    <p class="word-detail__sheet-text">{{ actionSoundCopy().text }}</p>
     <div class="flex flex-col gap-2.5">
       @if (stages().length > 1) {
         <button
@@ -253,12 +253,12 @@
 
   <!-- Which stage a sound moves to. -->
   <app-bottom-sheet
-    heading="Ranger ce son"
+    heading="Ranger le son"
     [open]="sheet() === 'move-sound'"
     [error]="sheetError()"
     (openChange)="onSheetToggle('move-sound', $event)"
   >
-    <p class="word-detail__sheet-text">Avec quelle prononciation ?</p>
+    <p class="word-detail__sheet-text">Avec quelle prononciation le ranger ?</p>
     <ul class="flex flex-col gap-2.5">
       @for (stage of moveTargets(); track stage.pronunciation.id) {
         <li>
@@ -285,7 +285,7 @@
 
   <!-- Deletion of one sound. -->
   <app-confirm-sheet
-    heading="Supprimer ce son ?"
+    heading="Supprimer le son ?"
     cancelLabel="Garder"
     confirmLabel="Oui, supprimer"
     [message]="removeSoundMessage()"

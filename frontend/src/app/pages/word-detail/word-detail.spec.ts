@@ -139,8 +139,23 @@ describe('WordDetailPage', () => {
       ),
     ]);
     expect(stages).toEqual([
-      ['«\u00A0apin\u00A0»', ['Actions sur le son du 14 octobre 2026 (0:04)']],
-      ['«\u00A0pin\u00A0»', ['Actions sur le son du 12 octobre 2026 (0:03)']],
+      // The year is said only outside the current one.
+      [
+        '«\u00A0apin\u00A0»',
+        [
+          expect.stringMatching(
+            /^Actions sur le son enregistré le 14 octobre( 2026)?, 4 secondes$/,
+          ),
+        ],
+      ],
+      [
+        '«\u00A0pin\u00A0»',
+        [
+          expect.stringMatching(
+            /^Actions sur le son enregistré le 12 octobre( 2026)?, 3 secondes$/,
+          ),
+        ],
+      ],
     ]);
     expect(element.querySelector('.word-detail__no-sound')).toBeNull();
     expect(element.textContent).toContain('Il le dit mieux !');
@@ -175,14 +190,17 @@ describe('WordDetailPage', () => {
     const fixture = render();
     const element = fixture.nativeElement as HTMLElement;
 
-    element.querySelector<HTMLButtonElement>('[aria-label^="Actions sur le son du 14"]')?.click();
+    element
+      .querySelector<HTMLButtonElement>('[aria-label^="Actions sur le son enregistré le 14"]')
+      ?.click();
     await fixture.whenStable();
     const actions = element.querySelector('dialog[open]') as HTMLElement;
-    expect(actions.textContent).toContain('Le son du 14 octobre 2026 (0:04)');
+    expect(actions.textContent).toContain('Son enregistré le 14 octobre');
+    expect(actions.textContent).toContain('Côme y dit «\u00A0apin\u00A0». Il dure 4 secondes.');
     clickButton(actions, 'Ranger avec une autre prononciation');
     await fixture.whenStable();
     const sheet = element.querySelector('dialog[open]') as HTMLElement;
-    expect(sheet.textContent).toContain('Avec quelle prononciation ?');
+    expect(sheet.textContent).toContain('Avec quelle prononciation le ranger ?');
     expect(sheet.querySelectorAll('.word-detail__row')).toHaveLength(1);
     clickButton(sheet, 'pin');
     await fixture.whenStable();
@@ -196,12 +214,16 @@ describe('WordDetailPage', () => {
     const fixture = render();
     const element = fixture.nativeElement as HTMLElement;
 
-    element.querySelector<HTMLButtonElement>('[aria-label^="Actions sur le son du 14"]')?.click();
+    element
+      .querySelector<HTMLButtonElement>('[aria-label^="Actions sur le son enregistré le 14"]')
+      ?.click();
     await fixture.whenStable();
     clickButton(element.querySelector('dialog[open]') as HTMLElement, 'Supprimer le son');
     await fixture.whenStable();
     const confirm = element.querySelector('dialog[open]') as HTMLElement;
-    expect(confirm.textContent).toContain('Le son du 14 octobre 2026 (0:04) sera effacé.');
+    expect(confirm.textContent).toMatch(
+      /Le son enregistré le 14 octobre( 2026)?, où Côme dit «\u00A0apin\u00A0», sera effacé\./,
+    );
     clickButton(confirm, 'Oui, supprimer');
     await fixture.whenStable();
 

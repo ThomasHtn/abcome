@@ -34,11 +34,13 @@ export function formatShortDateWithYear(iso: string): string {
 }
 
 /**
- * "16 septembre 2026", for screen reader labels and confirmations.
+ * "16 septembre 2026", for screen reader labels and confirmations; without the year when it is
+ * `currentYear`.
  */
-export function formatLongDate(iso: string): string {
+export function formatLongDate(iso: string, currentYear?: number): string {
   const [year, month, day] = parts(iso);
-  return `${day} ${LONG_MONTHS[month - 1]} ${year}`;
+  const date = `${day} ${LONG_MONTHS[month - 1]}`;
+  return year === currentYear ? date : `${date} ${year}`;
 }
 
 /**
