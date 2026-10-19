@@ -1,4 +1,4 @@
-import { aPronunciation, aWord } from '@core/words/word.fixtures';
+import { aPronunciation, aRecording, aWord } from '@core/words/word.fixtures';
 
 import {
   countWithNoun,
@@ -129,6 +129,20 @@ describe('toWordCard', () => {
       'apin, pour lapin, Presque, depuis le 16 septembre 2026. Voir sa page',
     );
     expect(card.change).toBeNull();
+    expect(card.hasSound).toBe(false);
+  });
+
+  it('flags an entry that keeps sounds and counts them for screen readers', () => {
+    const recordings = [aRecording({ id: 30, wordId: 1 }), aRecording({ id: 31, wordId: 1 })];
+    const card = toWordCard({ ...LAPIN, recordings }, 'pronunciation');
+
+    expect(card.hasSound).toBe(true);
+    expect(card.ariaLabel).toBe(
+      'apin, pour lapin, Presque, depuis le 16 septembre 2026, avec 2 sons, nouvelle prononciation. Voir sa page',
+    );
+    expect(toWordCard({ ...LAPIN, recordings: recordings.slice(0, 1) }).ariaLabel).toContain(
+      ', avec 1 son.',
+    );
   });
 
   it('says what changed, agreed with the kind of entry', () => {

@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   ElementRef,
   inject,
   Injector,
@@ -316,17 +315,6 @@ export class HomePage {
   protected readonly logoutMessage = computed(() =>
     translate('home.logoutMessage', { childName: this.childName() }),
   );
-
-  /**
-   * Marks the cards shown as seen, again when a reload, the search or the filter shows more: their
-   * tags stay for this visit and are gone at the next one; hidden entries keep theirs until shown.
-   */
-  constructor() {
-    effect(() => {
-      const entries = this.activeTab() === 'words' ? this.words() : this.sentences();
-      this.seenWords.markListed(visibleWords(entries, this.query(), this.activeFilter()));
-    });
-  }
 
   /**
    * Opens a tab through the URL, so the back button and a reload keep it; the search restarts.

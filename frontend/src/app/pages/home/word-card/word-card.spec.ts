@@ -18,6 +18,7 @@ const CARD: WordCardView = {
   day: '16',
   month: 'sept',
   change: null,
+  hasSound: false,
   ariaLabel: 'apin, pour lapin, Presque, depuis le 16 septembre 2026. Voir sa page',
 };
 
@@ -50,6 +51,25 @@ describe('WordCard', () => {
       'Alix dit «\u00A0apin\u00A0»',
     );
     expect(link.querySelector('app-card-tag')).toBeNull();
+  });
+
+  it('shows a microphone after the title of an entry that keeps sounds', () => {
+    expect(render(CARD).querySelector('.word-card__sound')).toBeNull();
+    TestBed.resetTestingModule();
+    const sound = render({ ...CARD, hasSound: true }).querySelector('.word-card__sound')!;
+
+    expect(sound.getAttribute('aria-hidden')).toBe('true');
+    expect(sound.querySelector('use')!.getAttribute('href')).toContain('#mic');
+  });
+
+  it('leaves the microphone to the tag of a new sound, and keeps it beside other news', () => {
+    const newSound = render({ ...CARD, hasSound: true, change: 'recording' });
+    expect(newSound.querySelector('.word-card__sound')).toBeNull();
+    TestBed.resetTestingModule();
+    const newStage = render({ ...CARD, hasSound: true, change: 'pronunciation' });
+
+    expect(newStage.querySelector('.word-card__sound')).not.toBeNull();
+    expect(newStage.querySelector('.word-card__change')).not.toBeNull();
   });
 
   it('shows no news tag when nothing changed elsewhere', () => {

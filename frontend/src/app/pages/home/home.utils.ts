@@ -90,14 +90,24 @@ export function visibleWords(words: readonly Word[], query: string, filter: Stat
 }
 
 /**
- * Card of a word or a sentence: first date, its label, its current spoken form and status, and what
- * changed since this device last looked.
+ * Card of a word or a sentence: first date, its label, its current spoken form and status, whether it
+ * keeps sounds, and what changed since this device last looked.
  */
 export function toWordCard(word: Word, change: WordChange | null = null): WordCardView {
   const current = currentPronunciation(word);
   const first = firstSaidDate(word);
   const { day, month } = dayAndMonth(first);
   const news = change ? `, ${translate(CHANGE_LABELS[word.kind][change])}` : '';
+  const soundCount = word.recordings.length;
+  const sounds =
+    soundCount === 0
+      ? ''
+      : translate(
+          isSingular(soundCount) ? 'home.wordCard.soundsOne' : 'home.wordCard.soundsOther',
+          {
+            count: soundCount,
+          },
+        );
   return {
     id: word.id,
     path: entryPath(word),
@@ -107,11 +117,13 @@ export function toWordCard(word: Word, change: WordChange | null = null): WordCa
     day,
     month,
     change,
+    hasSound: soundCount > 0,
     ariaLabel: translate('home.wordCard.ariaLabel', {
       spoken: current.spoken,
       label: word.label,
       status: statusLabel(current.status),
       date: formatLongDate(first),
+      sounds,
       news,
     }),
   };

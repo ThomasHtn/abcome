@@ -116,6 +116,11 @@ export interface WordCardView {
   change: WordChange | null;
 
   /**
+   * Whether the entry keeps at least one sound, shown as a microphone after the title.
+   */
+  hasSound: boolean;
+
+  /**
    * Whole card read as one sentence by screen readers.
    */
   ariaLabel: string;

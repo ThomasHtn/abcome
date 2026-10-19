@@ -41,18 +41,33 @@
   line-height: 1.15;
 }
 
-/* News tag: lavender pill after the title's last word, popping in once the card has landed. */
+/* Microphone and news tag after the title's last word, on one line together. */
+.word-card__marks {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-inline-start: 0.25rem;
+  vertical-align: text-bottom;
+}
+
+/* Microphone of an entry that keeps sounds, quiet beside the title. */
+.word-card__sound {
+  flex: none;
+  color: var(--color-text-muted);
+}
+
+/* News tag: lavender pill popping in once the card has landed, kept until the entry's page is opened. */
 .word-card__change {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   inline-size: 1.875rem;
   block-size: 1.375rem;
-  margin-inline-start: 0.25rem;
   border-radius: var(--radius-pill);
   background-color: var(--color-lavender-100);
   color: var(--color-lavender-700);
-  vertical-align: text-bottom;
 
   @include motion {
     animation: pop var(--duration-pop) var(--ease-pop) both;
@@ -60,12 +75,18 @@
   }
 }
 
-/* The tag's icon sways briefly now and then, swinging from its base. */
-.word-card__change-icon {
-  transform-origin: 50% 60%;
-
+/* Wave: a light band sweeps across the tag now and then, one card after the other down the list. */
+.word-card__change::after {
   @include motion {
-    animation: word-card-sway var(--duration-sway) ease-in-out var(--duration-pop) infinite;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 25%, tint(surface, 85%) 50%, transparent 75%);
+    content: '';
+    transform: translateX(-100%);
+    animation: word-card-wave var(--duration-wave) ease-in-out infinite;
+    animation-delay: calc(
+      var(--word-card-index, 0) * var(--motion-step) + var(--duration-entry) + var(--duration-pop)
+    );
   }
 }
 
@@ -99,23 +120,14 @@
   }
 }
 
-/* Short sway at the end of each period, still the rest of the time. */
-@keyframes word-card-sway {
-  0%,
-  84%,
+/* One sweep at the start of each period, still the rest of the time. */
+@keyframes word-card-wave {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  30%,
   100% {
-    transform: none;
-  }
-
-  88% {
-    transform: rotate(-14deg);
-  }
-
-  92% {
-    transform: rotate(12deg);
-  }
-
-  96% {
-    transform: rotate(-5deg);
+    transform: translateX(100%);
   }
 }

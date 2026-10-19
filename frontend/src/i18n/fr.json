@@ -146,7 +146,9 @@
     "countSentenceOne": "{{ count }} phrase",
     "countSentenceOther": "{{ count }} phrases",
     "wordCard": {
-      "ariaLabel": "{{ spoken }}, pour {{ label }}, {{ status }}, depuis le {{ date }}{{ news }}. Voir sa page",
+      "ariaLabel": "{{ spoken }}, pour {{ label }}, {{ status }}, depuis le {{ date }}{{ sounds }}{{ news }}. Voir sa page",
+      "soundsOne": ", avec {{ count }} son",
+      "soundsOther": ", avec {{ count }} sons",
       "saidBefore": "{{ childName }} dit ",
       "saidAfter": ""
     },

@@ -9,18 +9,21 @@
 
   <!-- The word as the title, then what the child says now, in salmon. -->
   <span class="word-card__text flex min-w-0 flex-1 flex-col gap-0.5">
-    <!-- The title, then what changed elsewhere since this device last looked as a lavender tag after its last word; the aria-label says it. -->
+    <!-- The title, a microphone when it keeps sounds, then what changed elsewhere since this device last looked as a lavender tag until its page is opened; the aria-label says both. -->
     <span class="word-card__label">
       {{ card().label }}
-      @if (card().change; as change) {
-        <span class="word-card__change" aria-hidden="true">
-          <svg
-            class="word-card__change-icon"
-            app-icon
-            [name]="changeIcons[change]"
-            [size]="14"
-            [strokeWidth]="2.6"
-          ></svg>
+      @if (card().hasSound || card().change) {
+        <!-- Kept together after the last word, so the microphone never wraps away from the tag. -->
+        <span class="word-card__marks">
+          <!-- A new sound already shows the microphone in its tag. -->
+          @if (card().hasSound && card().change !== 'recording') {
+            <svg class="word-card__sound" app-icon name="mic" [size]="16" [strokeWidth]="2.4"></svg>
+          }
+          @if (card().change; as change) {
+            <span class="word-card__change" aria-hidden="true">
+              <svg app-icon [name]="changeIcons[change]" [size]="14" [strokeWidth]="2.6"></svg>
+            </span>
+          }
         </span>
       }
     </span>
