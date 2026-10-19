@@ -10,6 +10,7 @@ export function aPronunciation(overrides: Partial<Pronunciation> = {}): Pronunci
     spoken: 'apin',
     status: 'almost',
     date: '2026-10-12',
+    createdAt: '2026-10-12T18:00:00Z',
     ...overrides,
   };
 }

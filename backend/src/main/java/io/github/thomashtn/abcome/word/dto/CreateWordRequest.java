@@ -16,7 +16,7 @@ import jakarta.validation.constraints.Size;
  *
  * @param kind          word (the default) or sentence
  * @param label         the word itself or what the sentence means, cleaned of extra spaces before it is validated
- * @param pronunciation how Côme said it the first time
+ * @param pronunciation how the child said it the first time
  */
 @Schema(description = "New word or sentence with its first pronunciation stage.")
 public record CreateWordRequest(

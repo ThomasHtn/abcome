@@ -133,18 +133,18 @@ describe('titleLength', () => {
     expect(titleLength('anticonstitutionnellement')).toBe('very-long');
   });
 
-  it('names a sound by its day and says what Côme says on it', () => {
+  it('names a sound by its day and says what the child says on it', () => {
     const [sound] = gallerySounds(
       [aRecording({ id: 2, createdAt: '2026-10-16T22:30:00Z', durationMs: 3400 })],
       '2026-10-18',
     );
 
-    expect(soundSheetCopy(sound, 'apin')).toEqual({
+    expect(soundSheetCopy(sound, 'apin', 'Alix')).toEqual({
       heading: 'Son enregistré le 17 octobre',
-      text: 'Côme y dit «\u00A0apin\u00A0». Il dure 3 secondes.',
+      text: 'Alix y dit «\u00A0apin\u00A0». Il dure 3 secondes.',
     });
-    expect(removeSoundText(sound, 'apin')).toBe(
-      'Le son enregistré le 17 octobre, où Côme dit «\u00A0apin\u00A0», sera effacé. ' +
+    expect(removeSoundText(sound, 'apin', 'Alix')).toBe(
+      'Le son enregistré le 17 octobre, où Alix dit «\u00A0apin\u00A0», sera effacé. ' +
         'On ne pourra pas revenir en arrière.',
     );
   });

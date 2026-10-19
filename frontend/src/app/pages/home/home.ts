@@ -17,7 +17,8 @@ import { LOGIN_ROUTE } from '@core/auth/auth.constants';
 import { AuthSession } from '@core/auth/auth-session';
 import { ToastQueue } from '@core/feedback/toast-queue';
 import { resourceValue } from '@core/http/resource.utils';
-import { Word } from '@core/words/word.model';
+import { SeenWords } from '@core/words/seen-words';
+import { Word, WordChange } from '@core/words/word.model';
 import { entriesOfKind, findWordByLabel } from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
 import { ActionBar } from '@shared/action-bar/action-bar';
@@ -82,6 +83,11 @@ export class HomePage {
    * Closes the session at logout.
    */
   private readonly session = inject(AuthSession);
+
+  /**
+   * First name of the child, given by the server with the session.
+   */
+  protected readonly childName = this.session.childName;
 
   /**
    * Switches tab through the URL and leaves after logout.
@@ -159,7 +165,7 @@ export class HomePage {
    * What the search looks for on the open tab, as placeholder and accessible name.
    */
   protected readonly searchLabel = computed(() =>
-    this.tab() === 'words' ? 'Chercher un mot de Côme' : 'Chercher une phrase',
+    this.tab() === 'words' ? `Chercher un mot de ${this.childName()}` : 'Chercher une phrase',
   );
 
   /**
@@ -192,11 +198,32 @@ export class HomePage {
   protected readonly sentences = computed(() => entriesOfKind(this.entries(), 'sentence'));
 
   /**
+   * What this device has already seen, to tag the entries that changed elsewhere.
+   */
+  private readonly seenWords = inject(SeenWords);
+
+  /**
+   * Number of words that changed since this device last looked.
+   */
+  protected readonly wordNews = computed(
+    () => this.words().filter((word) => this.changeOf(word) !== null).length,
+  );
+
+  /**
+   * Number of sentences that changed since this device last looked.
+   */
+  protected readonly sentenceNews = computed(
+    () => this.sentences().filter((sentence) => this.changeOf(sentence) !== null).length,
+  );
+
+  /**
    * Mascot card for the open tab; a greeting rather than "no word yet" until the list is there.
    */
   protected readonly summary = computed(() => {
     const summary =
-      this.tab() === 'words' ? wordsSummary(this.words()) : sentencesSummary(this.sentences());
+      this.tab() === 'words'
+        ? wordsSummary(this.words(), this.wordNews())
+        : sentencesSummary(this.sentences(), this.sentenceNews());
     return this.openListState() === 'ready'
       ? summary
       : { ...summary, emptyHeadline: SUMMARY_PENDING_HEADLINE };
@@ -206,14 +233,20 @@ export class HomePage {
    * Word cards matching the search and filter, by month of first-said date.
    */
   protected readonly wordMonths = computed(() =>
-    groupByMonth(visibleWords(this.words(), this.query(), this.filter()), 'mot'),
+    groupByMonth(visibleWords(this.words(), this.query(), this.filter()), 'mot', (word) =>
+      this.changeOf(word),
+    ),
   );
 
   /**
    * Sentence cards matching the search and filter, by month of first-said date.
    */
   protected readonly sentenceMonths = computed(() =>
-    groupByMonth(visibleWords(this.sentences(), this.query(), this.filter()), 'phrase'),
+    groupByMonth(
+      visibleWords(this.sentences(), this.query(), this.filter()),
+      'phrase',
+      (sentence) => this.changeOf(sentence),
+    ),
   );
 
   /**
@@ -225,7 +258,7 @@ export class HomePage {
    * Why the words list is empty.
    */
   protected readonly emptyWords = computed(() =>
-    emptyWordsMessage(this.query(), this.filter(), this.words().length),
+    emptyWordsMessage(this.query(), this.filter(), this.words().length, this.childName()),
   );
 
   /**
@@ -345,5 +378,12 @@ export class HomePage {
   private filterParam(): string | null {
     const filter = this.filter();
     return filter === 'all' ? null : FILTER_PARAM_VALUES[filter];
+  }
+
+  /**
+   * What changed in an entry since this device last looked.
+   */
+  private changeOf(word: Word): WordChange | null {
+    return this.seenWords.changeOf(word);
   }
 }

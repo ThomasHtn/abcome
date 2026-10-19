@@ -18,7 +18,7 @@ public interface PronunciationService {
     PronunciationResponse findById(Long id);
 
     /**
-     * Adds a stage to a word: Côme says it differently now.
+     * Adds a stage to a word: the child says it differently now.
      *
      * @param wordId  word identifier
      * @param request new stage

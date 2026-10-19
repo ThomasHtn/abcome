@@ -128,6 +128,17 @@ describe('toWordCard', () => {
     expect(card.ariaLabel).toBe(
       'apin, pour lapin, Presque, depuis le 16 septembre 2026. Voir sa page',
     );
+    expect(card.change).toBeNull();
+  });
+
+  it('says what changed, agreed with the kind of entry', () => {
+    expect(toWordCard(LAPIN, 'recording').ariaLabel).toBe(
+      'apin, pour lapin, Presque, depuis le 16 septembre 2026, nouveau son. Voir sa page',
+    );
+    expect(toWordCard(LAPIN, 'entry').ariaLabel).toContain(', nouveau mot.');
+    expect(toWordCard(LAPIN, 'pronunciation').ariaLabel).toContain(', nouvelle prononciation.');
+    expect(toWordCard(SENTENCES[0], 'entry')).toMatchObject({ change: 'entry' });
+    expect(toWordCard(SENTENCES[0], 'entry').ariaLabel).toContain(', nouvelle phrase.');
   });
 });
 
@@ -160,6 +171,12 @@ describe('summaries', () => {
     ]);
   });
 
+  it('counts the entries changed since the last visit, and says nothing without any', () => {
+    expect(wordsSummary([LAPIN], 3).newsText).toBe('3 nouveautés depuis ta visite');
+    expect(sentencesSummary(SENTENCES, 1).newsText).toBe('1 nouveauté depuis ta visite');
+    expect(wordsSummary([LAPIN]).newsText).toBeNull();
+  });
+
   it('has nothing to quote in an empty notebook', () => {
     expect(wordsSummary([])).toMatchObject({
       total: 0,
@@ -187,17 +204,19 @@ describe('summaries', () => {
 
 describe('empty messages', () => {
   it('names the search and the color', () => {
-    expect(emptyWordsMessage(' chien ', 'all', 3)).toBe(
-      "Côme n'a pas encore dit «\u00A0chien\u00A0».",
+    expect(emptyWordsMessage(' chien ', 'all', 3, 'Alix')).toBe(
+      "Alix n'a pas encore dit «\u00A0chien\u00A0».",
     );
-    expect(emptyWordsMessage('chien', 'mastered', 3)).toBe(
-      "Côme n'a pas encore dit «\u00A0chien\u00A0» dans cette couleur.",
+    expect(emptyWordsMessage('chien', 'mastered', 3, 'Alix')).toBe(
+      "Alix n'a pas encore dit «\u00A0chien\u00A0» dans cette couleur.",
     );
   });
 
   it('tells an empty notebook from an empty color', () => {
-    expect(emptyWordsMessage('', 'all', 0)).toBe('Pas encore de mot. Le premier arrive bientôt !');
-    expect(emptyWordsMessage('', 'mastered', 3)).toBe(
+    expect(emptyWordsMessage('', 'all', 0, 'Alix')).toBe(
+      'Pas encore de mot. Le premier arrive bientôt !',
+    );
+    expect(emptyWordsMessage('', 'mastered', 3, 'Alix')).toBe(
       "Aucun mot dans cette couleur pour l'instant.",
     );
   });
@@ -252,6 +271,17 @@ describe('groupByMonth', () => {
 
     expect(october.countText).toBe('2 mots');
     expect(october.cards.map((card) => card.label)).toEqual(['gâteau', 'eau']);
+  });
+
+  it('tags each card with what changed in its entry', () => {
+    const groups = groupByMonth([GATEAU, LAPIN], 'mot', (word) =>
+      word.id === LAPIN.id ? 'pronunciation' : null,
+    );
+
+    expect(groups.flatMap((group) => group.cards.map((card) => card.change))).toEqual([
+      null,
+      'pronunciation',
+    ]);
   });
 
   it('gives no month for an empty list', () => {

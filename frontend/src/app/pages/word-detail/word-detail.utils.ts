@@ -110,21 +110,25 @@ export function titleLength(label: string): TitleLength {
 }
 
 /**
- * Actions sheet of a sound: named by its day, described by what Côme says on it and its length.
+ * Actions sheet of a sound: named by its day, described by what the child says on it and its length.
  */
-export function soundSheetCopy(sound: GallerySound, spoken: string): SoundSheetCopy {
+export function soundSheetCopy(
+  sound: GallerySound,
+  spoken: string,
+  childName: string,
+): SoundSheetCopy {
   return {
     heading: `Son enregistré le ${sound.recordedOn}`,
-    text: `Côme y dit ${quote(spoken)}. Il dure ${sound.length}.`,
+    text: `${childName} y dit ${quote(spoken)}. Il dure ${sound.length}.`,
   };
 }
 
 /**
  * Consequence of deleting a sound, naming it the way the actions sheet does.
  */
-export function removeSoundText(sound: GallerySound, spoken: string): string {
+export function removeSoundText(sound: GallerySound, spoken: string, childName: string): string {
   return (
-    `Le son enregistré le ${sound.recordedOn}, où Côme dit ${quote(spoken)}, sera effacé. ` +
+    `Le son enregistré le ${sound.recordedOn}, où ${childName} dit ${quote(spoken)}, sera effacé. ` +
     'On ne pourra pas revenir en arrière.'
   );
 }

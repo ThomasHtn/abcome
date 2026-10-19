@@ -5,7 +5,8 @@ import { firstValueFrom } from 'rxjs';
 
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
 
-import { AuthStatus } from './auth.model';
+import { CHILD_NAME_FALLBACK } from './auth.constants';
+import { AuthStatus, SessionInfo } from './auth.model';
 
 /**
  * Family session state; the server holds the session, this only mirrors whether one is open.
@@ -33,6 +34,11 @@ export class AuthSession {
   public readonly signedIn = computed(() => this.status() === 'signed-in');
 
   /**
+   * First name of the child, given by the server with the session; a neutral one until then.
+   */
+  public readonly childName = signal(CHILD_NAME_FALLBACK);
+
+  /**
    * Asks the server once whether a session is open; later calls reuse the answer.
    * Only a 401 means signed out: offline or a server error keeps the visitor in the app, where each
    * screen shows its own retry state, and the next 401 still sends them to the login screen.
@@ -41,9 +47,9 @@ export class AuthSession {
     if (this.status() !== 'unknown') {
       return Promise.resolve(this.signedIn());
     }
-    this.pendingCheck ??= firstValueFrom(this.http.get(API_ENDPOINTS.session))
+    this.pendingCheck ??= firstValueFrom(this.http.get<SessionInfo>(API_ENDPOINTS.session))
       .then(
-        () => this.status.set('signed-in'),
+        (session) => this.open(session),
         (error: unknown) =>
           this.status.set(
             error instanceof HttpErrorResponse && error.status === HttpStatusCode.Unauthorized
@@ -62,8 +68,7 @@ export class AuthSession {
    * Opens a session; rejects with the HTTP error so the login screen can read its code.
    */
   public async signIn(password: string): Promise<void> {
-    await firstValueFrom(this.http.post<void>(API_ENDPOINTS.login, { password }));
-    this.status.set('signed-in');
+    this.open(await firstValueFrom(this.http.post<SessionInfo>(API_ENDPOINTS.login, { password })));
   }
 
   /**
@@ -86,5 +91,13 @@ export class AuthSession {
    */
   public markSignedOut(): void {
     this.status.set('signed-out');
+  }
+
+  /**
+   * Records an open session and what it tells about the child.
+   */
+  private open(session: SessionInfo): void {
+    this.childName.set(session.childName);
+    this.status.set('signed-in');
   }
 }

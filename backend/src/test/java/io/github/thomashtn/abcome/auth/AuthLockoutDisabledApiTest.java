@@ -24,7 +24,7 @@ class AuthLockoutDisabledApiTest extends PostgreSqlIntegrationTest {
             login("wrong " + attempt, address).andExpect(status().isUnauthorized());
         }
 
-        login(FAMILY_PASSWORD, address).andExpect(status().isNoContent());
+        login(FAMILY_PASSWORD, address).andExpect(status().isOk());
     }
 
     /**

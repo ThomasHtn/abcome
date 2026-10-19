@@ -2,7 +2,9 @@ package io.github.thomashtn.abcome.auth.controller;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.thomashtn.abcome.auth.dto.LoginRequest;
+import io.github.thomashtn.abcome.auth.dto.SessionResponse;
 import io.github.thomashtn.abcome.auth.service.AuthService;
+import io.github.thomashtn.abcome.shared.config.ApplicationProperties;
 import io.github.thomashtn.abcome.shared.exception.ApiErrorResponse;
 import io.github.thomashtn.abcome.shared.exception.UnauthorizedException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,18 +44,27 @@ public class AuthController {
     private final CookieSerializer cookieSerializer;
 
     /**
+     * Answer of the session check and the login, naming the child only to a signed-in visitor.
+     */
+    private final SessionResponse sessionResponse;
+
+    /**
      * Creates the controller.
      *
      * @param authService      session service
      * @param cookieSerializer session cookie writer
+     * @param properties       application settings, holding the child's name
      */
     @SuppressFBWarnings(
         value = "EI_EXPOSE_REP2",
         justification = "CookieSerializer is the shared Spring Session bean, configured once at startup."
     )
-    public AuthController(AuthService authService, CookieSerializer cookieSerializer) {
+    public AuthController(
+        AuthService authService, CookieSerializer cookieSerializer, ApplicationProperties properties
+    ) {
         this.authService = authService;
         this.cookieSerializer = cookieSerializer;
+        this.sessionResponse = new SessionResponse(properties.childName());
     }
 
     /**
@@ -65,14 +76,14 @@ public class AuthController {
      * @param csrfToken CSRF token of the request; reading it writes the {@code XSRF-TOKEN} cookie
      * @param request   current request, holding the session
      * @param response  response receiving the renewed session cookie
-     * @return 204 inside a session
+     * @return 200 with the session inside one
      */
     @GetMapping("/session")
     @Operation(summary = "Check the session", description = "Also sets the XSRF-TOKEN cookie.")
-    @ApiResponse(responseCode = "204", description = "Signed in.")
+    @ApiResponse(responseCode = "200", description = "Signed in.")
     @ApiResponse(responseCode = "401", description = "UNAUTHENTICATED: no valid session.",
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    public ResponseEntity<Void> session(
+    public ResponseEntity<SessionResponse> session(
         CsrfToken csrfToken, HttpServletRequest request, HttpServletResponse response
     ) {
         // The token is deferred: without this read, the cookie would never reach a fresh visitor.
@@ -84,7 +95,7 @@ public class AuthController {
         if (session != null) {
             cookieSerializer.writeCookieValue(new CookieSerializer.CookieValue(request, response, session.getId()));
         }
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(sessionResponse);
     }
 
     /**
@@ -93,22 +104,22 @@ public class AuthController {
      * @param loginRequest password typed by the family member
      * @param request      current request
      * @param response     current response, receiving the session cookie
-     * @return 204 with the session cookie
+     * @return 200 with the session and its cookie
      */
     @PostMapping("/login")
     @Operation(summary = "Sign in with the family password")
-    @ApiResponse(responseCode = "204", description = "Signed in; the session cookie is set.")
+    @ApiResponse(responseCode = "200", description = "Signed in; the session cookie is set.")
     @ApiResponse(responseCode = "400", description = "INVALID_REQUEST: empty or oversized password.",
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     @ApiResponse(responseCode = "401", description = "INVALID_CREDENTIALS: wrong password.",
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
     @ApiResponse(responseCode = "429", description = "TOO_MANY_ATTEMPTS: address locked out, see Retry-After.",
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
-    public ResponseEntity<Void> login(
+    public ResponseEntity<SessionResponse> login(
         @Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response
     ) {
         authService.login(loginRequest.password(), request, response);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(sessionResponse);
     }
 
     /**

@@ -56,7 +56,7 @@
   }
 }
 
-/* "Côme a déjà dit ...". */
+/* "[child] a déjà dit ...". */
 .home-summary__headline {
   margin: 0;
   font-family: var(--font-display);
@@ -77,6 +77,23 @@
   color: var(--color-text-muted);
   font-size: 0.8125rem;
   font-weight: 700;
+}
+
+/* "3 nouveautés depuis ta visite", in the lavender of the news tags. */
+.home-summary__news {
+  margin: 0;
+  color: var(--color-lavender-700);
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+/* Lavender dot before the news count. */
+.home-summary__news-dot {
+  flex: none;
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+  border-radius: 50%;
+  background-color: var(--color-lavender-700);
 }
 
 /* Count list, reset. */

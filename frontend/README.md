@@ -63,6 +63,7 @@ Lists are loaded whole, shared by every screen and patched locally after each wr
 | `core/dictionary/dictionary-api.ts` | `entries` resource, in acquisition order                               |
 | `core/feedback/`                    | `ToastQueue.show(text)`, `Celebration.play()` (confetti)               |
 | `core/words/word.utils.ts`          | Current stage and status, sorting, counting, search                    |
+| `core/words/seen-words.ts`          | What this device has seen: `changeOf(word)`, `markSeen(word)`          |
 | `core/words/word.constants.ts`      | Statuses and French labels                                             |
 | `core/text/text.utils.ts`           | Normalization and search ranking (twin of the backend)                 |
 | `core/date/date.utils.ts`           | `todayIso()` (Paris) and date formatting                               |

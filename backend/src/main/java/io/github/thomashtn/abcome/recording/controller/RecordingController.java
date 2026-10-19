@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Sounds of the words: uploaded raw under a stage, played back, moved to another stage and deleted by id.
  */
 @RestController
-@Tag(name = "Recordings", description = "Short sounds of Côme saying a word.")
+@Tag(name = "Recordings", description = "Short sounds of the child saying a word.")
 public class RecordingController {
 
     /**

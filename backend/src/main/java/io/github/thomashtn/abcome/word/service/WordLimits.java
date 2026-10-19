@@ -37,7 +37,7 @@ final class WordLimits {
      */
     static void checkSpoken(WordKind kind, String spoken) {
         if (spoken.length() > kind.spokenMaxLength()) {
-            throw new InvalidRequestException("What Côme says of a " + kind.code() + " is at most "
+            throw new InvalidRequestException("What the child says of a " + kind.code() + " is at most "
                 + kind.spokenMaxLength() + " characters long.");
         }
     }

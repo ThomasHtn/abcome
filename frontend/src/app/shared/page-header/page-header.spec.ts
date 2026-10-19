@@ -23,7 +23,7 @@ describe('PageHeader', () => {
 
   it('has no back link without a target', () => {
     const fixture = TestBed.createComponent(PageHeader);
-    fixture.componentRef.setInput('heading', 'Les mots de Côme');
+    fixture.componentRef.setInput('heading', 'Les mots de Alix');
     fixture.detectChanges();
 
     expect((fixture.nativeElement as HTMLElement).querySelector('a')).toBeNull();

@@ -47,10 +47,12 @@ describe('recording-new utils', () => {
   });
 
   it('words the instruction and the title of each step', () => {
-    expect(recordingInstruction('ready', false)).toContain('Touche le micro');
-    expect(recordingInstruction('recording', false)).toContain('carré rouge');
-    expect(recordingInstruction('review', false)).toContain('Recommence autant que tu veux');
-    expect(recordingInstruction('review', true)).toBe(
+    expect(recordingInstruction('ready', false, 'Alix')).toContain('Touche le micro');
+    expect(recordingInstruction('recording', false, 'Alix')).toContain('carré rouge');
+    expect(recordingInstruction('review', false, 'Alix')).toContain(
+      'Recommence autant que tu veux',
+    );
+    expect(recordingInstruction('review', true, 'Alix')).toBe(
       "15 secondes, c'est le maximum\u00A0: l'enregistrement s'est arrêté tout seul.",
     );
     expect(recordingTitle('ready', true)).toBe('Enregistrer un son');
@@ -60,19 +62,19 @@ describe('recording-new utils', () => {
 
   it('closes with a message matching what was saved', () => {
     const base = { label: 'lapin', wordId: 1 };
-    expect(doneCopy({ ...base, kind: 'new', spoken: 'apin', soundCount: 1 })).toEqual({
+    expect(doneCopy({ ...base, kind: 'new', spoken: 'apin', soundCount: 1 }, 'Alix')).toEqual({
       title: '«\u00A0lapin\u00A0» est dans ses mots\u00A0!',
-      text: "Côme le dit «\u00A0apin\u00A0». Son premier son t'attend sur sa page.",
+      text: "Alix le dit «\u00A0apin\u00A0». Son premier son t'attend sur sa page.",
     });
-    expect(doneCopy({ ...base, kind: 'added', spoken: '', soundCount: 3 })).toEqual({
+    expect(doneCopy({ ...base, kind: 'added', spoken: '', soundCount: 3 }, 'Alix')).toEqual({
       title: 'Son ajouté à «\u00A0lapin\u00A0»\u00A0!',
       text: 'Il a maintenant 3 sons. Tu les retrouves sur sa page.',
     });
-    expect(doneCopy({ ...base, kind: 'stage', spoken: 'lapin', soundCount: 2 })).toEqual({
+    expect(doneCopy({ ...base, kind: 'stage', spoken: 'lapin', soundCount: 2 }, 'Alix')).toEqual({
       title: 'Nouvelle prononciation de «\u00A0lapin\u00A0»\u00A0!',
-      text: "Côme le dit «\u00A0lapin\u00A0». Le son l'accompagne sur sa page.",
+      text: "Alix le dit «\u00A0lapin\u00A0». Le son l'accompagne sur sa page.",
     });
-    expect(doneCopy({ ...base, kind: 'added', spoken: '', soundCount: 1 }).text).toBe(
+    expect(doneCopy({ ...base, kind: 'added', spoken: '', soundCount: 1 }, 'Alix').text).toBe(
       'Tu le retrouves sur sa page.',
     );
   });

@@ -5,7 +5,7 @@ import { TextField } from './text-field';
 describe('TextField', () => {
   it('links the label to the input and reports what is typed', () => {
     const fixture = TestBed.createComponent(TextField);
-    fixture.componentRef.setInput('label', 'Comment Côme le dit');
+    fixture.componentRef.setInput('label', 'Comment Alix le dit');
     fixture.componentRef.setInput('maxLength', 60);
     fixture.detectChanges();
 
@@ -23,24 +23,24 @@ describe('TextField', () => {
 
   it('marks the field invalid and announces the error instead of the hint', () => {
     const fixture = TestBed.createComponent(TextField);
-    fixture.componentRef.setInput('label', 'Ce que Côme a dit');
+    fixture.componentRef.setInput('label', 'Ce que Alix a dit');
     fixture.componentRef.setInput('multiline', true);
     fixture.componentRef.setInput('hint', 'Une aide');
-    fixture.componentRef.setInput('error', 'Écris ce que Côme a dit.');
+    fixture.componentRef.setInput('error', 'Écris ce que Alix a dit.');
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
     const textarea = element.querySelector('textarea');
     expect(textarea?.getAttribute('aria-invalid')).toBe('true');
     expect(element.querySelector('[role="alert"]')?.textContent?.trim()).toBe(
-      'Écris ce que Côme a dit.',
+      'Écris ce que Alix a dit.',
     );
     expect(element.textContent).not.toContain('Une aide');
   });
 
   it('marks a field to fill with an asterisk and as required', () => {
     const fixture = TestBed.createComponent(TextField);
-    fixture.componentRef.setInput('label', 'Comment Côme le dit');
+    fixture.componentRef.setInput('label', 'Comment Alix le dit');
     fixture.componentRef.setInput('required', true);
     fixture.detectChanges();
 

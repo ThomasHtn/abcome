@@ -13,7 +13,7 @@ import { WORD_PICKER_MAX_SUGGESTIONS } from './word-picker.constants';
 import { WordChoice, WordSuggestion } from './word-picker.model';
 
 /**
- * Every pickable entry: the notebook's words and sentences first, then the dictionary entries Côme does
+ * Every pickable entry: the notebook's words and sentences first, then the dictionary entries the child does
  * not say yet as a word.
  */
 export function pickerCandidates(

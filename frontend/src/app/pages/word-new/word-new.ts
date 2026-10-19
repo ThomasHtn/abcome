@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
+import { AuthSession } from '@core/auth/auth-session';
 import { Today } from '@core/date/today';
 import { DictionaryEntry } from '@core/dictionary/dictionary.model';
 import { DictionaryApi } from '@core/dictionary/dictionary-api';
@@ -41,8 +42,8 @@ import { CATEGORY_ICONS } from './word-new.constants';
 import { saveBlocker, wordNewQuestion } from './word-new.utils';
 
 /**
- * Add-word screen: find the word in the dictionary (or type a new one), note how Côme said it and
- * when, then open its page. A word Côme already says leads to its page instead of a duplicate.
+ * Add-word screen: find the word in the dictionary (or type a new one), note how the child said it and
+ * when, then open its page. A word the child already says leads to its page instead of a duplicate.
  */
 @Component({
   selector: 'app-word-new-page',
@@ -91,6 +92,11 @@ export class WordNewPage {
    * Today in Paris, the latest day the first stage can be dated.
    */
   private readonly today = inject(Today).iso;
+
+  /**
+   * First name of the child, given by the server with the session.
+   */
+  protected readonly childName = inject(AuthSession).childName;
 
   /**
    * `?mot=` query parameter, prefilling the search (home's "Ajouter « x » à ses mots").
@@ -158,7 +164,7 @@ export class WordNewPage {
    * Lapinou's question.
    */
   protected readonly question = computed(() =>
-    wordNewQuestion(this.choice(), this.existing() !== null),
+    wordNewQuestion(this.choice(), this.existing() !== null, this.childName()),
   );
 
   /**

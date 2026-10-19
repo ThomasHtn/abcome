@@ -48,10 +48,11 @@ class AuthApiTest extends PostgreSqlIntegrationTest {
 
     @Test
     @DisplayName("Opens a session with the family password, in a __Host- cookie that is HttpOnly, Secure, Strict "
-        + "and kept 30 days")
+        + "and kept 30 days, and answers with the child's name")
     void signsIn() throws Exception {
         String setCookie = login(FAMILY_PASSWORD, "203.0.113.10")
-            .andExpect(status().isNoContent())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.childName").value(CHILD_NAME))
             .andReturn().getResponse().getHeader(HttpHeaders.SET_COOKIE);
 
         assertThat(setCookie)
@@ -61,10 +62,11 @@ class AuthApiTest extends PostgreSqlIntegrationTest {
     }
 
     @Test
-    @DisplayName("Answers 204 to a session check inside a session")
+    @DisplayName("Answers 200 with the child's name to a session check inside a session")
     void checksSessionOfFamilyMember() throws Exception {
         mockMvc().perform(get("/api/auth/session").cookie(signIn()))
-            .andExpect(status().isNoContent());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.childName").value(CHILD_NAME));
     }
 
     @Test
@@ -73,7 +75,7 @@ class AuthApiTest extends PostgreSqlIntegrationTest {
         Cookie session = signIn();
 
         String setCookie = mockMvc().perform(get("/api/auth/session").cookie(session))
-            .andExpect(status().isNoContent())
+            .andExpect(status().isOk())
             .andReturn().getResponse().getHeaders(HttpHeaders.SET_COOKIE).stream()
             .filter(header -> header.startsWith(SESSION_COOKIE + "="))
             .findFirst().orElse("");
@@ -123,7 +125,7 @@ class AuthApiTest extends PostgreSqlIntegrationTest {
             .andReturn().getResponse().getHeader(HttpHeaders.RETRY_AFTER);
         assertThat(Long.parseLong(retryAfter)).isBetween(1L, 60L);
 
-        login(FAMILY_PASSWORD, "198.51.100.8").andExpect(status().isNoContent());
+        login(FAMILY_PASSWORD, "198.51.100.8").andExpect(status().isOk());
     }
 
     @Test
@@ -136,7 +138,7 @@ class AuthApiTest extends PostgreSqlIntegrationTest {
                 .with(xsrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"password\":\"" + FAMILY_PASSWORD + "\"}"))
-            .andExpect(status().isNoContent())
+            .andExpect(status().isOk())
             .andReturn().getResponse().getCookie(SESSION_COOKIE);
 
         assertThat(after).isNotNull();

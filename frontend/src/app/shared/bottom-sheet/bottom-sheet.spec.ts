@@ -12,7 +12,7 @@ import { BottomSheet } from './bottom-sheet';
   template: `<button type="button" (click)="open.set(true)">Ajouter une phrase</button>
     <app-bottom-sheet heading="Nouvelle phrase" [(open)]="open" [error]="error()"
       ><p>Formulaire</p>
-      <input aria-label="Ce que Côme a dit" />
+      <input aria-label="Ce que Alix a dit" />
       <div sheetActions><button type="button">Enregistrer</button></div></app-bottom-sheet
     >`,
 })

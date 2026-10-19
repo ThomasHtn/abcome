@@ -16,6 +16,7 @@ import org.springframework.validation.annotation.Validated;
  * Application settings under {@code app.*}, validated at startup so a bad value stops the boot.
  *
  * @param apiDocsEnabled whether the OpenAPI document and Swagger UI are served and reachable
+ * @param childName      first name of the child, kept out of the repository and shown only after login
  * @param timeZone       zone of the family, in which "today" is judged
  * @param auth           family password and login lockout
  * @param recording      limits of an uploaded recording
@@ -24,6 +25,7 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties("app")
 public record ApplicationProperties(
     boolean apiDocsEnabled,
+    @NotBlank(message = "CHILD_NAME must be set") String childName,
     @NotNull ZoneId timeZone,
     @NotNull @Valid Auth auth,
     @NotNull @Valid Recording recording

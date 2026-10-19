@@ -10,7 +10,7 @@ import java.time.LocalDate;
 public final class FamilyDates {
 
     /**
-     * Earliest date the notebook accepts, well before Côme's first word: catches a mistyped year (0202).
+     * Earliest date the notebook accepts, well before the child's first word: catches a mistyped year (0202).
      */
     public static final LocalDate FIRST_DAY = LocalDate.of(2020, 1, 1);
 
@@ -21,7 +21,7 @@ public final class FamilyDates {
     }
 
     /**
-     * Refuses a date after today, since nobody notes a word Côme has not said yet, or before
+     * Refuses a date after today, since nobody notes a word the child has not said yet, or before
      * {@link #FIRST_DAY}, a mistyped year.
      *
      * @param date  date sent by the caller

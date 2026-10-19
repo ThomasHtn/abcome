@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Pronunciation stages: added under a word, then addressed by their own id.
  */
 @RestController
-@Tag(name = "Pronunciations", description = "Stages of a word: how Côme said it on a given day.")
+@Tag(name = "Pronunciations", description = "Stages of a word: how the child said it on a given day.")
 public class PronunciationController {
 
     /**

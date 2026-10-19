@@ -1,6 +1,13 @@
 import { matchesQuery, normalizeText } from '@core/text/text.utils';
 
-import { Pronunciation, PronunciationStatus, Recording, Word, WordKind } from './word.model';
+import {
+  Pronunciation,
+  PronunciationStatus,
+  Recording,
+  Word,
+  WordChange,
+  WordKind,
+} from './word.model';
 
 /**
  * Stages oldest first, by date then id, the order the API also guarantees.
@@ -20,7 +27,7 @@ export function currentPronunciation(word: Word): Pronunciation {
 }
 
 /**
- * Oldest stage of a word: the first time Côme said it.
+ * Oldest stage of a word: the first time the child said it.
  */
 export function firstPronunciation(word: Word): Pronunciation {
   return sortPronunciations(word.pronunciations)[0];
@@ -34,7 +41,7 @@ export function currentStatus(word: Word): PronunciationStatus {
 }
 
 /**
- * Day Côme first said the word, `yyyy-MM-dd`.
+ * Day the child first said the word, `yyyy-MM-dd`.
  */
 export function firstSaidDate(word: Word): string {
   return firstPronunciation(word).date;
@@ -186,4 +193,29 @@ export function removeRecording(words: readonly Word[], recordingId: number): Wo
       ? { ...word, recordings: word.recordings.filter((recording) => recording.id !== recordingId) }
       : word,
   );
+}
+
+/**
+ * Instant of the entry's latest addition (itself, a stage or a sound), in epoch milliseconds.
+ */
+export function latestChangeAt(word: Word): number {
+  return Math.max(
+    Date.parse(word.createdAt),
+    ...word.pronunciations.map((stage) => Date.parse(stage.createdAt)),
+    ...word.recordings.map((recording) => Date.parse(recording.createdAt)),
+  );
+}
+
+/**
+ * Most telling addition to the entry after `since` (epoch milliseconds), `null` when nothing is newer.
+ */
+export function changeSince(word: Word, since: number): WordChange | null {
+  const isNewer = (instant: string): boolean => Date.parse(instant) > since;
+  if (isNewer(word.createdAt)) {
+    return 'entry';
+  }
+  if (word.pronunciations.some((stage) => isNewer(stage.createdAt))) {
+    return 'pronunciation';
+  }
+  return word.recordings.some((recording) => isNewer(recording.createdAt)) ? 'recording' : null;
 }

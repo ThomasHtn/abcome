@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
+import { AuthSession } from '@core/auth/auth-session';
+
 import { HomeSummary } from '../home.model';
 import { HomeSummaryCard } from './home-summary';
 
@@ -17,6 +19,7 @@ const SUMMARY: HomeSummary = {
     { status: 'almost', count: 1, label: '1 Presque' },
     { status: 'learning', count: 1, label: '1 En route' },
   ],
+  newsText: null,
 };
 
 describe('HomeSummaryCard', () => {
@@ -24,6 +27,7 @@ describe('HomeSummaryCard', () => {
    * Renders the card and returns its text, whitespace collapsed.
    */
   function render(summary: HomeSummary): string {
+    TestBed.inject(AuthSession).childName.set('Alix');
     const fixture = TestBed.createComponent(HomeSummaryCard);
     fixture.componentRef.setInput('summary', summary);
     fixture.detectChanges();
@@ -33,9 +37,16 @@ describe('HomeSummaryCard', () => {
   it('says how many words, the latest and the counts per color', () => {
     const text = render(SUMMARY);
 
-    expect(text).toContain('Côme a déjà dit 3 mots !');
+    expect(text).toContain('Alix a déjà dit 3 mots !');
     expect(text).toContain('Dernier\u00A0: gâteau, dit «\u00A0tato\u00A0»');
     expect(text).toContain('1 Bien dit');
+  });
+
+  it('counts what changed since the last visit, only when something did', () => {
+    expect(render({ ...SUMMARY, newsText: '3 nouveautés depuis ta visite' })).toContain(
+      '3 nouveautés depuis ta visite',
+    );
+    expect(render(SUMMARY)).not.toContain('nouveauté');
   });
 
   it('waits for the first word in an empty notebook', () => {

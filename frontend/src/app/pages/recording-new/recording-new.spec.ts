@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
+import { AuthSession } from '@core/auth/auth-session';
 import { DictionaryApi } from '@core/dictionary/dictionary-api';
 import { aPronunciation, aRecording, aWord } from '@core/words/word.fixtures';
 import {
@@ -66,7 +67,12 @@ describe('RecordingNewPage', () => {
             },
             addPronunciation: (wordId: number, request: PronunciationRequest) => {
               addedStages.push(request);
-              const stage: Pronunciation = { id: 12, wordId, ...request };
+              const stage: Pronunciation = {
+                id: 12,
+                wordId,
+                ...request,
+                createdAt: '2026-10-19T10:00:00Z',
+              };
               words.update((list) => upsertPronunciation(list, stage));
               return Promise.resolve(stage);
             },
@@ -101,6 +107,7 @@ describe('RecordingNewPage', () => {
         ],
       },
     });
+    TestBed.inject(AuthSession).childName.set('Alix');
   });
 
   /**
@@ -151,7 +158,7 @@ describe('RecordingNewPage', () => {
   it('records, then offers to listen, retry or keep the sound', async () => {
     const fixture = render();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Touche le micro quand Côme commence à parler');
+    expect(element.textContent).toContain('Touche le micro quand Alix commence à parler');
 
     await press(fixture, "Commencer l'enregistrement");
 
@@ -245,7 +252,7 @@ describe('RecordingNewPage', () => {
 
     await press(fixture, "Commencer l'enregistrement");
     await press(fixture, 'Garder ce son');
-    expect(element.textContent).toContain('Que dit Côme sur ce son\u00A0?');
+    expect(element.textContent).toContain('Que dit Alix sur ce son\u00A0?');
     await press(fixture, 'apin');
 
     expect(uploads).toEqual([[11, 2400]]);

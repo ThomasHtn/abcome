@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
+import { AuthSession } from '@core/auth/auth-session';
 import { formatShortDateWithYear } from '@core/date/date.utils';
 import { Today } from '@core/date/today';
 import { Celebration } from '@core/feedback/celebration';
@@ -18,6 +19,7 @@ import { ToastQueue } from '@core/feedback/toast-queue';
 import { apiErrorCode, isNotFound } from '@core/http/api-error.utils';
 import { resourceValue } from '@core/http/resource.utils';
 import { quote } from '@core/text/text.utils';
+import { SeenWords } from '@core/words/seen-words';
 import { LABEL_MAX_LENGTHS } from '@core/words/word.constants';
 import { Pronunciation, Recording, Word, WordKind } from '@core/words/word.model';
 import {
@@ -108,6 +110,11 @@ export class WordDetailPage {
   private readonly celebration = inject(Celebration);
 
   /**
+   * Clears the entry's news tag on this device once its page is shown.
+   */
+  private readonly seenWords = inject(SeenWords);
+
+  /**
    * Tells where the visitor came from, for the back arrow.
    */
   private readonly router = inject(Router);
@@ -116,6 +123,11 @@ export class WordDetailPage {
    * Goes back in the browser history, so the list keeps its tab and search.
    */
   private readonly location = inject(Location);
+
+  /**
+   * First name of the child, given by the server with the session.
+   */
+  protected readonly childName = inject(AuthSession).childName;
 
   /**
    * Timer bringing Lapinou back to rest after a celebration jump.
@@ -204,7 +216,7 @@ export class WordDetailPage {
   protected readonly actionSoundCopy = computed(() => {
     const sound = this.sounds().find((item) => item.recording.id === this.actionSound()?.id);
     return sound
-      ? soundSheetCopy(sound, this.spokenOn(sound.recording))
+      ? soundSheetCopy(sound, this.spokenOn(sound.recording), this.childName())
       : { heading: '', text: '' };
   });
 
@@ -226,12 +238,12 @@ export class WordDetailPage {
   protected readonly removingSound = signal<Recording | null>(null);
 
   /**
-   * Consequence of the sound deletion, naming its day and what Côme says on it.
+   * Consequence of the sound deletion, naming its day and what the child says on it.
    */
   protected readonly removeSoundMessage = computed(() => {
     const removing = this.removingSound();
     const sound = this.sounds().find((item) => item.recording.id === removing?.id);
-    return sound ? removeSoundText(sound, this.spokenOn(sound.recording)) : '';
+    return sound ? removeSoundText(sound, this.spokenOn(sound.recording), this.childName()) : '';
   });
 
   /**
@@ -279,7 +291,7 @@ export class WordDetailPage {
   );
 
   /**
-   * Example in the new stage's spoken field: what Côme said before.
+   * Example in the new stage's spoken field: what the child said before.
    */
   protected readonly spokenPlaceholder = computed(() =>
     this.editing() ? '' : `avant\u00A0: ${this.current()?.spoken ?? ''}`,
@@ -347,8 +359,9 @@ export class WordDetailPage {
   protected readonly shortDate = formatShortDateWithYear;
 
   /**
-   * Stops the jump timer when the page goes away, and moves an entry opened under the other kind's
-   * path (`/mots/` for a sentence) to its own, so its wording and limits match.
+   * Stops the jump timer when the page goes away, moves an entry opened under the other kind's path
+   * (`/mots/` for a sentence) to its own, so its wording and limits match, and marks what the page
+   * shows as seen, again when a reload brings a change made elsewhere.
    */
   constructor() {
     inject(DestroyRef).onDestroy(() => clearTimeout(this.jumpTimer));
@@ -356,6 +369,12 @@ export class WordDetailPage {
       const word = this.word();
       if (word && word.kind !== this.kind()) {
         void this.router.navigateByUrl(entryPath(word), { replaceUrl: true });
+      }
+    });
+    effect(() => {
+      const word = this.word();
+      if (word) {
+        this.seenWords.markSeen(word);
       }
     });
   }
@@ -632,7 +651,7 @@ export class WordDetailPage {
    */
   private celebrate(label: string): void {
     this.celebration.play();
-    this.toasts.show(`Bravo Côme\u00A0! ${quote(label)} passe au vert`);
+    this.toasts.show(`Bravo ${this.childName()}\u00A0! ${quote(label)} passe au vert`);
     clearTimeout(this.jumpTimer);
     this.mascotState.set('jump');
     this.jumpTimer = setTimeout(() => this.mascotState.set('idle'), MASCOT_JUMP_MS);
@@ -696,7 +715,7 @@ export class WordDetailPage {
   }
 
   /**
-   * What Côme says on a sound: the spoken form of the stage it is filed under.
+   * What the child says on a sound: the spoken form of the stage it is filed under.
    */
   private spokenOn(recording: Recording): string {
     const stage = this.word()?.pronunciations.find(

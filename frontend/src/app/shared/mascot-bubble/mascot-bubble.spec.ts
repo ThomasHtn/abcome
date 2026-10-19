@@ -9,7 +9,7 @@ import { MascotBubble } from './mascot-bubble';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MascotBubble],
-  template: `<app-mascot-bubble live>Quel mot Côme a-t-il dit ?</app-mascot-bubble>`,
+  template: `<app-mascot-bubble live>Quel mot Alix a-t-il dit ?</app-mascot-bubble>`,
 })
 class Host {}
 
@@ -20,7 +20,7 @@ describe('MascotBubble', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     const bubble = element.querySelector('p');
-    expect(bubble?.textContent?.trim()).toBe('Quel mot Côme a-t-il dit ?');
+    expect(bubble?.textContent?.trim()).toBe('Quel mot Alix a-t-il dit ?');
     expect(bubble?.getAttribute('role')).toBe('status');
     expect(element.querySelector('img')?.getAttribute('alt')).toBe('');
   });

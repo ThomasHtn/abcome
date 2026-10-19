@@ -7,7 +7,7 @@ import { DictionaryEntry } from './dictionary.model';
 
 /**
  * Shortcuts of the add-word screen: the first `frequent` entries in API order (earliest acquired first)
- * that Côme does not say yet, so a tap never leads to a duplicate.
+ * that the child does not say yet, so a tap never leads to a duplicate.
  */
 export function frequentShortcuts(
   entries: readonly DictionaryEntry[],

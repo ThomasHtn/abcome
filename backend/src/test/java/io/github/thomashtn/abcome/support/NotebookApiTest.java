@@ -42,7 +42,7 @@ public abstract class NotebookApiTest extends PostgreSqlIntegrationTest {
      * Adds a word with one stage through the API.
      *
      * @param label  the word
-     * @param spoken what Côme said
+     * @param spoken what the child said
      * @param status stage status code
      * @param date   stage date
      * @return created word identifier
@@ -73,7 +73,7 @@ public abstract class NotebookApiTest extends PostgreSqlIntegrationTest {
      * Builds the JSON of a new word.
      *
      * @param label  the word
-     * @param spoken what Côme said
+     * @param spoken what the child said
      * @param status stage status code
      * @param date   stage date
      * @return request body
@@ -87,7 +87,7 @@ public abstract class NotebookApiTest extends PostgreSqlIntegrationTest {
     /**
      * Builds the JSON of a stage.
      *
-     * @param spoken what Côme said
+     * @param spoken what the child said
      * @param status stage status code
      * @param date   stage date
      * @return request body

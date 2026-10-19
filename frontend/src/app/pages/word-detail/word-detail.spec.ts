@@ -3,9 +3,11 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
+import { AuthSession } from '@core/auth/auth-session';
 import { Celebration } from '@core/feedback/celebration';
 import { ToastQueue } from '@core/feedback/toast-queue';
 import { Waveforms } from '@core/recordings/waveforms';
+import { SeenWords } from '@core/words/seen-words';
 import { aPronunciation, aRecording, aWord } from '@core/words/word.fixtures';
 import { Pronunciation, PronunciationRequest, Word, WordKind } from '@core/words/word.model';
 import { removeRecording, replaceRecording, upsertPronunciation } from '@core/words/word.utils';
@@ -76,7 +78,12 @@ describe('WordDetailPage', () => {
               if (addStageError) {
                 return Promise.reject(addStageError);
               }
-              const stage: Pronunciation = { id: 12, wordId, ...request };
+              const stage: Pronunciation = {
+                id: 12,
+                wordId,
+                ...request,
+                createdAt: '2026-10-19T10:00:00Z',
+              };
               words.update((list) => upsertPronunciation(list, stage));
               return Promise.resolve(stage);
             },
@@ -102,6 +109,7 @@ describe('WordDetailPage', () => {
         },
       ],
     });
+    TestBed.inject(AuthSession).childName.set('Alix');
   });
 
   /**
@@ -124,6 +132,14 @@ describe('WordDetailPage', () => {
     );
     button?.click();
   }
+
+  it('marks the word as seen on this device once shown', () => {
+    const seen = TestBed.inject(SeenWords);
+    const markSeen = vi.spyOn(seen, 'markSeen');
+    render();
+
+    expect(markSeen).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
+  });
 
   it('shows the word with its status, its stages newest first, each with its own sounds', () => {
     const element = render().nativeElement as HTMLElement;
@@ -258,7 +274,7 @@ describe('WordDetailPage', () => {
     await fixture.whenStable();
     const actions = element.querySelector('dialog[open]') as HTMLElement;
     expect(actions.textContent).toContain('Son enregistré le 14 octobre');
-    expect(actions.textContent).toContain('Côme y dit «\u00A0apin\u00A0». Il dure 4 secondes.');
+    expect(actions.textContent).toContain('Alix y dit «\u00A0apin\u00A0». Il dure 4 secondes.');
     clickButton(actions, 'Ranger avec une autre prononciation');
     await fixture.whenStable();
     const sheet = element.querySelector('dialog[open]') as HTMLElement;
@@ -284,7 +300,7 @@ describe('WordDetailPage', () => {
     await fixture.whenStable();
     const confirm = element.querySelector('dialog[open]') as HTMLElement;
     expect(confirm.textContent).toMatch(
-      /Le son enregistré le 14 octobre( 2026)?, où Côme dit «\u00A0apin\u00A0», sera effacé\./,
+      /Le son enregistré le 14 octobre( 2026)?, où Alix dit «\u00A0apin\u00A0», sera effacé\./,
     );
     clickButton(confirm, 'Oui, supprimer');
     await fixture.whenStable();
@@ -315,7 +331,7 @@ describe('WordDetailPage', () => {
 
     expect(play).toHaveBeenCalled();
     expect(TestBed.inject(ToastQueue).current()?.text).toBe(
-      'Bravo Côme\u00A0! «\u00A0lapin\u00A0» passe au vert',
+      'Bravo Alix\u00A0! «\u00A0lapin\u00A0» passe au vert',
     );
     expect(element.querySelector('.word-detail__spoken')?.textContent).toContain('lapin');
   });

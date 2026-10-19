@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/words")
-@Tag(name = "Words", description = "Words Côme says, with their pronunciation stages.")
+@Tag(name = "Words", description = "Words the child says, with their pronunciation stages.")
 public class WordController {
 
     /**

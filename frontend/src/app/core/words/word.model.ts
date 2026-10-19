@@ -1,5 +1,5 @@
 /**
- * What a notebook entry is: a single word, or a sentence labelled by what Côme meant.
+ * What a notebook entry is: a single word, or a sentence labelled by what the child meant.
  */
 export type WordKind = 'word' | 'sentence';
 
@@ -37,7 +37,7 @@ export type WordCategory =
   | 'custom';
 
 /**
- * One stage of a word: what Côme said on a given day.
+ * One stage of a word: what the child said on a given day.
  */
 export interface Pronunciation {
   /**
@@ -51,7 +51,7 @@ export interface Pronunciation {
   wordId: number;
 
   /**
-   * What Côme actually said ("apin").
+   * What the child actually said ("apin").
    */
   spoken: string;
 
@@ -64,6 +64,11 @@ export interface Pronunciation {
    * Day it was said, `yyyy-MM-dd`.
    */
   date: string;
+
+  /**
+   * Instant it was noted, ISO 8601, telling a stage added since this device last looked.
+   */
+  createdAt: string;
 }
 
 /**
@@ -103,7 +108,7 @@ export interface Recording {
 }
 
 /**
- * A word Côme says, with every stage of its pronunciation and its sounds.
+ * A word the child says, with every stage of its pronunciation and its sounds.
  */
 export interface Word {
   /**
@@ -143,11 +148,32 @@ export interface Word {
 }
 
 /**
+ * What changed in an entry since this device last looked, most telling first: the entry itself, a stage
+ * or a sound.
+ */
+export type WordChange = 'entry' | 'pronunciation' | 'recording';
+
+/**
+ * What this device has seen, kept in browser storage, instants in epoch milliseconds.
+ */
+export interface SeenMarks {
+  /**
+   * First visit on this device: anything older counts as seen.
+   */
+  since: number;
+
+  /**
+   * Latest change of each entry this device has seen, by entry id.
+   */
+  entries: Record<number, number>;
+}
+
+/**
  * Body of a stage creation or edit.
  */
 export interface PronunciationRequest {
   /**
-   * What Côme said, 1 to 60 characters.
+   * What the child said, 1 to 60 characters.
    */
   spoken: string;
 

@@ -60,6 +60,7 @@ describe('HomePage', () => {
     });
     http = TestBed.inject(HttpTestingController);
     TestBed.inject(AuthSession).status.set('signed-in');
+    TestBed.inject(AuthSession).childName.set('Alix');
   });
 
   afterEach(() => http.verify());
@@ -104,7 +105,7 @@ describe('HomePage', () => {
    */
   function openSearch(fixture: ComponentFixture<HomePage>): void {
     (fixture.nativeElement as HTMLElement)
-      .querySelector<HTMLButtonElement>('button[aria-label="Chercher un mot de Côme"]')!
+      .querySelector<HTMLButtonElement>('button[aria-label="Chercher un mot de Alix"]')!
       .click();
     fixture.detectChanges();
   }
@@ -126,8 +127,8 @@ describe('HomePage', () => {
     const fixture = await render();
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(text(fixture)).toContain('Les mots de Côme');
-    expect(text(fixture)).toContain('Côme a déjà dit 2 mots !');
+    expect(text(fixture)).toContain('Les mots de Alix');
+    expect(text(fixture)).toContain('Alix a déjà dit 2 mots !');
     expect(element.querySelectorAll('app-word-card')).toHaveLength(2);
   });
 
@@ -186,7 +187,7 @@ describe('HomePage', () => {
 
     expect(searchInput(fixture)).toBeNull();
     expect(element.querySelectorAll('app-word-card')).toHaveLength(2);
-    expect(document.activeElement?.getAttribute('aria-label')).toBe('Chercher un mot de Côme');
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Chercher un mot de Alix');
     element.remove();
   });
 
@@ -223,7 +224,7 @@ describe('HomePage', () => {
     expect(element.querySelectorAll('app-word-card')).toHaveLength(1);
 
     search(fixture, 'chien');
-    expect(text(fixture)).toContain("Côme n'a pas encore dit «\u00A0chien\u00A0».");
+    expect(text(fixture)).toContain("Alix n'a pas encore dit «\u00A0chien\u00A0».");
     const add = element.querySelector<HTMLAnchorElement>('a[href^="/mots/nouveau?mot="]')!;
     expect(add.textContent).toContain('Ajouter «\u00A0chien\u00A0» à ses mots');
   });
@@ -273,7 +274,7 @@ describe('HomePage', () => {
     const fixture = await render('phrases');
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(text(fixture)).toContain('Les phrases de Côme');
+    expect(text(fixture)).toContain('Les phrases de Alix');
     expect(element.querySelectorAll('app-word-card')).toHaveLength(1);
     expect(element.querySelector('app-word-card a')!.getAttribute('href')).toBe('/phrases/3');
     expect(text(fixture)).toContain("Il n'y a plus de gâteau");

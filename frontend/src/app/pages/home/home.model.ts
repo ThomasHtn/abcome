@@ -1,4 +1,4 @@
-import { PronunciationStatus } from '@core/words/word.model';
+import { PronunciationStatus, WordChange } from '@core/words/word.model';
 
 /**
  * Tab shown by the home screen.
@@ -35,7 +35,7 @@ export interface HomeSummary {
   latestLabel: string;
 
   /**
-   * The latest entry and how Côme says it ("renard, dit « enard »"), `null` while the tab is empty.
+   * The latest entry and how the child says it ("renard, dit « enard »"), `null` while the tab is empty.
    */
   latest: string | null;
 
@@ -43,6 +43,12 @@ export interface HomeSummary {
    * Words or sentences per current status, best first; `null` while the tab is empty.
    */
   statusCounts: readonly StatusCount[] | null;
+
+  /**
+   * Entries of the tab that changed since this device last looked ("3 nouveautés depuis ta visite"),
+   * `null` when none did.
+   */
+  newsText: string | null;
 }
 
 /**
@@ -85,7 +91,7 @@ export interface WordCardView {
   label: string;
 
   /**
-   * How Côme says it now ("apin").
+   * How the child says it now ("apin").
    */
   spoken: string;
 
@@ -103,6 +109,11 @@ export interface WordCardView {
    * Short month of the first time, for the date tile ("sept").
    */
   month: string;
+
+  /**
+   * What changed since this device last looked, shown as a tag after the title; `null` when nothing.
+   */
+  change: WordChange | null;
 
   /**
    * Whole card read as one sentence by screen readers.

@@ -31,6 +31,7 @@ class PasswordHashSettingsTest {
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
         .withUserConfiguration(SettingsOnly.class)
         .withPropertyValues(
+            "app.child-name=Alix",
             "app.time-zone=Europe/Paris",
             "app.auth.max-failures=5",
             "app.auth.initial-lockout=PT1M",

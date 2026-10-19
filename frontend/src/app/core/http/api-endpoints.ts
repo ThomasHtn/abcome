@@ -3,7 +3,7 @@
  */
 export const API_ENDPOINTS = {
   /**
-   * Answers 204 when signed in, 401 otherwise; also sets the CSRF cookie.
+   * Answers the session when signed in, 401 otherwise; also sets the CSRF cookie.
    */
   session: '/api/auth/session',
 

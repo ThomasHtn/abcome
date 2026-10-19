@@ -88,7 +88,7 @@ export interface SaveOutcome {
   label: string;
 
   /**
-   * What Côme says, for a new word or stage; empty when the sound joined an existing stage.
+   * What the child says, for a new word or stage; empty when the sound joined an existing stage.
    */
   spoken: string;
 

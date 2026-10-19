@@ -1,11 +1,11 @@
 import { PronunciationStatus } from '@core/words/word.model';
 
 /**
- * A stage being typed: what Côme said, how close it was, and when.
+ * A stage being typed: what the child said, how close it was, and when.
  */
 export interface PronunciationDraft {
   /**
-   * What Côme said, as typed (trimmed only when sent).
+   * What the child said, as typed (trimmed only when sent).
    */
   spoken: string;
 

@@ -6,8 +6,8 @@ import { booleanAttribute, ChangeDetectionStrategy, Component, input, model } fr
 let nextFieldId = 0;
 
 /**
- * Labelled text input or textarea of the forms ("Comment Côme le dit", "Ce qu'il voulait dire").
- * Usage: `<app-text-field label="Comment Côme le dit" placeholder="ex. apin" [(value)]="spoken" />`.
+ * Labelled text input or textarea of the forms ("Comment [child] le dit", "Ce qu'il voulait dire").
+ * Usage: `<app-text-field label="Comment [child] le dit" placeholder="ex. apin" [(value)]="spoken" />`.
  */
 @Component({
   selector: 'app-text-field',
@@ -57,7 +57,7 @@ export class TextField {
   public readonly maxLength = input<number | null>(null);
 
   /**
-   * `display` writes in Fredoka, for what Côme says; `plain` in Nunito, for the family's words.
+   * `display` writes in Fredoka, for what the child says; `plain` in Nunito, for the family's words.
    */
   public readonly tone = input<'display' | 'plain'>('display');
 

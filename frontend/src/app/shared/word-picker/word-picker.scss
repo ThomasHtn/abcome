@@ -96,7 +96,7 @@
   text-transform: uppercase;
 }
 
-/* A notebook word card: what Côme says, then the word. */
+/* A notebook word card: what the child says, then the word. */
 .word-picker__word {
   min-block-size: 3.5rem;
   border: 0;
@@ -108,7 +108,7 @@
   text-align: start;
 }
 
-/* What Côme says, big. */
+/* What the child says, big. */
 .word-picker__spoken {
   display: -webkit-box;
   overflow: hidden;

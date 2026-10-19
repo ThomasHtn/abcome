@@ -26,7 +26,7 @@ export const LOGIN_MESSAGES = {
   /**
    * Shown before anything is tried: who holds the shared password.
    */
-  hint: "C'est le mot de passe de la famille\u00A0: demande-le aux parents de Côme.",
+  hint: "C'est le mot de passe de la famille\u00A0: demande-le aux parents.",
 
   /**
    * Shown while Lapinou jumps, just before the home screen.

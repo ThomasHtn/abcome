@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 
+import { AuthSession } from '@core/auth/auth-session';
 import { todayIso } from '@core/date/date.utils';
 import { Celebration } from '@core/feedback/celebration';
 import { ToastQueue } from '@core/feedback/toast-queue';
@@ -24,7 +25,7 @@ import {
 import { TextField } from '@shared/text-field/text-field';
 
 /**
- * Sheet to note a new sentence: what Côme meant, then how he said it; its page does the rest.
+ * Sheet to note a new sentence: what the child meant, then how they said it; its page does the rest.
  * Shown while the page keeps it in its template.
  */
 @Component({
@@ -50,6 +51,11 @@ export class SentenceSheet {
   private readonly celebration = inject(Celebration);
 
   /**
+   * First name of the child, given by the server with the session.
+   */
+  protected readonly childName = inject(AuthSession).childName;
+
+  /**
    * Tells the page the sheet is done, saved or not.
    */
   public readonly closed = output();
@@ -60,7 +66,7 @@ export class SentenceSheet {
   protected readonly labelMaxLength = LABEL_MAX_LENGTHS.sentence;
 
   /**
-   * What Côme meant, the sentence's title.
+   * What the child meant, the sentence's title.
    */
   protected readonly label = signal('');
 

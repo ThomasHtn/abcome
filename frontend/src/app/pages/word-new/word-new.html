@@ -28,7 +28,9 @@
       @if (existing(); as word) {
         <!-- Already in the notebook: progress goes on its page, not in a duplicate. -->
         <div class="word-new__known pop flex flex-col gap-3" role="status">
-          <p class="word-new__known-title">Côme dit déjà {{ word.label | quote }}&nbsp;!</p>
+          <p class="word-new__known-title">
+            {{ childName() }} dit déjà {{ word.label | quote }}&nbsp;!
+          </p>
           <p class="word-new__known-text">
             Pour noter qu'il le prononce mieux, ajoute une étape depuis sa page plutôt que de créer
             un doublon.

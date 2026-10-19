@@ -34,6 +34,7 @@ class WordApiTest extends NotebookApiTest {
             .andExpect(jsonPath("$.pronunciations[0].spoken").value("pin"))
             .andExpect(jsonPath("$.pronunciations[0].status").value("learning"))
             .andExpect(jsonPath("$.pronunciations[0].date").value("2026-09-16"))
+            .andExpect(jsonPath("$.pronunciations[0].createdAt").isNotEmpty())
             .andExpect(jsonPath("$.pronunciations[0].recordingId").doesNotExist())
             .andExpect(jsonPath("$.recordings.length()").value(0));
     }

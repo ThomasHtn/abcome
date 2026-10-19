@@ -34,7 +34,7 @@
   padding-block-end: 0.25rem;
 }
 
-/* "Les mots de Côme", fluid so it holds on one line from 320 px. */
+/* "Les mots de [child]", fluid so it holds on one line from 320 px. */
 .home__title {
   margin: 0;
   font-family: var(--font-display);
@@ -78,6 +78,17 @@
   background-color: var(--color-surface);
   box-shadow: 0 4px 12px tint(lavender-700, 15%);
   color: var(--color-ink);
+}
+
+/* Dot after a tab's name when the other tab is open and this one has news. */
+.home__tab-news {
+  display: inline-block;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  margin-inline-start: 0.375rem;
+  border-radius: 50%;
+  background-color: var(--color-lavender-700);
+  vertical-align: middle;
 }
 
 /* Tabs, search and filters, spaced like the blocks of the screen. */

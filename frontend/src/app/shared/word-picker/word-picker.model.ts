@@ -15,7 +15,7 @@ export interface WordChoice {
   category: WordCategory;
 
   /**
-   * The notebook word when Côme already says it, `null` for a new word.
+   * The notebook word when the child already says it, `null` for a new word.
    */
   word: Word | null;
 }

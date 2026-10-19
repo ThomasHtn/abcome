@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { AuthSession } from '@core/auth/auth-session';
 import { todayIso } from '@core/date/date.utils';
 import { DictionaryEntry } from '@core/dictionary/dictionary.model';
 import { DictionaryApi } from '@core/dictionary/dictionary-api';
@@ -130,6 +131,11 @@ export class RecordingNewPage {
    * Confetti once the sound is saved.
    */
   private readonly celebration = inject(Celebration);
+
+  /**
+   * First name of the child, given by the server with the session.
+   */
+  protected readonly childName = inject(AuthSession).childName;
 
   /**
    * Stage already created by a save whose upload failed (a new word's first one, or a new stage), so
@@ -306,7 +312,7 @@ export class RecordingNewPage {
    * Lapinou's instruction, or the microphone failure.
    */
   protected readonly instruction = computed(
-    () => this.error() ?? recordingInstruction(this.phase(), this.capped()),
+    () => this.error() ?? recordingInstruction(this.phase(), this.capped(), this.childName()),
   );
 
   /**
@@ -383,7 +389,10 @@ export class RecordingNewPage {
       return null;
     }
     const word = this.words().find((entry) => entry.id === outcome.wordId);
-    return { ...doneCopy(outcome), path: entryPath(word ?? { id: outcome.wordId, kind: 'word' }) };
+    return {
+      ...doneCopy(outcome, this.childName()),
+      path: entryPath(word ?? { id: outcome.wordId, kind: 'word' }),
+    };
   });
 
   /**

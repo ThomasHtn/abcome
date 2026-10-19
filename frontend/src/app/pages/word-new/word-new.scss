@@ -62,14 +62,14 @@
   font-weight: 800;
 }
 
-/* Lavender panel when Côme already says the word. */
+/* Lavender panel when the child already says the word. */
 .word-new__known {
   border-radius: var(--radius-block);
   padding: 1.125rem;
   background-color: var(--color-lavender-50);
 }
 
-/* "Côme dit déjà « x » !" */
+/* "[child] dit déjà « x » !" */
 .word-new__known-title {
   font-family: var(--font-display);
   font-size: 1.25rem;

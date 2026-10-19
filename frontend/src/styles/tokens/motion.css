@@ -17,6 +17,9 @@
   --duration-sheet: 350ms;
   --duration-fade: 250ms;
 
+  /* Period of the news tag's sway: one short swing every few seconds, like Lapinou's blink. */
+  --duration-sway: 5s;
+
   /* Delay between two blocks of a screen cascading in, and between two list items popping in. */
   --motion-step: 70ms;
 

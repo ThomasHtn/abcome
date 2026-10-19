@@ -47,7 +47,7 @@
         </div>
       }
 
-      <h2 class="recording-new__question">Que dit Côme sur ce son&nbsp;?</h2>
+      <h2 class="recording-new__question">Que dit {{ childName() }} sur ce son&nbsp;?</h2>
       <ul class="flex flex-col gap-2">
         @for (option of stages(); track option.pronunciation.id) {
           <li>
@@ -69,7 +69,7 @@
           </li>
         }
         <li>
-          <!-- Côme says it differently now: note a new stage for the sound. -->
+          <!-- The child says it differently now: note a new stage for the sound. -->
           <button
             class="recording-new__stage recording-new__stage--new press flex w-full items-center gap-3"
             type="button"
@@ -122,7 +122,7 @@
       }
 
       <app-pronunciation-form
-        spokenLabel="Sur ce son, Côme dit"
+        [spokenLabel]="'Sur ce son, ' + childName() + ' dit'"
         [dateLabel]="targetWord() ? 'Entendu le' : 'Dit pour la première fois le'"
         [kind]="kind()"
         [(draft)]="draft"
@@ -294,7 +294,8 @@
             @if (tooShort()) {
               <!-- A tap on stop too early: explain why the sound cannot be kept. -->
               <p class="recording-new__note recording-new__note--warning" role="status">
-                Ce son est trop court. Recommence en laissant Côme parler un peu plus longtemps.
+                Ce son est trop court. Recommence en laissant {{ childName() }} parler un peu plus
+                longtemps.
               </p>
             } @else {
               <p class="recording-new__note">

@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 
+import { AuthSession } from '@core/auth/auth-session';
 import { Mascot } from '@shared/mascot/mascot';
 
 import { HomeSummary } from '../home.model';
@@ -19,4 +20,9 @@ export class HomeSummaryCard {
    * What to say about the open tab.
    */
   public readonly summary = input.required<HomeSummary>();
+
+  /**
+   * First name of the child, given by the server with the session.
+   */
+  protected readonly childName = inject(AuthSession).childName;
 }

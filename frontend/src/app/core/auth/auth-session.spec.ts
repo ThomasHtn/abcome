@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
 
+import { CHILD_NAME_FALLBACK } from './auth.constants';
 import { AuthSession } from './auth-session';
 
 describe('AuthSession', () => {
@@ -20,16 +21,17 @@ describe('AuthSession', () => {
 
   afterEach(() => http.verify());
 
-  it('asks the server once, even when two guards check together', async () => {
+  it('asks the server once, even when two guards check together, and learns the child name', async () => {
     const first = session.ensureChecked();
     const second = session.ensureChecked();
 
-    http.expectOne(API_ENDPOINTS.session).flush(null, { status: 204, statusText: 'No Content' });
+    http.expectOne(API_ENDPOINTS.session).flush({ childName: 'Alix' });
 
     expect(await first).toBe(true);
     expect(await second).toBe(true);
     expect(await session.ensureChecked()).toBe(true);
     expect(session.signedIn()).toBe(true);
+    expect(session.childName()).toBe('Alix');
   });
 
   it('counts a 401 on the check as signed out', async () => {
@@ -48,6 +50,7 @@ describe('AuthSession', () => {
     http.expectOne(API_ENDPOINTS.session).error(new ProgressEvent('error'));
     expect(await offline).toBe(true);
     expect(session.status()).toBe('signed-in');
+    expect(session.childName()).toBe(CHILD_NAME_FALLBACK);
   });
 
   it('keeps the visitor in the app on a server error during the check', async () => {
@@ -58,13 +61,14 @@ describe('AuthSession', () => {
     expect(await check).toBe(true);
   });
 
-  it('opens the session only when the password is accepted', async () => {
+  it('opens the session and learns the child name only when the password is accepted', async () => {
     const accepted = session.signIn('une phrase de passe');
     const request = http.expectOne(API_ENDPOINTS.login);
     expect(request.request.body).toEqual({ password: 'une phrase de passe' });
-    request.flush(null, { status: 204, statusText: 'No Content' });
+    request.flush({ childName: 'Alix' });
     await accepted;
     expect(session.signedIn()).toBe(true);
+    expect(session.childName()).toBe('Alix');
   });
 
   it('rejects with the HTTP error on a wrong password and stays signed out', async () => {

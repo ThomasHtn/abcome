@@ -1,7 +1,7 @@
 {
   "name": "ABCome",
   "short_name": "ABCome",
-  "description": "Le carnet des premiers mots de Côme",
+  "description": "Le carnet des premiers mots",
   "lang": "fr",
   "start_url": "/",
   "scope": "/",

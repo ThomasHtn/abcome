@@ -1,6 +1,7 @@
 import { STATUS_LABELS } from '@core/words/word.constants';
-import { PronunciationStatus } from '@core/words/word.model';
+import { PronunciationStatus, WordChange, WordKind } from '@core/words/word.model';
 import { FilterChipOption } from '@shared/filter-chips/filter-chips.model';
+import { IconName } from '@shared/icon/icon.model';
 
 import { StatusFilter } from './home.model';
 
@@ -65,3 +66,30 @@ export const SUMMARY_STATUS_ORDER: readonly PronunciationStatus[] = [
  * Cards past this index pop in together, so a long list never waits for its stagger.
  */
 export const CARD_STAGGER_LIMIT = 10;
+
+/**
+ * Icon of the news tag for each kind of change: a sparkle for a new entry, a speech bubble for a new
+ * stage, a microphone for a new sound.
+ */
+export const CHANGE_ICONS: Readonly<Record<WordChange, IconName>> = {
+  entry: 'sparkle',
+  pronunciation: 'message-circle',
+  recording: 'mic',
+};
+
+/**
+ * What the news tag says to screen readers, agreed with the entry's kind.
+ */
+export const CHANGE_LABELS: Readonly<Record<WordKind, Readonly<Record<WordChange, string>>>> = {
+  word: { entry: 'nouveau mot', pronunciation: 'nouvelle prononciation', recording: 'nouveau son' },
+  sentence: {
+    entry: 'nouvelle phrase',
+    pronunciation: 'nouvelle prononciation',
+    recording: 'nouveau son',
+  },
+};
+
+/**
+ * Noun of the news count in the mascot card ("3 nouveautés depuis ta visite").
+ */
+export const NEWS_NOUN = 'nouveauté';

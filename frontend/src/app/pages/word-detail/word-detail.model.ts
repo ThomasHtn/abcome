@@ -187,7 +187,7 @@ export interface SoundSheetCopy {
   heading: string;
 
   /**
-   * What is heard on it and how long it lasts ("Côme y dit « apin ». Il dure 3 secondes.").
+   * What is heard on it and how long it lasts ("[child] y dit « apin ». Il dure 3 secondes.").
    */
   text: string;
 }

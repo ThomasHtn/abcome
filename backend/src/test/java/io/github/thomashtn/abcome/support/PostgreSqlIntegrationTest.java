@@ -23,7 +23,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  *
  * <p>Singleton container pattern: started once in a static initializer and reaped by Ryuk, so the
  * container outlives every test class instead of stopping after the first one. Tests run on the
- * production {@code application.properties}, Flyway included, with a known family password.</p>
+ * production {@code application.properties}, Flyway included, with a known family password and child name.</p>
  *
  * <p>spring-dotenv also reads the developer's {@code backend/.env} during tests, so the production
  * login lockout is pinned here; a subclass may override it with its own {@link TestPropertySource}.</p>
@@ -37,6 +37,11 @@ public abstract class PostgreSqlIntegrationTest {
      * Family password every test signs in with.
      */
     protected static final String FAMILY_PASSWORD = "une phrase de passe pour les tests";
+
+    /**
+     * Made-up first name of the child, so no real one ever sits in the repository.
+     */
+    protected static final String CHILD_NAME = "Alix";
 
     /**
      * Name of the session cookie, as configured in {@code application.properties}.
@@ -81,7 +86,7 @@ public abstract class PostgreSqlIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     /**
-     * Points the datasource at the shared container and sets the family password hash.
+     * Points the datasource at the shared container and sets the family password hash and child name.
      *
      * @param registry Spring dynamic property registry
      */
@@ -91,6 +96,7 @@ public abstract class PostgreSqlIntegrationTest {
         registry.add("spring.datasource.username", POSTGRESQL::getUsername);
         registry.add("spring.datasource.password", POSTGRESQL::getPassword);
         registry.add("app.auth.password-hash", () -> FAMILY_PASSWORD_HASH);
+        registry.add("app.child-name", () -> CHILD_NAME);
     }
 
     /**
@@ -121,7 +127,7 @@ public abstract class PostgreSqlIntegrationTest {
                 .with(remoteAddress(CLIENT_ADDRESS))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"password\":\"" + FAMILY_PASSWORD + "\"}"))
-            .andExpect(status().isNoContent())
+            .andExpect(status().isOk())
             .andReturn()
             .getResponse()
             .getCookie(SESSION_COOKIE);

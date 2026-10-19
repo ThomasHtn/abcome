@@ -5,7 +5,7 @@ Spring Boot 4 REST API on Java 25 and PostgreSQL. Conventions are in [CONTRIBUTI
 ## Commands
 
 ```bash
-cp .env.example .env                 # local settings; set FAMILY_PASSWORD_HASH
+cp .env.example .env                 # local settings; set FAMILY_PASSWORD_HASH and CHILD_NAME
 ./mvnw spring-boot:run               # API on :8080, Swagger UI at /swagger-ui.html if API_DOCS_ENABLED=true
 ./mvnw spotless:apply                # format
 ./mvnw clean verify                  # full gate: Spotless, Checkstyle, tests, SpotBugs, JaCoCo

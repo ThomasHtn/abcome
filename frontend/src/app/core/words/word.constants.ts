@@ -56,3 +56,13 @@ export const LABEL_MAX_LENGTHS: Readonly<Record<WordKind, number>> = { word: 40,
  * Longest spoken form the API accepts, per kind.
  */
 export const SPOKEN_MAX_LENGTHS: Readonly<Record<WordKind, number>> = { word: 60, sentence: 200 };
+
+/**
+ * Browser storage key of what this device has seen (entry ids and instants only).
+ */
+export const SEEN_STORAGE_KEY = 'abcome.seen';
+
+/**
+ * How long an unseen change stays marked: 14 days, so a device seldom opened is not covered in tags.
+ */
+export const CHANGE_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;

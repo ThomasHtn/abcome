@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
 /**
- * How well Côme says a word at a given stage; shown as red, orange or green.
+ * How well the child says a word at a given stage; shown as red, orange or green.
  */
 public enum PronunciationStatus {
 

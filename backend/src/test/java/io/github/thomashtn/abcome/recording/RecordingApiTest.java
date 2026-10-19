@@ -382,7 +382,7 @@ class RecordingApiTest extends NotebookApiTest {
     /**
      * Adds a stage to the word.
      *
-     * @param spoken what Côme said
+     * @param spoken what the child said
      * @param status stage status code
      * @param date   stage date
      * @return stage identifier

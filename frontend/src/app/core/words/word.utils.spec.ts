@@ -1,6 +1,7 @@
 import { aPronunciation, aRecording, aWord } from './word.fixtures';
 import {
   addRecording,
+  changeSince,
   countByStatus,
   currentPronunciation,
   currentStatus,
@@ -9,6 +10,7 @@ import {
   findWordByLabel,
   firstSaidDate,
   heirStage,
+  latestChangeAt,
   removePronunciation,
   removeRecording,
   sortByFirstSaidDesc,
@@ -156,5 +158,28 @@ describe('list updates', () => {
     const [updated, untouched] = removeRecording([withSounds, maman], 4);
     expect(updated.recordings.map((recording) => recording.id)).toEqual([3]);
     expect(untouched).toBe(maman);
+  });
+});
+
+describe('changes since a visit', () => {
+  /**
+   * Word added on Sept 16, a stage noted on Oct 12, a sound recorded on Oct 17.
+   */
+  const changed = aWord({
+    id: 3,
+    createdAt: '2026-09-16T08:00:00Z',
+    pronunciations: [aPronunciation({ id: 30, wordId: 3, createdAt: '2026-10-12T18:00:00Z' })],
+    recordings: [aRecording({ id: 31, wordId: 3, createdAt: '2026-10-17T09:30:00Z' })],
+  });
+
+  it('dates an entry by its latest addition', () => {
+    expect(latestChangeAt(changed)).toBe(Date.parse('2026-10-17T09:30:00Z'));
+  });
+
+  it('names the most telling addition newer than the visit', () => {
+    expect(changeSince(changed, Date.parse('2026-09-01T00:00:00Z'))).toBe('entry');
+    expect(changeSince(changed, Date.parse('2026-10-01T00:00:00Z'))).toBe('pronunciation');
+    expect(changeSince(changed, Date.parse('2026-10-15T00:00:00Z'))).toBe('recording');
+    expect(changeSince(changed, Date.parse('2026-10-17T09:30:00Z'))).toBeNull();
   });
 });

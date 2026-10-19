@@ -15,7 +15,7 @@ public enum WordKind {
     WORD("word", 40, 60),
 
     /**
-     * A sentence, labelled by what Côme meant; two sentences may mean the same.
+     * A sentence, labelled by what the child meant; two sentences may mean the same.
      */
     SENTENCE("sentence", 200, 200);
 

@@ -6,7 +6,8 @@
   <div class="home-summary__bubble flex min-w-0 flex-col gap-1">
     @if (summary().total > 0) {
       <p class="home-summary__headline">
-        Côme a déjà dit <span class="home-summary__count">{{ summary().countText }}</span> !
+        {{ childName() }} a déjà dit
+        <span class="home-summary__count">{{ summary().countText }}</span> !
       </p>
     } @else {
       <p class="home-summary__headline">{{ summary().emptyHeadline }}</p>
@@ -14,6 +15,14 @@
 
     @if (summary().latest; as latest) {
       <p class="home-summary__latest">{{ summary().latestLabel }}&nbsp;: {{ latest }}</p>
+    }
+
+    <!-- How many entries of the tab changed since this device last looked. -->
+    @if (summary().newsText; as news) {
+      <p class="home-summary__news flex items-center gap-1.5">
+        <span class="home-summary__news-dot" aria-hidden="true"></span>
+        {{ news }}
+      </p>
     }
 
     @if (summary().statusCounts; as counts) {

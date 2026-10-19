@@ -46,7 +46,7 @@ describe('word picker utils', () => {
     expect(labels).toEqual(['lapin', 'lait', 'salade']);
   });
 
-  it('puts the exact word first and flags a word Côme already says', () => {
+  it('puts the exact word first and flags a word the child already says', () => {
     const suggestions = buildSuggestions([entry('chaton'), entry('chat')], [], 'chat').map(
       (suggestion) => suggestion.label,
     );
@@ -54,7 +54,7 @@ describe('word picker utils', () => {
     expect(buildSuggestions(entries, [lapin], 'lap')[0].word).toBe(lapin);
   });
 
-  it('finds a notebook word by what Côme says', () => {
+  it('finds a notebook word by what the child says', () => {
     const gateau = aWord({
       id: 2,
       label: 'gâteau',

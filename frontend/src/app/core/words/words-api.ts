@@ -9,6 +9,7 @@ import { AuthSession } from '@core/auth/auth-session';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
 import { resourcePatcher } from '@core/http/resource.utils';
 
+import { SeenWords } from './seen-words';
 import {
   CreateWordRequest,
   MoveRecordingRequest,
@@ -43,6 +44,11 @@ export class WordsApi {
    * Gates the list on an open session.
    */
   private readonly session = inject(AuthSession);
+
+  /**
+   * Keeps what this device adds from being tagged as news on its own list.
+   */
+  private readonly seen = inject(SeenWords);
 
   /**
    * Every word with its stages and sounds; idle while signed out, so nothing leaks before login.
@@ -85,6 +91,7 @@ export class WordsApi {
   public async create(request: CreateWordRequest): Promise<Word> {
     const word = await firstValueFrom(this.http.post<Word>(API_ENDPOINTS.words, request));
     this.patch((words) => upsertWord(words, word));
+    this.seen.markSeen(word);
     return word;
   }
 
@@ -116,6 +123,7 @@ export class WordsApi {
       this.http.post<Pronunciation>(API_ENDPOINTS.wordPronunciations(wordId), request),
     );
     this.patch((words) => upsertPronunciation(words, stage));
+    this.seen.markSeenAt(stage.wordId, Date.parse(stage.createdAt));
     return stage;
   }
 
@@ -158,6 +166,7 @@ export class WordsApi {
       }),
     );
     this.patch((words) => addRecording(words, recording));
+    this.seen.markSeenAt(recording.wordId, Date.parse(recording.createdAt));
     return recording;
   }
 

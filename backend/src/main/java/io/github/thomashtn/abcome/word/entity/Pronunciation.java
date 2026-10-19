@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 /**
- * One stage of a word: how Côme said it on a given day.
+ * One stage of a word: how the child said it on a given day.
  *
  * <p>The word is referenced by id rather than mapped as a relation: stages are always read in bulk
  * through projections, never navigated from a word.</p>
@@ -33,7 +33,7 @@ public class Pronunciation {
     private Long wordId;
 
     /**
-     * What Côme said, as the family writes it: "apin" for lapin.
+     * What the child said, as the family writes it: "apin" for lapin.
      */
     @Column(name = "spoken", nullable = false)
     private String spoken;
@@ -66,7 +66,7 @@ public class Pronunciation {
      * Creates a stage.
      *
      * @param wordId    word it belongs to
-     * @param spoken    what Côme said
+     * @param spoken    what the child said
      * @param status    how well he said it
      * @param date      day he said it
      * @param createdAt creation instant
@@ -82,7 +82,7 @@ public class Pronunciation {
     /**
      * Rewrites the stage.
      *
-     * @param newSpoken what Côme said
+     * @param newSpoken what the child said
      * @param newStatus how well he said it
      * @param newDate   day he said it
      */

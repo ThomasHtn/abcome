@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 
 /**
- * Word or sentence Côme says; its stages are {@link Pronunciation} rows, loaded separately to avoid N+1
+ * Word or sentence the child says; its stages are {@link Pronunciation} rows, loaded separately to avoid N+1
  * queries.
  */
 @Entity

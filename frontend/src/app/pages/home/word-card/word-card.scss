@@ -41,7 +41,35 @@
   line-height: 1.15;
 }
 
-/* "Côme dit « apin »", quieter, shown whole too. */
+/* News tag: lavender pill after the title's last word, popping in once the card has landed. */
+.word-card__change {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.875rem;
+  block-size: 1.375rem;
+  margin-inline-start: 0.25rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-lavender-100);
+  color: var(--color-lavender-700);
+  vertical-align: text-bottom;
+
+  @include motion {
+    animation: pop var(--duration-pop) var(--ease-pop) both;
+    animation-delay: calc(var(--word-card-index, 0) * var(--motion-step) + var(--duration-entry));
+  }
+}
+
+/* The tag's icon sways briefly now and then, swinging from its base. */
+.word-card__change-icon {
+  transform-origin: 50% 60%;
+
+  @include motion {
+    animation: word-card-sway var(--duration-sway) ease-in-out var(--duration-pop) infinite;
+  }
+}
+
+/* "[child] dit « apin »", quieter, shown whole too. */
 .word-card__said {
   overflow-wrap: anywhere;
   color: var(--color-text-muted);
@@ -49,7 +77,7 @@
   font-weight: 700;
 }
 
-/* What Côme says, in his salmon as in the titles. */
+/* What the child says, in salmon as in the titles. */
 .word-card__spoken {
   color: var(--color-salmon-700);
   font-weight: 800;
@@ -68,5 +96,26 @@
 
   .word-card__current {
     margin-inline-start: auto;
+  }
+}
+
+/* Short sway at the end of each period, still the rest of the time. */
+@keyframes word-card-sway {
+  0%,
+  84%,
+  100% {
+    transform: none;
+  }
+
+  88% {
+    transform: rotate(-14deg);
+  }
+
+  92% {
+    transform: rotate(12deg);
+  }
+
+  96% {
+    transform: rotate(-5deg);
   }
 }

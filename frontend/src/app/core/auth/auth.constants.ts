@@ -12,3 +12,8 @@ export const HOME_ROUTE = '/';
  * Query parameter of the login screen holding the page to go back to after signing in.
  */
 export const RETURN_URL_PARAM = 'retour';
+
+/**
+ * Name shown until the server has given the child's one, when the app starts offline.
+ */
+export const CHILD_NAME_FALLBACK = 'Bébé';

@@ -3,13 +3,13 @@ import { saveBlocker, wordNewQuestion } from './word-new.utils';
 describe('word-new utils', () => {
   const lapin = { label: 'lapin', category: 'animals', word: null } as const;
 
-  it('asks for the word, then for how Côme said it', () => {
-    expect(wordNewQuestion(null, false)).toBe('Quel mot Côme a-t-il dit ?');
-    expect(wordNewQuestion(lapin, false)).toBe("Super ! Et comment Côme l'a dit ?");
+  it('asks for the word, then for how the child said it', () => {
+    expect(wordNewQuestion(null, false, 'Alix')).toBe('Quel mot Alix a-t-il dit ?');
+    expect(wordNewQuestion(lapin, false, 'Alix')).toBe("Super ! Et comment Alix l'a dit ?");
   });
 
-  it('asks nothing more about a word Côme already says', () => {
-    expect(wordNewQuestion(lapin, true)).toBe('Côme le dit déjà !');
+  it('asks nothing more about a word the child already says', () => {
+    expect(wordNewQuestion(lapin, true, 'Alix')).toBe('Alix le dit déjà !');
   });
 
   it('names what blocks the save: the spoken form first, then the day', () => {

@@ -72,7 +72,7 @@ describe('SentenceSheet', () => {
     TestBed.tick();
   }
 
-  it('creates a sentence from what Côme meant and said, celebrates and closes', async () => {
+  it('creates a sentence from what the child meant and said, celebrates and closes', async () => {
     const { element, closings } = render();
     type(element, 'textarea', '  Il n’y a plus de gâteau ');
     type(element, 'input[type="text"]', ' a pu ato ');

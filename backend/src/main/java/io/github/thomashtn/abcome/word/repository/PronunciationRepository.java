@@ -22,7 +22,7 @@ public interface PronunciationRepository extends JpaRepository<Pronunciation, Lo
      */
     String SELECT_RESPONSE = """
         select new io.github.thomashtn.abcome.word.dto.PronunciationResponse(
-            p.id, p.wordId, p.spoken, p.status, p.date)
+            p.id, p.wordId, p.spoken, p.status, p.date, p.createdAt)
         from Pronunciation p
         """;
 

@@ -6,7 +6,8 @@ import { provideRouter, Router } from '@angular/router';
 import { AuthSession } from '@core/auth/auth-session';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
 
-import { aRecording, aWord } from './word.fixtures';
+import { SeenWords } from './seen-words';
+import { aPronunciation, aRecording, aWord } from './word.fixtures';
 import { WordsApi } from './words-api';
 
 describe('WordsApi', () => {
@@ -94,6 +95,31 @@ describe('WordsApi', () => {
     await created;
 
     expect(api.words.value()?.map((word) => word.label)).toEqual(['lapin', 'chat']);
+  });
+
+  it('never tags as news a word or a stage this device adds', async () => {
+    await loadList();
+    const later = '2099-01-01T00:00:00Z';
+    const word = aWord({
+      id: 2,
+      label: 'chat',
+      createdAt: later,
+      pronunciations: [aPronunciation({ id: 20, wordId: 2, createdAt: later })],
+    });
+    const created = api.create({
+      label: 'chat',
+      pronunciation: { spoken: 'ka', status: 'learning', date: '2026-10-17' },
+    });
+    http.expectOne(API_ENDPOINTS.words).flush(word);
+    await created;
+    const stage = aPronunciation({ id: 21, wordId: 2, createdAt: '2099-01-02T00:00:00Z' });
+    const added = api.addPronunciation(2, { spoken: 'sa', status: 'almost', date: '2026-10-18' });
+    http.expectOne(API_ENDPOINTS.wordPronunciations(2)).flush(stage);
+    await added;
+
+    const seen = TestBed.inject(SeenWords);
+    expect(seen.changeOf(word)).toBeNull();
+    expect(seen.changeOf({ ...word, pronunciations: [...word.pronunciations, stage] })).toBeNull();
   });
 
   it('fetches the list again when a word is created before the list has loaded', async () => {

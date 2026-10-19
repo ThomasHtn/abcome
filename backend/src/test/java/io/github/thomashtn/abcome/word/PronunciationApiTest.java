@@ -40,6 +40,7 @@ class PronunciationApiTest extends NotebookApiTest {
             .andExpect(jsonPath("$.wordId").value(wordId))
             .andExpect(jsonPath("$.spoken").value("apin"))
             .andExpect(jsonPath("$.status").value("almost"))
+            .andExpect(jsonPath("$.createdAt").isNotEmpty())
             .andExpect(jsonPath("$.recordingId").doesNotExist());
     }
 

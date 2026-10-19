@@ -3,7 +3,7 @@ import { Resource } from '@angular/core';
 import { dayAndMonth, formatLongDate, formatMonthYear } from '@core/date/date.utils';
 import { quote } from '@core/text/text.utils';
 import { PRONUNCIATION_STATUSES, STATUS_LABELS } from '@core/words/word.constants';
-import { Word } from '@core/words/word.model';
+import { Word, WordChange } from '@core/words/word.model';
 import {
   countByStatus,
   currentPronunciation,
@@ -13,7 +13,13 @@ import {
   wordMatchesQuery,
 } from '@core/words/word.utils';
 
-import { FILTER_PARAM_VALUES, SENTENCES_TAB_PARAM, SUMMARY_STATUS_ORDER } from './home.constants';
+import {
+  CHANGE_LABELS,
+  FILTER_PARAM_VALUES,
+  NEWS_NOUN,
+  SENTENCES_TAB_PARAM,
+  SUMMARY_STATUS_ORDER,
+} from './home.constants';
 import {
   HomeSummary,
   HomeTab,
@@ -56,12 +62,14 @@ export function visibleWords(words: readonly Word[], query: string, filter: Stat
 }
 
 /**
- * Card of a word or a sentence: first date, its label, its current spoken form and status.
+ * Card of a word or a sentence: first date, its label, its current spoken form and status, and what
+ * changed since this device last looked.
  */
-export function toWordCard(word: Word): WordCardView {
+export function toWordCard(word: Word, change: WordChange | null = null): WordCardView {
   const current = currentPronunciation(word);
   const first = firstSaidDate(word);
   const { day, month } = dayAndMonth(first);
+  const news = change ? `, ${CHANGE_LABELS[word.kind][change]}` : '';
   return {
     id: word.id,
     path: entryPath(word),
@@ -70,15 +78,20 @@ export function toWordCard(word: Word): WordCardView {
     status: current.status,
     day,
     month,
-    ariaLabel: `${current.spoken}, pour ${word.label}, ${STATUS_LABELS[current.status]}, depuis le ${formatLongDate(first)}. Voir sa page`,
+    change,
+    ariaLabel: `${current.spoken}, pour ${word.label}, ${STATUS_LABELS[current.status]}, depuis le ${formatLongDate(first)}${news}. Voir sa page`,
   };
 }
 
 /**
  * The list cut into months of first-said date, in the order given (newest first), each titled and
- * counted with `noun` ("mot", "phrase").
+ * counted with `noun` ("mot", "phrase"); `changeOf` tells what changed in each entry.
  */
-export function groupByMonth(words: readonly Word[], noun: string): MonthGroup[] {
+export function groupByMonth(
+  words: readonly Word[],
+  noun: string,
+  changeOf: (word: Word) => WordChange | null = () => null,
+): MonthGroup[] {
   const groups: MonthGroup[] = [];
   words.forEach((word, index) => {
     const first = firstSaidDate(word);
@@ -88,13 +101,14 @@ export function groupByMonth(words: readonly Word[], noun: string): MonthGroup[]
       group = { key, title: formatMonthYear(first), countText: '', cards: [], offset: index };
       groups.push(group);
     }
-    group.cards.push(toWordCard(word));
+    group.cards.push(toWordCard(word, changeOf(word)));
   });
   return groups.map((group) => ({ ...group, countText: countWithNoun(group.cards.length, noun) }));
 }
 
 /**
- * Mascot card of a tab: total, latest entry, counts per status once there is one.
+ * Mascot card of a tab: total, latest entry, counts per status once there is one, and how many
+ * entries changed since this device last looked.
  */
 function summaryOf(
   entries: readonly Word[],
@@ -102,6 +116,7 @@ function summaryOf(
   emptyHeadline: string,
   latestLabel: string,
   spokenVerb: string,
+  newsCount: number,
 ): HomeSummary {
   const [latest] = sortByFirstSaidDesc(entries);
   return {
@@ -119,36 +134,43 @@ function summaryOf(
             const count = countByStatus(entries, status);
             return { status, count, label: `${count} ${STATUS_LABELS[status]}` };
           }),
+    newsText: newsCount > 0 ? `${countWithNoun(newsCount, NEWS_NOUN)} depuis ta visite` : null,
   };
 }
 
 /**
- * Mascot card of the words tab.
+ * Mascot card of the words tab, `newsCount` of them changed since this device last looked.
  */
-export function wordsSummary(words: readonly Word[]): HomeSummary {
-  return summaryOf(words, 'mot', 'Le carnet attend son premier mot !', 'Dernier', 'dit');
+export function wordsSummary(words: readonly Word[], newsCount = 0): HomeSummary {
+  return summaryOf(words, 'mot', 'Le carnet attend son premier mot !', 'Dernier', 'dit', newsCount);
 }
 
 /**
- * Mascot card of the sentences tab.
+ * Mascot card of the sentences tab, `newsCount` of them changed since this device last looked.
  */
-export function sentencesSummary(sentences: readonly Word[]): HomeSummary {
+export function sentencesSummary(sentences: readonly Word[], newsCount = 0): HomeSummary {
   return summaryOf(
     sentences,
     'phrase',
     'Le carnet attend sa première phrase !',
     'Dernière',
     'dite',
+    newsCount,
   );
 }
 
 /**
  * Why the words list is empty, given the search, the filter and the whole notebook.
  */
-export function emptyWordsMessage(query: string, filter: StatusFilter, total: number): string {
+export function emptyWordsMessage(
+  query: string,
+  filter: StatusFilter,
+  total: number,
+  childName: string,
+): string {
   const search = query.trim();
   if (search !== '') {
-    return `Côme n'a pas encore dit ${quote(search)}${filter === 'all' ? '.' : ' dans cette couleur.'}`;
+    return `${childName} n'a pas encore dit ${quote(search)}${filter === 'all' ? '.' : ' dans cette couleur.'}`;
   }
   return total === 0
     ? 'Pas encore de mot. Le premier arrive bientôt !'

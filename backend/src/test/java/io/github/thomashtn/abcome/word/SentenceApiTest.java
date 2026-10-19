@@ -88,7 +88,7 @@ class SentenceApiTest extends NotebookApiTest {
     /**
      * Builds the JSON of a new sentence, said "En route" on 12 October.
      *
-     * @param meaning what Côme meant
+     * @param meaning what the child meant
      * @param spoken  what he said
      * @return request body
      */
@@ -115,7 +115,7 @@ class SentenceApiTest extends NotebookApiTest {
      * Adds an "En route" stage to an entry.
      *
      * @param id     entry identifier
-     * @param spoken what Côme said
+     * @param spoken what the child said
      * @return result of the request
      * @throws Exception when the request fails
      */

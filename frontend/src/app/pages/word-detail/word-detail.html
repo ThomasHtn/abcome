@@ -95,7 +95,8 @@
       @if (sounds().length === 0) {
         <!-- No sound yet: the microphone of the bar records the first one. -->
         <p class="word-detail__no-sound">
-          Pas encore de son. Touche le micro pour enregistrer Côme dire {{ word.label | quote }}.
+          Pas encore de son. Touche le micro pour enregistrer {{ childName() }} dire
+          {{ word.label | quote }}.
         </p>
       }
     </section>
@@ -301,7 +302,7 @@
     cancelLabel="Garder"
     confirmLabel="Oui, supprimer"
     message="Tout son historique de prononciation et ses sons seront effacés. On ne pourra pas revenir en arrière."
-    [heading]="'Supprimer ' + (word.label | quote) + ' de la liste de Côme\u00A0?'"
+    [heading]="'Supprimer ' + (word.label | quote) + ' de la liste de ' + childName() + '\u00A0?'"
     [busy]="busy()"
     [open]="sheet() === 'delete'"
     (openChange)="onSheetToggle('delete', $event)"

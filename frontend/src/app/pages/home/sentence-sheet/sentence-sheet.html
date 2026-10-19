@@ -4,7 +4,7 @@
   [error]="error()"
   (openChange)="onOpenChange($event)"
 >
-  <!-- What Côme meant, the sentence's title, then its first pronunciation; Enter saves. -->
+  <!-- What the child meant, the sentence's title, then its first pronunciation; Enter saves. -->
   <form
     id="sentence-sheet-form"
     class="flex flex-col gap-3.5"
@@ -21,7 +21,7 @@
     />
     <app-pronunciation-form
       kind="sentence"
-      spokenLabel="Ce que Côme a dit"
+      [spokenLabel]="'Ce que ' + childName() + ' a dit'"
       spokenPlaceholder="ex. a pu ato"
       dateLabel="Dite le"
       [(draft)]="draft"

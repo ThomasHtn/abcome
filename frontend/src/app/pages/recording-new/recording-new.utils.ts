@@ -80,7 +80,11 @@ export function microphoneErrorKind(error: unknown): RecorderErrorKind {
 /**
  * Lapinou's instruction for each recording step; `capped` explains a recording stopped by the 15 s cap.
  */
-export function recordingInstruction(phase: RecordingPhase, capped: boolean): string {
+export function recordingInstruction(
+  phase: RecordingPhase,
+  capped: boolean,
+  childName: string,
+): string {
   switch (phase) {
     case 'recording':
       return "J'écoute… Touche le carré rouge quand il a fini.";
@@ -89,7 +93,7 @@ export function recordingInstruction(phase: RecordingPhase, capped: boolean): st
         ? "15 secondes, c'est le maximum\u00A0: l'enregistrement s'est arrêté tout seul."
         : 'Écoute le son. Pas réussi\u00A0? Recommence autant que tu veux.';
     default:
-      return 'Prêt ? Touche le micro quand Côme commence à parler.';
+      return `Prêt ? Touche le micro quand ${childName} commence à parler.`;
   }
 }
 
@@ -113,17 +117,17 @@ export function recordingTitle(phase: RecordingPhase, newWord: boolean): string 
 /**
  * Title and sentence of the closing screen.
  */
-export function doneCopy(outcome: SaveOutcome): DoneCopy {
+export function doneCopy(outcome: SaveOutcome, childName: string): DoneCopy {
   if (outcome.kind === 'new') {
     return {
       title: `${quote(outcome.label)} est dans ses mots\u00A0!`,
-      text: `Côme le dit ${quote(outcome.spoken)}. Son premier son t'attend sur sa page.`,
+      text: `${childName} le dit ${quote(outcome.spoken)}. Son premier son t'attend sur sa page.`,
     };
   }
   if (outcome.kind === 'stage') {
     return {
       title: `Nouvelle prononciation de ${quote(outcome.label)}\u00A0!`,
-      text: `Côme le dit ${quote(outcome.spoken)}. Le son l'accompagne sur sa page.`,
+      text: `${childName} le dit ${quote(outcome.spoken)}. Le son l'accompagne sur sa page.`,
     };
   }
   return {

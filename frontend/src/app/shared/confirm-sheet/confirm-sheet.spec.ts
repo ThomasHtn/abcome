@@ -12,7 +12,7 @@ import { ConfirmSheet } from './confirm-sheet';
   template: `
     <app-confirm-sheet
       heading="Se déconnecter ?"
-      message="Les mots de Côme restent enregistrés."
+      message="Les mots de Alix restent enregistrés."
       confirmLabel="Se déconnecter"
       cancelLabel="Rester"
       tone="dark"
@@ -49,7 +49,7 @@ describe('ConfirmSheet', () => {
     fixture.detectChanges();
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(element.textContent).toContain('Les mots de Côme restent enregistrés.');
+    expect(element.textContent).toContain('Les mots de Alix restent enregistrés.');
     expect(element.querySelector('dialog')?.getAttribute('role')).toBe('alertdialog');
     const [cancel, confirm] = element.querySelectorAll<HTMLButtonElement>('.grid button');
     expect(confirm.textContent?.trim()).toBe('Se déconnecter');

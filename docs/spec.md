@@ -1,12 +1,13 @@
 # ABCome functional spec
 
-The UI is in French; quoted strings are shown as the app displays them. "The child" is the toddler whose words the notebook keeps.
+The UI is in French; quoted strings are shown as the app displays them. "The child" is the toddler whose words the notebook keeps; `[child]` in a quoted string stands for their first name.
 
 ## Users and access
 
 - The family shares one password to open the notebook ("Ouvrir le carnet").
 - Everyone sees and edits the same data, from any device.
 - A web app, kept as a home-screen shortcut (manifest, no service worker): every new screen, and the app coming back to the screen, fetches the notebook again, so what another phone changed shows up.
+- The child's first name is never in the repository: it is `CHILD_NAME` in the backend `.env`, sent only to a signed-in visitor (session check and login answers). The login screen and the manifest never show it; an app opened without reaching the server says "Bébé" until it is reloaded.
 - Logout asks for confirmation; data stays on the server. When the server cannot close the session (offline, down), the visitor stays in the notebook and is told so.
 
 ## Security rules
@@ -74,26 +75,29 @@ Each status has a color, an icon and a label. Lists draw it as a small colored d
 
 ## Screens
 
-A text field that must be filled to save (what Côme says, what a sentence means) has a salmon asterisk after its label and is marked required for screen readers.
+A text field that must be filled to save (what the child says, what a sentence means) has a salmon asterisk after its label and is marked required for screen readers.
 
 ### 1. Login (Connexion)
 
 - Password field with show/hide toggle; error and shake on a wrong password.
-- Under the field, until something is tried: "C'est le mot de passe de la famille : demande-le aux parents de Côme."
+- Under the field, until something is tried: "C'est le mot de passe de la famille : demande-le aux parents."
 - A lockout says it holds on this network, for the whole home, and for how many minutes.
 - Lapinou covers its eyes while the password is typed.
 
 ### 2. Home (Accueil)
 
-- Tabs "Mots" and "Phrases", built alike: a sentence is a notebook entry like a word, labelled by what Côme meant.
-- Header: total, the latest entry and how Côme says it ("renard, dit « enard »"), count per status, for the open tab.
+- Tabs "Mots" and "Phrases", built alike: a sentence is a notebook entry like a word, labelled by what the child meant.
+- Header: total, the latest entry and how the child says it ("renard, dit « enard »"), count per status, for the open tab.
 - Entries sorted by first-said date, newest first; filters by current status ("Tous", "Toutes" on sentences), kept in the URL; search on the label and every spoken form, ignoring accents and case.
 - The list is cut into months of first-said date, each under its title ("Octobre 2026") and its count ("5 mots"); the title stays at the top of the screen while its month scrolls by.
 - The search hides behind a magnifier next to the tabs; opening it swaps the tabs for the field, closing it (cross or Escape) clears it. A search kept in the URL opens it.
 - An empty search offers to add the searched word.
-- Word and sentence card: first-said date, the word or what the sentence means as its title, "Côme dit « apin »" below with the spoken form in salmon, current status as a small dot at the end (the card's accessible name reads it).
+- Word and sentence card: first-said date, the word or what the sentence means as its title, "[child] dit « apin »" below with the spoken form in salmon, current status as a small dot at the end (the card's accessible name reads it).
 - A tap on a card opens the word's or the sentence's page.
-- Actions: add a word, add a sentence (a bottom sheet: what Côme meant, then what he said, its status and day), record a sound, logout.
+- What changed since this device last looked: an entry, a stage or a sound added elsewhere puts a small lavender tag after the card's title, holding one outlined icon, the same size for all: a sparkle for a new word or sentence, a speech bubble for a new stage, a microphone for a new sound (one tag per card, in that order). The card's accessible name says it ("nouveau mot", "nouvelle phrase", "nouvelle prononciation", "nouveau son").
+- Lapinou's bubble counts the changed entries of the open tab ("3 nouveautés depuis ta visite"); the other tab carries a lavender dot when it has some.
+- These marks are kept per device, in browser storage (entry ids and instants only): opening an entry's page marks it seen, and so does adding a word, a sentence, a stage or a sound from this device. The first visit on a device marks nothing, and a change older than 14 days is no longer shown. Editing a stage, renaming an entry, moving or deleting a sound mark nothing.
+- Actions: add a word, add a sentence (a bottom sheet: what the child meant, then what they said, its status and day), record a sound, logout.
 
 ### 3. Add a word (Ajout)
 
@@ -143,8 +147,8 @@ JSON under `/api`, same origin. Dates `yyyy-MM-dd`, enums in lower case. Errors 
 
 | Method and path                                        | Body                                                              | Success                                                               | Errors                                                              |
 | ------------------------------------------------------ | ----------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `GET /api/auth/session`                                |                                                                   | `204` if signed in, sets the CSRF cookie                              | `401 UNAUTHENTICATED`                                               |
-| `POST /api/auth/login`                                 | `{password}`                                                      | `204`, session cookie                                                 | `401 INVALID_CREDENTIALS`, `429 TOO_MANY_ATTEMPTS`                  |
+| `GET /api/auth/session`                                |                                                                   | `200 {childName}` if signed in, sets the CSRF cookie                  | `401 UNAUTHENTICATED`                                               |
+| `POST /api/auth/login`                                 | `{password}`                                                      | `200 {childName}`, session cookie                                     | `401 INVALID_CREDENTIALS`, `429 TOO_MANY_ATTEMPTS`                  |
 | `POST /api/auth/logout`                                |                                                                   | `204`                                                                 |                                                                     |
 | `GET /api/dictionary`                                  |                                                                   | `200 [{label, category, frequent}]` by acquisition rank, cached 1 day |                                                                     |
 | `GET /api/words`                                       |                                                                   | `200 [Word]`                                                          |                                                                     |
@@ -163,7 +167,7 @@ JSON under `/api`, same origin. Dates `yyyy-MM-dd`, enums in lower case. Errors 
 Shapes:
 
 - `Word`: `{id, kind, label, category, createdAt, pronunciations, recordings}`, `kind` `word` (the default on creation) or `sentence`, stages by date then id, recordings newest first (metadata only).
-- `Pronunciation`: `{id, wordId, spoken, status, date}`.
+- `Pronunciation`: `{id, wordId, spoken, status, date, createdAt}`.
 - `Recording`: `{id, wordId, pronunciationId, mimeType, durationMs, createdAt}`.
 
 Caching: dictionary `private, max-age=86400`; recordings `private, max-age=31536000, immutable` with `Accept-Ranges: bytes`. A sound for a new word takes two calls: create the word, then add the recording.
@@ -226,6 +230,7 @@ Radii: 12 chip, 20 card, 28 block, pill for buttons. Soft shadows.
 - Float: mascot breathes (3 s loop).
 - Pop: a new word bounces into the list (0.6 s).
 - Celebration: salmon and lavender confetti when a word becomes mastered, or a sentence or sound is added.
+- Change tag: pops in with its card, then its icon sways briefly every 5 s.
 - Entry: screens cascade in (0.5 s), bottom bar slides up.
 - Press: buttons squash; tapping Lapinou makes it jump.
 - Sheet: rises with a light bounce, backdrop fades in.

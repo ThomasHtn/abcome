@@ -4,7 +4,7 @@ import { Mascot } from '@shared/mascot/mascot';
 import { MascotState } from '@shared/mascot/mascot.model';
 
 /**
- * Lapinou asking or explaining something in a salmon speech bubble ("Quel mot Côme a-t-il dit ?").
+ * Lapinou asking or explaining something in a salmon speech bubble ("Quel mot [child] a-t-il dit ?").
  * Usage: `<app-mascot-bubble live>J'écoute…</app-mascot-bubble>`.
  */
 @Component({

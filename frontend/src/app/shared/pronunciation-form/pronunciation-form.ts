@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, model } from '@angular/core';
 
+import { AuthSession } from '@core/auth/auth-session';
 import { todayIso } from '@core/date/date.utils';
 import { SPOKEN_MAX_LENGTHS } from '@core/words/word.constants';
 import { WordKind } from '@core/words/word.model';
@@ -11,7 +12,7 @@ import { PronunciationDraft } from './pronunciation-form.model';
 import { isDraftReady } from './pronunciation-form.utils';
 
 /**
- * The three fields of a stage: what Côme said, the status tiles and the day; the screen owns the
+ * The three fields of a stage: what the child said, the status tiles and the day; the screen owns the
  * draft and the save button. Usage: `<app-pronunciation-form [(draft)]="draft" />`.
  */
 @Component({
@@ -27,9 +28,9 @@ export class PronunciationForm {
   public readonly draft = model.required<PronunciationDraft>();
 
   /**
-   * Label of the spoken field ("Comment Côme le dit", "Sur ce son, Côme dit").
+   * Label of the spoken field ("Sur ce son, [child] dit"); "Comment [child] le dit" when not given.
    */
-  public readonly spokenLabel = input('Comment Côme le dit');
+  public readonly spokenLabel = input<string>();
 
   /**
    * Example shown in the empty spoken field ("ex. apin", "avant : apin").
@@ -55,6 +56,18 @@ export class PronunciationForm {
    * Longest spoken form the API accepts for the kind.
    */
   protected readonly spokenMaxLength = computed(() => SPOKEN_MAX_LENGTHS[this.kind()]);
+
+  /**
+   * First name of the child, which the default spoken label names.
+   */
+  private readonly childName = inject(AuthSession).childName;
+
+  /**
+   * Label shown on the spoken field.
+   */
+  protected readonly shownSpokenLabel = computed(
+    () => this.spokenLabel() ?? `Comment ${this.childName()} le dit`,
+  );
 
   /**
    * Replaces some fields of the draft, keeping the others.
