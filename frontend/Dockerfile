@@ -17,7 +17,7 @@ RUN npm run build
 # ---- Runtime stage ------------------------------------------------------------
 # nginx serves the bundle; the reverse proxy terminates HTTPS and routes /api/* to the backend on the same origin.
 # The unprivileged image runs every nginx process as the `nginx` user, never root.
-FROM nginxinc/nginx-unprivileged:1.29.8-alpine3.23@sha256:0c79d56aee561a1d81c63f00eee5fb5fe29279560cdc55e91425133104c7fbe6 AS runtime
+FROM nginxinc/nginx-unprivileged:1.31.2-alpine3.23@sha256:6320020c7da8714feab524e02c08c5a1958675c4e68700e93a2fd8970b065786 AS runtime
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /workspace/dist/frontend/browser /usr/share/nginx/html
