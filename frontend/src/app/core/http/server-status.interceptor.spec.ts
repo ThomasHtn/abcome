@@ -39,6 +39,7 @@ describe('serverStatusInterceptor', () => {
 
     answer(200);
     expect(status.problem()).toBeNull();
+    expect(status.recoveries()).toBe(1);
   });
 
   it('reports the server down when it cannot be reached at all', () => {

@@ -85,6 +85,32 @@ describe('WordsApi', () => {
     http.expectOne(API_ENDPOINTS.words).flush([aWord()]);
   });
 
+  it('keeps the shown list when a fetch fails, and fetches again when the network returns', async () => {
+    await loadList();
+
+    document.dispatchEvent(new Event('visibilitychange'));
+    TestBed.tick();
+    http.expectOne(API_ENDPOINTS.words).error(new ProgressEvent('error'));
+    await new Promise((resolve) => setTimeout(resolve));
+    TestBed.tick();
+    expect(api.words.value()?.map((word) => word.label)).toEqual(['lapin']);
+
+    window.dispatchEvent(new Event('online'));
+    TestBed.tick();
+    http.expectOne(API_ENDPOINTS.words).flush([aWord(), aWord({ id: 2, label: 'chat' })]);
+    await new Promise((resolve) => setTimeout(resolve));
+    TestBed.tick();
+    expect(api.words.value()?.map((word) => word.label)).toEqual(['lapin', 'chat']);
+  });
+
+  it('forgets the kept list at sign-out', async () => {
+    await loadList();
+    session.status.set('signed-out');
+    TestBed.tick();
+
+    expect(api.words.hasValue()).toBe(false);
+  });
+
   it('appends a created word to the loaded list without fetching it again', async () => {
     await loadList();
     const created = api.create({

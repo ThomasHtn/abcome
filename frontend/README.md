@@ -14,6 +14,8 @@ npm run fix                          # every auto-fix
 npm run build                        # production bundle in dist/
 ```
 
+Production image: nginx serves the bundle and answers `/healthz` for the Docker `HEALTHCHECK` and uptime probes. Deployment and monitoring: [backend/README.md](../backend/README.md#deployment).
+
 ## Folders
 
 | Folder                        | Role                                                                     |
@@ -68,6 +70,8 @@ Lists are loaded whole, shared by every screen and patched locally after each wr
 | `core/text/text.utils.ts`           | Normalization and search ranking (twin of the backend)                 |
 | `core/date/date.utils.ts`           | `todayIso()` (Paris) and date formatting                               |
 | `core/http/api-error.utils.ts`      | `apiErrorCode(error)`, `retryAfterSeconds(error)`, `isNotFound(error)` |
+| `core/http/resource.utils.ts`       | `resourceValue(resource, fallback)`, `keepValueOnError(resource)`      |
+| `core/http/stale-build.utils.ts`    | Reloads a screen whose lazy bundle went away with a deployment         |
 | `core/recordings/`                  | Duration and size limits, MIME type choice, decoded waveforms          |
 
 Test factories `aWord()` and `aPronunciation()` are in `core/words/word.fixtures.ts`.

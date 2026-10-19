@@ -1,59 +1,142 @@
-# Little Words
+<p align="center">
+  <img src="frontend/public/assets/mascot/idle.svg" alt="Lapinou, the Little Words mascot" width="120">
+</p>
 
-Shown to the family as ABCome, at `https://abcome.thomashtn.dev`; Little Words is the technical name (repository, images, database, packages).
+<h1 align="center">Little Words</h1>
 
-Mobile-first web app, installable as a home-screen shortcut, where family members log a toddler's first words and sentences, track how each pronunciation evolves and keep short audio recordings.
+<p align="center">
+  <b>The first-words baby book. The one you actually fill in.</b><br>
+  Log a new word in ten seconds, follow it from "bit" to "rabbit",<br>
+  and keep the sound of that tiny voice for good.
+</p>
 
-## Documentation
+<p align="center">
+  <img src="https://img.shields.io/badge/self--hosted-yours-F7957C" alt="Self-hosted">
+  <img src="https://img.shields.io/badge/tracking-none-9488DF" alt="No tracking">
+  <img src="https://img.shields.io/badge/app_store-not_needed-F7957C" alt="No app store">
+  <img src="https://img.shields.io/badge/confetti-included-9488DF" alt="Confetti included">
+</p>
+
+<p align="center">
+  <a href="docs/media/littlewords-tour-en.mp4">
+    <img src="docs/media/poster.png" alt="Watch the Little Words tour" width="760">
+  </a>
+  <br>
+  <a href="docs/media/littlewords-tour-en.mp4"><b>&#9654; Watch the 46-second tour</b></a><br>
+  <sub>No sound, no ads, one bunny.</sub>
+</p>
+
+<br>
+
+## Toddlers speak their own language
+
+"Bit" means rabbit. "Wawa" means water. "Tate" means cake, and also *I want cake right now*.
+Three months later the same child says "rabbit" perfectly, and nobody remembers the "bit" anymore.
+
+**Little Words is the family notebook that remembers for you.**
+
+<br>
+
+<table>
+  <tr>
+    <td align="center" width="25%" valign="top">
+      <img src="docs/media/screen-notebook.png" alt="The notebook" width="190"><br><br>
+      <b>The notebook</b><br>
+      <sub>Every word, the day it showed up, how it sounds today.</sub>
+    </td>
+    <td align="center" width="25%" valign="top">
+      <img src="docs/media/screen-progress.png" alt="A word's progress" width="190"><br><br>
+      <b>The journey</b><br>
+      <sub>From "bit" to "babbit" to "rabbit", each step with its sound.</sub>
+    </td>
+    <td align="center" width="25%" valign="top">
+      <img src="docs/media/screen-pronunciation.png" alt="A new pronunciation" width="190"><br><br>
+      <b>The big day</b><br>
+      <sub>They finally nailed it. Two taps, and cue the confetti.</sub>
+    </td>
+    <td align="center" width="25%" valign="top">
+      <img src="docs/media/screen-recorder.png" alt="The recorder" width="190"><br><br>
+      <b>The voice</b><br>
+      <sub>One tap, fifteen seconds, kept forever.</sub>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+## What's inside
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <img src="docs/media/icons/users.svg" alt="" width="48"><br>
+      <b>One notebook, the whole family</b><br>
+      Parents, grandparents, the nanny: everyone adds words from their own phone. One shared passphrase, zero accounts, zero "forgot your password" emails.
+    </td>
+    <td width="33%" valign="top">
+      <img src="docs/media/icons/footprints.svg" alt="" width="48"><br>
+      <b>Every step counts</b><br>
+      Each word keeps its whole history, marked <i>On the way</i>, <i>Almost</i> or <i>Nailed it</i>. Watching the dots turn green is weirdly addictive.
+    </td>
+    <td width="33%" valign="top">
+      <img src="docs/media/icons/mic.svg" alt="" width="48"><br>
+      <b>That little voice</b><br>
+      Record up to 15 seconds next to each word. Prime material for an 18th birthday speech.
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top">
+      <img src="docs/media/icons/party-popper.svg" alt="" width="48"><br>
+      <b>Confetti</b><br>
+      A word reaches <i>Nailed it</i>? Confetti. This is not up for debate.
+    </td>
+    <td width="33%" valign="top">
+      <img src="docs/media/icons/eye.svg" alt="" width="48"><br>
+      <b>Look, don't touch</b><br>
+      An optional read-only passphrase for relatives who want to follow along without "fixing" anything.
+    </td>
+    <td width="33%" valign="top">
+      <img src="docs/media/icons/lock.svg" alt="" width="48"><br>
+      <b>Yours, really</b><br>
+      Self-hosted, no store, no ads, no tracking. Add it to the home screen and it feels like an app.
+    </td>
+  </tr>
+</table>
+
+<br>
+
+## Get it
+
+You bring the toddler, Little Words brings the rest. You need Docker, a PostgreSQL database and a reverse proxy (the compose file plugs into Traefik).
+
+```bash
+git clone https://github.com/ThomasHtn/littlewords.git && cd littlewords
+cp .env.example .env    # database, passphrase hash, your child's first name
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Step-by-step guide (database, passphrase hash, monitoring): [backend/README.md](backend/README.md#deployment).
+Rather tinker first? [CONTRIBUTING.md](CONTRIBUTING.md) runs it locally in a few commands.
+
+<br>
+
+## Technical
+
+Everything is called `littlewords`: repository, Java package, Docker images, containers, database.
+
+| Layer | Stack |
+|---|---|
+| Frontend | Angular 22 (standalone, zoneless, signals), Tailwind 4 for layout and SCSS for visuals, served by nginx |
+| Backend | Spring Boot 4 on Java 25: Spring Security, Data JPA, Flyway, springdoc |
+| Database | PostgreSQL 17, recordings stored as `bytea` in their own table |
+| Auth | Shared family passphrase (Argon2id), optional read-only one, session cookie, CSRF, login lockout |
+| Deployment | `docker-compose.prod.yml`: `/api/*` to the backend, the rest to the frontend |
+| Quality | Spotless, Checkstyle, SpotBugs, JaCoCo, Testcontainers; ESLint, Stylelint, Prettier, vitest; GitHub Actions |
+
+The interface and the word dictionary are in French; the screenshots above are translated.
 
 - [CONTRIBUTING.md](CONTRIBUTING.md): setup, code map, conventions. Start here.
-- [backend/README.md](backend/README.md), [frontend/README.md](frontend/README.md): commands, structure, design notes.
+- [backend/README.md](backend/README.md): commands, family password, packages, deployment, monitoring.
+- [frontend/README.md](frontend/README.md): commands, folders, routes, styles, components.
+- [docs/dictionary/README.md](docs/dictionary/README.md): where the word list comes from (IFDC via Wordbank, CC BY 4.0).
 - API reference: Swagger UI at `/swagger-ui.html` when `API_DOCS_ENABLED=true` (dev only).
-
-## Stack
-
-- Frontend: Angular 22, Tailwind 4 + SCSS, served by nginx.
-- Backend: Spring Boot 4 on Java 25.
-- Database: PostgreSQL 17, recordings stored as `bytea`.
-- Auth: one shared family passphrase (Argon2id hash), plus an optional read-only one for relatives; session cookie, CSRF.
-
-## Deployment
-
-`docker-compose.prod.yml` runs the `backend` and `frontend` images behind the VPS Traefik: `/api/*` goes to the backend, the rest to the frontend. The backend reaches PostgreSQL through the external `database` network.
-
-First deployment:
-
-1. Create the role and database: `CREATE ROLE littlewords LOGIN PASSWORD '...'; CREATE DATABASE littlewords OWNER littlewords;`. Flyway creates the tables at first start.
-2. Produce the passphrase hash, and the reader one if relatives should look ([backend/README.md](backend/README.md#family-password)).
-3. `cp .env.example .env` and fill it (hash in single quotes, the child's first name in `CHILD_NAME`).
-4. `docker compose -f docker-compose.prod.yml up -d --build`.
-5. Open `https://abcome.thomashtn.dev` and check that a wrong passphrase is refused.
-
-Back up the `littlewords` database: it holds the recordings.
-
-## Monitoring
-
-Traefik routes only `/api` to the backend, so the actuator is reachable from the Docker networks only, by container name.
-
-| Target | Use |
-|---|---|
-| `http://littlewords-backend:8080/actuator/health/readiness` | `200` when the API and its database answer, `503` otherwise |
-| `http://littlewords-backend:8080/actuator/health/liveness` | `200` while the JVM runs, even without the database |
-| `http://littlewords-backend:8080/actuator/info` | Version and build time of the running image |
-| `http://littlewords-backend:8080/actuator/prometheus` | Metrics (JVM, HTTP, Hikari pool), tagged `application="littlewords"` |
-| `https://abcome.thomashtn.dev/healthz` | Public path: Traefik, TLS and nginx |
-
-Both images carry a Docker `HEALTHCHECK` (backend on readiness, frontend on `/healthz`), shown by `docker ps` and by Uptime Kuma's "Docker Container" monitor. Container logs rotate at three files of 10 MB.
-
-On the VPS:
-
-- Uptime Kuma: an HTTP monitor on the public `/healthz`, and one on the readiness URL if Uptime Kuma shares the `traefik` network.
-- Prometheus: join the `traefik` network and add the job below.
-
-```yaml
-scrape_configs:
-  - job_name: littlewords
-    metrics_path: /actuator/prometheus
-    static_configs:
-      - targets: ["littlewords-backend:8080"]
-```

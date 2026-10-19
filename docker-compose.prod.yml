@@ -20,7 +20,7 @@ services:
     env_file: .env
     environment:
       API_DOCS_ENABLED: "false"
-      FORWARD_HEADERS_STRATEGY: framework
+      FORWARD_HEADERS_STRATEGY: native
     networks:
       - traefik
       - database

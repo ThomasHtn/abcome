@@ -205,6 +205,8 @@ export class AudioRecorder {
       this.analyser = this.context.createAnalyser();
       this.analyser.fftSize = 512;
       this.context.createMediaStreamSource(stream).connect(this.analyser);
+      // Created after the microphone prompt, outside the tap: Safari may start it suspended.
+      void this.context.resume().catch(() => undefined);
     } catch {
       void this.context?.close().catch(() => undefined);
       this.context = null;

@@ -25,6 +25,11 @@ export class ServerStatus {
   public readonly down = signal(false);
 
   /**
+   * Times the server answered again after being unreachable or failing, for whoever waits on it.
+   */
+  public readonly recoveries = signal(0);
+
+  /**
    * What to tell the family, `null` while everything answers.
    */
   public readonly problem = computed<ServerProblem | null>(() => {
@@ -41,7 +46,17 @@ export class ServerStatus {
     this.window?.addEventListener('offline', () => this.online.set(false));
     this.window?.addEventListener('online', () => {
       this.online.set(true);
-      this.down.set(false);
+      this.report(false);
     });
+  }
+
+  /**
+   * Records the outcome of a call, counting a recovery when it ends an outage.
+   */
+  public report(failed: boolean): void {
+    if (this.down() && !failed) {
+      this.recoveries.update((count) => count + 1);
+    }
+    this.down.set(failed);
   }
 }

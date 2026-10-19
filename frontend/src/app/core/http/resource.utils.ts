@@ -35,3 +35,23 @@ export function resourcePatcher<T>(
     }
   };
 }
+
+/**
+ * Puts the last value back when a reload fails (offline, server down), so screens keep what they
+ * showed instead of their error state; the outage band says why. Going idle (signed out) forgets it.
+ * Call it in an injection context, like a field initializer.
+ */
+export function keepValueOnError<T>(resource: WritableResource<T | undefined>): void {
+  let last: T | undefined;
+  effect(() => {
+    const status = resource.status();
+    if (status === 'idle') {
+      last = undefined;
+    } else if (resource.hasValue()) {
+      last = resource.value();
+    } else if (status === 'error' && last !== undefined) {
+      const kept = last;
+      untracked(() => resource.set(kept));
+    }
+  });
+}

@@ -1,8 +1,10 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
+import { ServerStatus } from '@core/http/server-status';
 
 import { CHILD_NAME_FALLBACK } from './auth.constants';
 import { AuthSession } from './auth-session';
@@ -51,6 +53,43 @@ describe('AuthSession', () => {
     expect(await offline).toBe(true);
     expect(session.status()).toBe('signed-in');
     expect(session.childName()).toBe(CHILD_NAME_FALLBACK);
+    expect(session.readOnly()).toBe(true);
+  });
+
+  /**
+   * Fails the first check for lack of server, then has the server answer again after an outage.
+   */
+  async function checkWhileServerAway(): Promise<void> {
+    const check = session.ensureChecked();
+    http.expectOne(API_ENDPOINTS.session).error(new ProgressEvent('error'));
+    await check;
+    const status = TestBed.inject(ServerStatus);
+    status.report(true);
+    status.report(false);
+    TestBed.tick();
+  }
+
+  it('checks again once the server answers, and learns the role and the child name', async () => {
+    await checkWhileServerAway();
+
+    http.expectOne(API_ENDPOINTS.session).flush({ childName: 'Alix', readOnly: false });
+    await Promise.resolve();
+
+    expect(session.readOnly()).toBe(false);
+    expect(session.childName()).toBe('Alix');
+  });
+
+  it('leaves for the login screen when the late check finds the session closed', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    await checkWhileServerAway();
+
+    http
+      .expectOne(API_ENDPOINTS.session)
+      .flush({ code: 'UNAUTHENTICATED' }, { status: 401, statusText: 'Unauthorized' });
+    await Promise.resolve();
+
+    expect(session.status()).toBe('signed-out');
+    expect(navigate).toHaveBeenCalled();
   });
 
   it('keeps the visitor in the app on a server error during the check', async () => {

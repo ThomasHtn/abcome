@@ -1,12 +1,15 @@
 import { HttpClient, HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
-import { computed, inject, Service, signal } from '@angular/core';
+import { computed, effect, inject, Service, signal, untracked } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { firstValueFrom } from 'rxjs';
 
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
+import { ServerStatus } from '@core/http/server-status';
 
 import { CHILD_NAME_FALLBACK } from './auth.constants';
 import { AuthStatus, SessionInfo } from './auth.model';
+import { loginUrlTree } from './auth.utils';
 
 /**
  * Family session state; the server holds the session, this only mirrors whether one is open.
@@ -17,6 +20,21 @@ export class AuthSession {
    * Sends the session, login and logout calls.
    */
   private readonly http = inject(HttpClient);
+
+  /**
+   * Sends the visitor to the login screen when a late check finds the session closed.
+   */
+  private readonly router = inject(Router);
+
+  /**
+   * Whether the server answers, so a check it could not answer is made again once it does.
+   */
+  private readonly serverStatus = inject(ServerStatus);
+
+  /**
+   * Whether the session is only assumed open: the check got no answer, so its role is unknown.
+   */
+  private unverified = false;
 
   /**
    * Running session check, shared by guards that fire together.
@@ -44,9 +62,21 @@ export class AuthSession {
   public readonly readOnly = signal(false);
 
   /**
+   * Checks an assumed session again each time the server answers after an outage (network back,
+   * any call through).
+   */
+  constructor() {
+    effect(() => {
+      if (this.serverStatus.recoveries() > 0 && this.unverified) {
+        untracked(() => void this.recheck());
+      }
+    });
+  }
+
+  /**
    * Asks the server once whether a session is open; later calls reuse the answer.
-   * Only a 401 means signed out: offline or a server error keeps the visitor in the app, where each
-   * screen shows its own retry state, and the next 401 still sends them to the login screen.
+   * Only a 401 means signed out: offline or a server error keeps the visitor in the app, read-only
+   * like a reader until the server answers again and a new check tells the role.
    */
   public ensureChecked(): Promise<boolean> {
     if (this.status() !== 'unknown') {
@@ -55,12 +85,15 @@ export class AuthSession {
     this.pendingCheck ??= firstValueFrom(this.http.get<SessionInfo>(API_ENDPOINTS.session))
       .then(
         (session) => this.open(session),
-        (error: unknown) =>
-          this.status.set(
-            error instanceof HttpErrorResponse && error.status === HttpStatusCode.Unauthorized
-              ? 'signed-out'
-              : 'signed-in',
-          ),
+        (error: unknown) => {
+          if (isUnauthorized(error)) {
+            this.status.set('signed-out');
+            return;
+          }
+          this.unverified = true;
+          this.readOnly.set(true);
+          this.status.set('signed-in');
+        },
       )
       .then(() => {
         this.pendingCheck = null;
@@ -84,7 +117,7 @@ export class AuthSession {
     try {
       await firstValueFrom(this.http.post<void>(API_ENDPOINTS.logout, null));
     } catch (error) {
-      if (!(error instanceof HttpErrorResponse && error.status === HttpStatusCode.Unauthorized)) {
+      if (!isUnauthorized(error)) {
         throw error;
       }
     }
@@ -99,6 +132,24 @@ export class AuthSession {
   }
 
   /**
+   * Asks the server again about a session assumed open: learns its role, or leaves for the login
+   * screen when it is closed; a check that still gets no answer waits for the next one.
+   */
+  private async recheck(): Promise<void> {
+    this.unverified = false;
+    try {
+      this.open(await firstValueFrom(this.http.get<SessionInfo>(API_ENDPOINTS.session)));
+    } catch (error) {
+      if (!isUnauthorized(error)) {
+        this.unverified = true;
+        return;
+      }
+      this.markSignedOut();
+      void this.router.navigateByUrl(loginUrlTree(this.router, this.router.url));
+    }
+  }
+
+  /**
    * Records an open session, what it tells about the child and whether it may write.
    */
   private open(session: SessionInfo): void {
@@ -106,4 +157,11 @@ export class AuthSession {
     this.readOnly.set(session.readOnly);
     this.status.set('signed-in');
   }
+}
+
+/**
+ * Whether a failed call means the server refused the session.
+ */
+function isUnauthorized(error: unknown): boolean {
+  return error instanceof HttpErrorResponse && error.status === HttpStatusCode.Unauthorized;
 }

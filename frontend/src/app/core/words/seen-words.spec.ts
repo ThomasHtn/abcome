@@ -122,6 +122,21 @@ describe('SeenWords', () => {
     expect(seen.changeOf(RENARD)).toBe('entry');
   });
 
+  it('keeps what another tab stored when it stores its own marks', () => {
+    const seen = onDevice();
+    const otherTab: SeenMarks = {
+      since: Date.parse(FIRST_VISIT),
+      entries: { 1: Date.parse('2026-10-17T09:30:00Z') },
+    };
+    localStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify(otherTab));
+    seen.markListed([RENARD]);
+
+    expect(Object.keys(JSON.parse(localStorage.getItem(SEEN_STORAGE_KEY)!).entries)).toEqual([
+      '1',
+      '2',
+    ]);
+  });
+
   it('stores nothing for entries older than the first visit', () => {
     const seen = onDevice();
     const old = '2026-09-01T08:00:00Z';

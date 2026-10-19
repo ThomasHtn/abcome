@@ -123,7 +123,10 @@ public class DefaultAuthService implements AuthService {
                 LOGGER.warn("Wrong password from {}", address);
                 throw new UnauthorizedException(INVALID_CREDENTIALS, "Wrong password.");
             }
-            attemptLimiter.recordSuccess(address);
+            // A reader's success keeps the count, or it would reset guesses at the family password.
+            if (role.get() == Role.FAMILY) {
+                attemptLimiter.recordSuccess(address);
+            }
         } finally {
             checkSlots.release();
         }

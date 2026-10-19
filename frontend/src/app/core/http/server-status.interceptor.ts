@@ -16,12 +16,12 @@ export const serverStatusInterceptor: HttpInterceptorFn = (request, next) => {
     tap({
       next: (event) => {
         if (event instanceof HttpResponse) {
-          status.down.set(false);
+          status.report(false);
         }
       },
       error: (error: unknown) => {
         if (error instanceof HttpErrorResponse) {
-          status.down.set(isServerFailure(error));
+          status.report(isServerFailure(error));
         }
       },
     }),

@@ -298,12 +298,13 @@ export class HomePage {
   protected readonly loggingOut = signal(false);
 
   /**
-   * Marks the open tab's entries as seen once shown, again when a reload brings more: their tags
-   * stay for this visit and are gone at the next one; the other tab keeps its own until opened.
+   * Marks the cards shown as seen, again when a reload, the search or the filter shows more: their
+   * tags stay for this visit and are gone at the next one; hidden entries keep theirs until shown.
    */
   constructor() {
     effect(() => {
-      this.seenWords.markListed(this.activeTab() === 'words' ? this.words() : this.sentences());
+      const entries = this.activeTab() === 'words' ? this.words() : this.sentences();
+      this.seenWords.markListed(visibleWords(entries, this.query(), this.activeFilter()));
     });
   }
 

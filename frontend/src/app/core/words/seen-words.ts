@@ -40,6 +40,7 @@ export class SeenWords {
   constructor() {
     this.document.addEventListener('visibilitychange', () => {
       if (this.document.visibilityState === 'visible') {
+        this.stored = this.latest();
         this.marks.set(this.stored);
       }
     });
@@ -84,11 +85,19 @@ export class SeenWords {
    * Adds marks to the stored ones, writing only when one moves forward.
    */
   private store(seen: readonly SeenMark[]): void {
-    const next = withMarks(this.stored, seen);
-    if (next !== this.stored) {
-      this.stored = next;
+    const current = this.latest();
+    const next = withMarks(current, seen);
+    this.stored = next;
+    if (next !== current) {
       this.write(next);
     }
+  }
+
+  /**
+   * Stored marks as another tab may have left them, or this tab's own when storage is unreadable.
+   */
+  private latest(): SeenMarks {
+    return parseMarks(this.read()) ?? this.stored;
   }
 
   /**

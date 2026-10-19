@@ -145,6 +145,31 @@ class AuthApiTest extends PostgreSqlIntegrationTest {
     }
 
     @Test
+    @DisplayName("Keeps counting wrong passwords after a reader login, so it cannot reset guesses at the family one")
+    void readerLoginKeepsFailures() throws Exception {
+        String address = "198.51.100.9";
+        for (int attempt = 0; attempt < 3; attempt++) {
+            login("wrong " + attempt, address).andExpect(status().isUnauthorized());
+        }
+        login(READER_PASSWORD, address).andExpect(status().isOk());
+        login("wrong again", address).andExpect(status().isUnauthorized());
+
+        login(FAMILY_PASSWORD, address).andExpect(status().isTooManyRequests());
+    }
+
+    @Test
+    @DisplayName("Lifts the count after a family login")
+    void familyLoginLiftsFailures() throws Exception {
+        String address = "198.51.100.10";
+        for (int attempt = 0; attempt < 4; attempt++) {
+            login("wrong " + attempt, address).andExpect(status().isUnauthorized());
+        }
+        login(FAMILY_PASSWORD, address).andExpect(status().isOk());
+
+        login("wrong again", address).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @DisplayName("Gives a new session id at login, so an id known before login is worthless")
     void changesSessionIdAtLogin() throws Exception {
         Cookie before = signIn();

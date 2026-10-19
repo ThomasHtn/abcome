@@ -7,7 +7,7 @@ import { distinctUntilChanged, filter, firstValueFrom, map, skip } from 'rxjs';
 
 import { AuthSession } from '@core/auth/auth-session';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
-import { resourcePatcher } from '@core/http/resource.utils';
+import { keepValueOnError, resourcePatcher } from '@core/http/resource.utils';
 
 import { SeenWords } from './seen-words';
 import {
@@ -65,10 +65,12 @@ export class WordsApi {
 
   /**
    * Fetches the list again on each new screen (not the first, which loads it, nor a tab or search
-   * change, which only touch the query) and when the app comes back to the screen; a load already
-   * running is kept, and the shown list stays until the fresh one arrives.
+   * change, which only touch the query), when the app comes back to the screen and when the network
+   * returns; a load already running is kept, and the shown list stays until the fresh one arrives,
+   * or after it fails.
    */
   constructor() {
+    keepValueOnError(this.words);
     const document = inject(DOCUMENT);
     inject(Router)
       .events.pipe(
@@ -83,6 +85,7 @@ export class WordsApi {
         this.words.reload();
       }
     });
+    document.defaultView?.addEventListener('online', () => this.words.reload());
   }
 
   /**

@@ -84,7 +84,7 @@ public class LoginAttemptLimiter {
      *
      * <p>Counting first, atomically, means parallel guesses cannot all pass the check before any of
      * them is recorded. The attempt that uses up the budget starts the lockout at once; if its
-     * password is right, {@link #recordSuccess} lifts it.</p>
+     * family password is right, {@link #recordSuccess} lifts it.</p>
      *
      * @param address caller's remote address
      * @return remaining wait when the address is locked out, empty when the attempt may go on
@@ -114,7 +114,7 @@ public class LoginAttemptLimiter {
     }
 
     /**
-     * Forgets the attempts and lockouts of an address after a right password.
+     * Forgets the attempts and lockouts of an address after a right family password.
      *
      * @param address caller's remote address
      */

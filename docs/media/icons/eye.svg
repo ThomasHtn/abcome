@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" width="56" height="56">
+  <!-- README feature tile: lucide "eye" (ISC) from the app sprite, on a brand-coloured square. -->
+  <rect width="56" height="56" rx="16" fill="#ffe6dd" />
+  <!-- Icon centred at 28 px, stroked like the app icons. -->
+  <g transform="translate(14 14) scale(1.1667)" fill="none" stroke="#b4513b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+    <circle cx="12" cy="12" r="3" />
+  </g>
+</svg>
