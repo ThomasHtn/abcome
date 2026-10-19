@@ -10,7 +10,9 @@ import {
   signal,
 } from '@angular/core';
 
-import { MASCOT_ALT, MASCOT_ASPECT_RATIO, MASCOT_JUMP_MS } from './mascot.constants';
+import { translate, TranslocoPipe } from '@jsverse/transloco';
+
+import { MASCOT_ALT_KEYS, MASCOT_ASPECT_RATIO, MASCOT_JUMP_MS } from './mascot.constants';
 import { MascotState } from './mascot.model';
 
 /**
@@ -20,7 +22,7 @@ import { MascotState } from './mascot.model';
 @Component({
   selector: 'app-mascot',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgOptimizedImage],
+  imports: [NgOptimizedImage, TranslocoPipe],
   templateUrl: './mascot.html',
   styleUrl: './mascot.scss',
 })
@@ -89,7 +91,9 @@ export class Mascot {
   /**
    * Alternative text of the drawn state, unless the screen gave its own.
    */
-  protected readonly description = computed(() => this.alt() ?? MASCOT_ALT[this.shown()]);
+  protected readonly description = computed(
+    () => this.alt() ?? translate(MASCOT_ALT_KEYS[this.shown()]),
+  );
 
   /**
    * Cancels a running jump timer when the mascot goes away.

@@ -2,10 +2,13 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  computed,
   input,
   model,
   output,
 } from '@angular/core';
+
+import { translate } from '@jsverse/transloco';
 
 import { BottomSheet } from '@shared/bottom-sheet/bottom-sheet';
 import { Button } from '@shared/button/button';
@@ -43,9 +46,16 @@ export class ConfirmSheet {
   public readonly confirmLabel = input.required<string>();
 
   /**
-   * Cancel button text ("Garder").
+   * Cancel button text ("Garder"); "Annuler" when not given.
    */
-  public readonly cancelLabel = input('Annuler');
+  public readonly cancelLabel = input<string>();
+
+  /**
+   * Cancel button text as shown.
+   */
+  protected readonly shownCancelLabel = computed(
+    () => this.cancelLabel() ?? translate('confirmSheet.cancel'),
+  );
 
   /**
    * `danger` red confirm for a deletion, `dark` ink confirm for a log out.

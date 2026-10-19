@@ -3,37 +3,35 @@ import { WordKind } from '@core/words/word.model';
 import { KindCopy, WordSheet } from './word-detail.model';
 
 /**
- * Wording of the page for a word and for a sentence.
+ * Translation keys of the page wording for a word and for a sentence, translated by `translatedCopy`.
  */
 export const KIND_COPY: Readonly<Record<WordKind, KindCopy>> = {
   word: {
-    theNoun: 'le mot',
-    renameAction: 'Renommer le mot',
-    deletedSuffix: 'a été supprimé',
-    notFound: "Ce mot n'est pas dans le carnet",
-    loading: 'Chargement du mot…',
-    renamed: 'Mot renommé',
-    emptyLabel: 'Écris le mot.',
-    labelField: 'Le mot',
-    renameFailed: "Le mot n'a pas pu être renommé, réessaie.",
-    deleteFailed: "Le mot n'a pas pu être supprimé, réessaie.",
-    lastStageMessage:
-      "Un mot garde toujours au moins une prononciation. Pour l'effacer, supprime le mot.",
+    deleteAction: 'wordDetail.word.deleteAction',
+    renameAction: 'wordDetail.word.renameAction',
+    deletedSuffix: 'wordDetail.word.deletedSuffix',
+    notFound: 'wordDetail.word.notFound',
+    loading: 'wordDetail.word.loading',
+    renamed: 'wordDetail.word.renamed',
+    emptyLabel: 'wordDetail.word.emptyLabel',
+    labelField: 'wordDetail.word.labelField',
+    renameFailed: 'wordDetail.word.renameFailed',
+    deleteFailed: 'wordDetail.word.deleteFailed',
+    lastStageMessage: 'wordDetail.word.lastStageMessage',
     listQuery: {},
   },
   sentence: {
-    theNoun: 'la phrase',
-    renameAction: 'Modifier la phrase',
-    deletedSuffix: 'a été supprimée',
-    notFound: "Cette phrase n'est pas dans le carnet",
-    loading: 'Chargement de la phrase…',
-    renamed: 'Phrase modifiée',
-    emptyLabel: "Écris ce qu'il voulait dire.",
-    labelField: "Ce qu'il voulait dire",
-    renameFailed: "La phrase n'a pas pu être modifiée, réessaie.",
-    deleteFailed: "La phrase n'a pas pu être supprimée, réessaie.",
-    lastStageMessage:
-      "Une phrase garde toujours au moins une prononciation. Pour l'effacer, supprime la phrase.",
+    deleteAction: 'wordDetail.sentence.deleteAction',
+    renameAction: 'wordDetail.sentence.renameAction',
+    deletedSuffix: 'wordDetail.sentence.deletedSuffix',
+    notFound: 'wordDetail.sentence.notFound',
+    loading: 'wordDetail.sentence.loading',
+    renamed: 'wordDetail.sentence.renamed',
+    emptyLabel: 'wordDetail.sentence.emptyLabel',
+    labelField: 'wordDetail.sentence.labelField',
+    renameFailed: 'wordDetail.sentence.renameFailed',
+    deleteFailed: 'wordDetail.sentence.deleteFailed',
+    lastStageMessage: 'wordDetail.sentence.lastStageMessage',
     listQuery: { tab: 'sentences' },
   },
 };

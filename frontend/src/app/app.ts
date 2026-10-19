@@ -2,6 +2,8 @@ import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
+import { TranslocoPipe } from '@jsverse/transloco';
+
 import { ServerStatus } from '@core/http/server-status';
 import { Button } from '@shared/button/button';
 import { CelebrationBurst } from '@shared/celebration-burst/celebration-burst';
@@ -15,7 +17,7 @@ import { ToastOutlet } from '@shared/toast-outlet/toast-outlet';
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, ToastOutlet, CelebrationBurst, Button, Icon],
+  imports: [RouterOutlet, ToastOutlet, CelebrationBurst, Button, Icon, TranslocoPipe],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

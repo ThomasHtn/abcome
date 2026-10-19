@@ -4,16 +4,12 @@
   <svg class="app__outage-icon" app-icon name="triangle-alert" [size]="18"></svg>
   @switch (serverStatus.problem()) {
     @case ('offline') {
-      <p class="app__outage-text min-w-0 flex-1">
-        Pas de connexion internet. Le carnet se remettra à jour dès son retour.
-      </p>
+      <p class="app__outage-text min-w-0 flex-1">{{ 'app.offline' | transloco }}</p>
     }
     @case ('server') {
-      <p class="app__outage-text min-w-0 flex-1">
-        Le carnet ne répond pas pour l'instant. Réessaie dans quelques minutes.
-      </p>
+      <p class="app__outage-text min-w-0 flex-1">{{ 'app.serverDown' | transloco }}</p>
       <button app-button type="button" variant="soft" size="sm" (click)="reload()">
-        Réessayer
+        {{ 'app.retry' | transloco }}
       </button>
     }
   }

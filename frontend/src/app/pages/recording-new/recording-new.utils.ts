@@ -1,10 +1,12 @@
+import { translate } from '@jsverse/transloco';
+
 import { formatLongDate, formatShortDateWithYear } from '@core/date/date.utils';
+import { activeLocale, isSingular } from '@core/i18n/i18n.utils';
 import { RECORDING_MAX_DURATION_MS, TRIM_SAMPLE_RATE } from '@core/recordings/recording.constants';
 import { encodeWav, waveformLevels } from '@core/recordings/recording.utils';
 import { quote } from '@core/text/text.utils';
-import { STATUS_LABELS } from '@core/words/word.constants';
 import { Word } from '@core/words/word.model';
-import { sortPronunciations } from '@core/words/word.utils';
+import { sortPronunciations, statusLabel } from '@core/words/word.utils';
 
 import { LEVEL_BAR_COUNT, LEVEL_GAIN, MIN_KEEP_MS, TRIM_FADE_MS } from './recording-new.constants';
 import {
@@ -87,13 +89,13 @@ export function recordingInstruction(
 ): string {
   switch (phase) {
     case 'recording':
-      return "J'écoute… Touche le carré rouge quand il a fini.";
+      return translate('recordingNew.instruction.recording');
     case 'review':
       return capped
-        ? "15 secondes, c'est le maximum\u00A0: l'enregistrement s'est arrêté tout seul."
-        : 'Écoute le son. Pas réussi\u00A0? Recommence autant que tu veux.';
+        ? translate('recordingNew.instruction.capped')
+        : translate('recordingNew.instruction.review');
     default:
-      return `Prêt ? Touche le micro quand ${childName} commence à parler.`;
+      return translate('recordingNew.instruction.ready', { childName });
   }
 }
 
@@ -104,13 +106,15 @@ export function recordingTitle(phase: RecordingPhase, newWord: boolean): string 
   switch (phase) {
     case 'pick':
     case 'stage':
-      return 'Associer le son';
+      return translate('recordingNew.title.pick');
     case 'note':
-      return newWord ? 'Nouveau mot' : 'Nouvelle prononciation';
+      return newWord
+        ? translate('recordingNew.title.newWord')
+        : translate('recordingNew.title.newStage');
     case 'done':
-      return "C'est fait";
+      return translate('recordingNew.title.done');
     default:
-      return 'Enregistrer un son';
+      return translate('recordingNew.title.record');
   }
 }
 
@@ -120,22 +124,22 @@ export function recordingTitle(phase: RecordingPhase, newWord: boolean): string 
 export function doneCopy(outcome: SaveOutcome, childName: string): DoneCopy {
   if (outcome.kind === 'new') {
     return {
-      title: `${quote(outcome.label)} est dans ses mots\u00A0!`,
-      text: `${childName} le dit ${quote(outcome.spoken)}. Son premier son t'attend sur sa page.`,
+      title: translate('recordingNew.done.newTitle', { label: quote(outcome.label) }),
+      text: translate('recordingNew.done.newText', { childName, spoken: quote(outcome.spoken) }),
     };
   }
   if (outcome.kind === 'stage') {
     return {
-      title: `Nouvelle prononciation de ${quote(outcome.label)}\u00A0!`,
-      text: `${childName} le dit ${quote(outcome.spoken)}. Le son l'accompagne sur sa page.`,
+      title: translate('recordingNew.done.stageTitle', { label: quote(outcome.label) }),
+      text: translate('recordingNew.done.stageText', { childName, spoken: quote(outcome.spoken) }),
     };
   }
   return {
-    title: `Son ajouté à ${quote(outcome.label)}\u00A0!`,
+    title: translate('recordingNew.done.soundTitle', { label: quote(outcome.label) }),
     text:
       outcome.soundCount > 1
-        ? `Il a maintenant ${outcome.soundCount} sons. Tu les retrouves sur sa page.`
-        : 'Tu le retrouves sur sa page.',
+        ? translate('recordingNew.done.soundsText', { count: outcome.soundCount })
+        : translate('recordingNew.done.soundText'),
   };
 }
 
@@ -144,9 +148,9 @@ export function doneCopy(outcome: SaveOutcome, childName: string): DoneCopy {
  */
 export function saveButtonText(ready: boolean, newWord: boolean): string {
   if (!ready) {
-    return "Note d'abord ce qu'il dit";
+    return translate('recordingNew.save.notReady');
   }
-  return newWord ? 'Enregistrer le mot' : 'Enregistrer la prononciation';
+  return newWord ? translate('recordingNew.save.word') : translate('recordingNew.save.stage');
 }
 
 /**
@@ -159,10 +163,12 @@ export function stageOptions(word: Word): StageOption[] {
       const date = formatShortDateWithYear(pronunciation.date);
       return {
         pronunciation,
-        caption: index === stages.length - 1 ? `Maintenant · ${date}` : date,
-        ariaLabel:
-          `${pronunciation.spoken}, ${STATUS_LABELS[pronunciation.status]}, ` +
-          `le ${formatLongDate(pronunciation.date)}`,
+        caption: index === stages.length - 1 ? translate('recordingNew.stage.now', { date }) : date,
+        ariaLabel: translate('recordingNew.stage.ariaLabel', {
+          spoken: pronunciation.spoken,
+          status: statusLabel(pronunciation.status),
+          date: formatLongDate(pronunciation.date),
+        }),
       };
     })
     .reverse();
@@ -252,6 +258,8 @@ function clamp(value: number, min: number, max: number): number {
  */
 export function spokenSeconds(ms: number): string {
   const seconds = Math.round(ms / 100) / 10;
-  const text = seconds.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
-  return `${text} ${seconds < 2 ? 'seconde' : 'secondes'}`;
+  const text = seconds.toLocaleString(activeLocale(), { maximumFractionDigits: 1 });
+  return isSingular(seconds)
+    ? translate('recordingNew.trim.secondOne', { seconds: text })
+    : translate('recordingNew.trim.secondOther', { seconds: text });
 }

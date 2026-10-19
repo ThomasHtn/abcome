@@ -24,9 +24,12 @@
         </span>
       }
     </span>
-    <span class="word-card__said">
-      {{ childName() }} dit <span class="word-card__spoken">{{ card().spoken | quote }}</span>
-    </span>
+    <!-- Each language orders the name and the spoken form its own way, around the salmon span. -->
+    <span class="word-card__said"
+      >{{ 'home.wordCard.saidBefore' | transloco: { childName: childName() }
+      }}<span class="word-card__spoken">{{ card().spoken | quote }}</span
+      >{{ 'home.wordCard.saidAfter' | transloco: { childName: childName() } }}</span
+    >
   </span>
 
   <!-- Current status as a small dot; the aria-label reads it out. -->

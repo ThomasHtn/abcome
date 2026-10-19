@@ -11,9 +11,9 @@
           [durationMs]="clip()?.durationMs ?? 0"
         />
       }
-      <h2 class="recording-new__question">À quel mot correspond ce son&nbsp;?</h2>
+      <h2 class="recording-new__question">{{ 'recordingNew.whichWord' | transloco }}</h2>
       <app-word-picker
-        searchLabel="Chercher ou créer un mot"
+        [searchLabel]="'recordingNew.searchLabel' | transloco"
         emptyState="notebook"
         [words]="words()"
         [entries]="entries()"
@@ -38,16 +38,18 @@
         <!-- The chosen word, with a way back to the search. -->
         <div class="recording-new__target flex items-center gap-3">
           <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span class="recording-new__overline">Le son de</span>
+            <span class="recording-new__overline">{{ 'recordingNew.soundOf' | transloco }}</span>
             <span class="recording-new__target-label">{{ chosen.label }}</span>
           </span>
           <button app-button type="button" variant="outline" size="sm" (click)="changeWord()">
-            Changer
+            {{ 'recordingNew.change' | transloco }}
           </button>
         </div>
       }
 
-      <h2 class="recording-new__question">Que dit {{ childName() }} sur ce son&nbsp;?</h2>
+      <h2 class="recording-new__question">
+        {{ 'recordingNew.whatSays' | transloco: { childName: childName() } }}
+      </h2>
       <ul class="flex flex-col gap-2">
         @for (option of stages(); track option.pronunciation.id) {
           <li>
@@ -77,13 +79,13 @@
             (click)="noteNewStage()"
           >
             <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
-            Il le dit autrement
+            {{ 'recordingNew.saysDifferently' | transloco }}
           </button>
         </li>
       </ul>
       @if (saving()) {
         <!-- A stage was chosen: its sound is on its way. -->
-        <p class="recording-new__saving" role="status">Enregistrement du son…</p>
+        <p class="recording-new__saving" role="status">{{ 'recordingNew.saving' | transloco }}</p>
       }
     </div>
   }
@@ -103,9 +105,7 @@
         <!-- The word, with a way back to the previous step. -->
         <div class="recording-new__target flex items-center gap-3">
           <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span class="recording-new__overline">
-              {{ targetWord() ? 'Nouvelle prononciation de' : 'Nouveau mot' }}
-            </span>
+            <span class="recording-new__overline">{{ targetOverline() }}</span>
             <span class="recording-new__target-label">{{ chosen.label }}</span>
           </span>
           <button
@@ -116,14 +116,14 @@
             [disabled]="saving()"
             (click)="leaveNote()"
           >
-            Changer
+            {{ 'recordingNew.change' | transloco }}
           </button>
         </div>
       }
 
       <app-pronunciation-form
-        [spokenLabel]="'Sur ce son, ' + childName() + ' dit'"
-        [dateLabel]="targetWord() ? 'Entendu le' : 'Dit pour la première fois le'"
+        [spokenLabel]="spokenLabel()"
+        [dateLabel]="dateLabel()"
         [kind]="kind()"
         [(draft)]="draft"
       />
@@ -135,9 +135,9 @@
           [status]="ready() ? draft().status : null"
         />
         @if (targetWord()) {
-          Cette prononciation rejoint ses progrès, avec ce son.
+          {{ 'recordingNew.effect.stage' | transloco }}
         } @else {
-          {{ target()?.label | quote }} rejoint ses mots, avec ce son pour premier souvenir.
+          {{ 'recordingNew.effect.word' | transloco: { label: (target()?.label | quote) } }}
         }
       </p>
     </div>
@@ -165,13 +165,15 @@
     <!-- Step 4: saved, with confetti. -->
     @if (done(); as copy) {
       <div class="recording-new__done pop flex flex-1 flex-col items-center justify-center gap-4">
-        <app-mascot state="jump" alt="Lapinou est content" [size]="120" />
+        <app-mascot state="jump" [alt]="'recordingNew.mascotAlt' | transloco" [size]="120" />
         <p class="recording-new__done-title" role="status">{{ copy.title }}</p>
         <p class="recording-new__done-text">{{ copy.text }}</p>
         <div class="mt-2 flex flex-col gap-2.5 self-stretch">
-          <a app-button size="lg" block [routerLink]="copy.path">Voir sa page</a>
+          <a app-button size="lg" block [routerLink]="copy.path">{{
+            'recordingNew.seePage' | transloco
+          }}</a>
           <button app-button type="button" variant="outline" block (click)="another()">
-            Enregistrer un autre son
+            {{ 'recordingNew.another' | transloco }}
           </button>
         </div>
       </div>
@@ -200,7 +202,7 @@
           </p>
           @if (phase() === 'review' && trimmed()) {
             <button app-button type="button" variant="outline" size="sm" (click)="undoTrim()">
-              Annuler la coupe
+              {{ 'recordingNew.undoTrim' | transloco }}
             </button>
           }
         </div>
@@ -222,7 +224,7 @@
         </div>
         @if (phase() === 'review' && canTrim()) {
           <!-- How to use the handles, only while they are offered. -->
-          <p class="recording-new__note">Glisse les poignées pour couper le début ou la fin.</p>
+          <p class="recording-new__note">{{ 'recordingNew.trimHint' | transloco }}</p>
         }
       </div>
 
@@ -233,14 +235,14 @@
             <button
               class="recording-new__stop"
               type="button"
-              aria-label="Arrêter l'enregistrement"
+              [attr.aria-label]="'recordingNew.stopAriaLabel' | transloco"
               (click)="stopRecording()"
             >
               <span class="recording-new__stop-square" aria-hidden="true"></span>
             </button>
-            <span class="recording-new__caption recording-new__caption--live">
-              Touche pour arrêter
-            </span>
+            <span class="recording-new__caption recording-new__caption--live">{{
+              'recordingNew.tapToStop' | transloco
+            }}</span>
           </div>
         } @else if (phase() === 'review' && clipUrl()) {
           <div class="pop flex flex-col items-center gap-5.5 self-stretch">
@@ -249,7 +251,7 @@
                 <button
                   class="recording-new__side recording-new__side--retry press"
                   type="button"
-                  aria-label="Recommencer l'enregistrement"
+                  [attr.aria-label]="'recordingNew.retryAriaLabel' | transloco"
                   (click)="startRecording()"
                 >
                   <svg app-icon name="rotate-ccw" [size]="28" [strokeWidth]="2.4"></svg>
@@ -257,27 +259,30 @@
                 <span
                   class="recording-new__side-label recording-new__side-label--retry"
                   aria-hidden="true"
+                  >{{ 'recordingNew.retry' | transloco }}</span
                 >
-                  Recommencer
-                </span>
               </div>
               <div class="recording-new__listen flex flex-col items-center gap-2">
                 <app-audio-button
                   size="lg"
-                  label="Écouter le son"
+                  [label]="'recordingNew.listenLabel' | transloco"
                   [src]="clipUrl() ?? ''"
                   (playingChange)="playing.set($event)"
                   (positionChange)="positionMs.set($event)"
                 />
                 <span class="recording-new__side-label" aria-hidden="true">
-                  {{ playing() ? 'Arrêter' : 'Écouter' }}
+                  @if (playing()) {
+                    {{ 'recordingNew.stop' | transloco }}
+                  } @else {
+                    {{ 'recordingNew.listen' | transloco }}
+                  }
                 </span>
               </div>
               <div class="flex flex-col items-center gap-2">
                 <button
                   class="recording-new__side recording-new__side--keep press"
                   type="button"
-                  aria-label="Garder ce son"
+                  [attr.aria-label]="'recordingNew.keepAriaLabel' | transloco"
                   [disabled]="saving() || tooShort()"
                   (click)="keep()"
                 >
@@ -286,21 +291,17 @@
                 <span
                   class="recording-new__side-label recording-new__side-label--keep"
                   aria-hidden="true"
+                  >{{ 'recordingNew.keep' | transloco }}</span
                 >
-                  Garder
-                </span>
               </div>
             </div>
             @if (tooShort()) {
               <!-- A tap on stop too early: explain why the sound cannot be kept. -->
               <p class="recording-new__note recording-new__note--warning" role="status">
-                Ce son est trop court. Recommence en laissant {{ childName() }} parler un peu plus
-                longtemps.
+                {{ 'recordingNew.tooShort' | transloco: { childName: childName() } }}
               </p>
             } @else {
-              <p class="recording-new__note">
-                Recommencer efface ce son et relance l'enregistrement tout de suite.
-              </p>
+              <p class="recording-new__note">{{ 'recordingNew.retryHint' | transloco }}</p>
             }
           </div>
         } @else {
@@ -308,12 +309,12 @@
             <button
               class="recording-new__mic"
               type="button"
-              aria-label="Commencer l'enregistrement"
+              [attr.aria-label]="'recordingNew.startAriaLabel' | transloco"
               (click)="startRecording()"
             >
               <svg app-icon name="mic" [size]="52" [strokeWidth]="2.2"></svg>
             </button>
-            <span class="recording-new__caption">Touche pour enregistrer</span>
+            <span class="recording-new__caption">{{ 'recordingNew.tapToRecord' | transloco }}</span>
           </div>
         }
       </div>

@@ -1,8 +1,10 @@
 # syntax=docker/dockerfile:1
 
+# Base images are pinned by version and digest for reproducible builds; Dependabot bumps both.
+
 # ---- Build stage ------------------------------------------------------------
 # Quality gates (format, lint, test) run in CI before an image is built, so this stage only builds.
-FROM node:22-alpine AS build
+FROM node:22.23.3-alpine3.24@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS build
 WORKDIR /workspace
 
 # Installed before the sources, so this layer only changes with the dependencies.
@@ -13,9 +15,9 @@ COPY . .
 RUN npm run build
 
 # ---- Runtime stage ------------------------------------------------------------
-# nginx serves the bundle; Traefik terminates HTTPS and routes /api/* to the backend on the same origin.
+# nginx serves the bundle; the reverse proxy terminates HTTPS and routes /api/* to the backend on the same origin.
 # The unprivileged image runs every nginx process as the `nginx` user, never root.
-FROM nginxinc/nginx-unprivileged:1.29-alpine AS runtime
+FROM nginxinc/nginx-unprivileged:1.29.8-alpine3.23@sha256:0c79d56aee561a1d81c63f00eee5fb5fe29279560cdc55e91425133104c7fbe6 AS runtime
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /workspace/dist/frontend/browser /usr/share/nginx/html

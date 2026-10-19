@@ -14,6 +14,8 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
+import { translate, TranslocoPipe } from '@jsverse/transloco';
+
 import { LOGIN_ROUTE } from '@core/auth/auth.constants';
 import { AuthSession } from '@core/auth/auth-session';
 import { ToastQueue } from '@core/feedback/toast-queue';
@@ -38,6 +40,7 @@ import {
   SENTENCES_TAB_PARAM,
   STATUS_FILTER_OPTIONS,
   SUMMARY_PENDING_HEADLINE,
+  TAB_LABELS,
 } from './home.constants';
 import { HomeTab, ListState, StatusFilter } from './home.model';
 import {
@@ -63,6 +66,7 @@ import { WordCard } from './word-card/word-card';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     QuotePipe,
+    TranslocoPipe,
     RouterLink,
     ActionBar,
     Button,
@@ -170,8 +174,15 @@ export class HomePage {
    * What the search looks for on the open tab, as placeholder and accessible name.
    */
   protected readonly searchLabel = computed(() =>
-    this.activeTab() === 'words' ? `Chercher un mot de ${this.childName()}` : 'Chercher une phrase',
+    this.activeTab() === 'words'
+      ? translate('home.searchWords', { childName: this.childName() })
+      : translate('home.searchSentences'),
   );
+
+  /**
+   * Key of each tab's name, on its button and on the list while the search hides the tabs.
+   */
+  protected readonly tabLabels = TAB_LABELS;
 
   /**
    * Status filter, kept across tabs, following `?filter=`.
@@ -179,10 +190,12 @@ export class HomePage {
   protected readonly activeFilter = linkedSignal(() => filterFromParam(this.filter()));
 
   /**
-   * Status filter chips, "Tous" on the words and "Toutes" on the sentences.
+   * Status filter chips, "Tous" on the words and "Toutes" on the sentences, their keys translated.
    */
   protected readonly filterOptions = computed(() =>
-    this.activeTab() === 'words' ? STATUS_FILTER_OPTIONS : SENTENCE_STATUS_FILTER_OPTIONS,
+    (this.activeTab() === 'words' ? STATUS_FILTER_OPTIONS : SENTENCE_STATUS_FILTER_OPTIONS).map(
+      (option) => ({ ...option, label: translate(option.label) }),
+    ),
   );
 
   /**
@@ -231,14 +244,14 @@ export class HomePage {
         : sentencesSummary(this.sentences(), this.sentenceNews());
     return this.openListState() === 'ready'
       ? summary
-      : { ...summary, emptyHeadline: SUMMARY_PENDING_HEADLINE };
+      : { ...summary, emptyHeadline: translate(SUMMARY_PENDING_HEADLINE) };
   });
 
   /**
    * Word cards matching the search and filter, by month of first-said date.
    */
   protected readonly wordMonths = computed(() =>
-    groupByMonth(visibleWords(this.words(), this.query(), this.activeFilter()), 'mot', (word) =>
+    groupByMonth(visibleWords(this.words(), this.query(), this.activeFilter()), 'word', (word) =>
       this.changeOf(word),
     ),
   );
@@ -249,7 +262,7 @@ export class HomePage {
   protected readonly sentenceMonths = computed(() =>
     groupByMonth(
       visibleWords(this.sentences(), this.query(), this.activeFilter()),
-      'phrase',
+      'sentence',
       (sentence) => this.changeOf(sentence),
     ),
   );
@@ -296,6 +309,13 @@ export class HomePage {
    * Logout request on its way.
    */
   protected readonly loggingOut = signal(false);
+
+  /**
+   * Body of the logout question: nothing is lost, but the password will be needed again.
+   */
+  protected readonly logoutMessage = computed(() =>
+    translate('home.logoutMessage', { childName: this.childName() }),
+  );
 
   /**
    * Marks the cards shown as seen, again when a reload, the search or the filter shows more: their
@@ -378,10 +398,7 @@ export class HomePage {
       await this.session.signOut();
       void this.router.navigateByUrl(LOGIN_ROUTE);
     } catch {
-      this.toasts.show(
-        "La déconnexion n'a pas pu se faire. Vérifie la connexion et réessaie.",
-        'error',
-      );
+      this.toasts.show(translate('home.logoutFailed'), 'error');
     } finally {
       this.loggingOut.set(false);
       this.logoutOpen.set(false);

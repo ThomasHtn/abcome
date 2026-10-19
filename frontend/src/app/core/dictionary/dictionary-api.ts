@@ -4,12 +4,13 @@ import { inject, Service } from '@angular/core';
 
 import { AuthSession } from '@core/auth/auth-session';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
+import { activeLocale } from '@core/i18n/i18n.utils';
 
 import { DictionaryEntry } from './dictionary.model';
 
 /**
- * Built-in dictionary of first words (IFDC based), sorted by acquisition rank, read-only, loaded once per session
- * (again only after a failed load).
+ * Built-in dictionary of first words in the interface language (IFDC for French, CDI for English), sorted by
+ * acquisition rank, read-only, loaded once per session (again only after a failed load).
  */
 @Service()
 export class DictionaryApi {
@@ -22,7 +23,7 @@ export class DictionaryApi {
    * Every entry; read it through `resourceValue(entries, [])`.
    */
   public readonly entries = httpResource<DictionaryEntry[]>(() =>
-    this.session.signedIn() ? API_ENDPOINTS.dictionary : undefined,
+    this.session.signedIn() ? API_ENDPOINTS.dictionary(activeLocale()) : undefined,
   );
 
   /**

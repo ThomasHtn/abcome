@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { TranslocoPipe } from '@jsverse/transloco';
+
 import { AuthSession } from '@core/auth/auth-session';
 import { Icon } from '@shared/icon/icon';
 import { QuotePipe } from '@shared/quote/quote.pipe';
@@ -17,7 +19,7 @@ import { WordCardView } from '../home.model';
 @Component({
   selector: 'app-word-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon, QuotePipe, RouterLink, StatusDot, DateTile],
+  imports: [Icon, QuotePipe, RouterLink, StatusDot, DateTile, TranslocoPipe],
   templateUrl: './word-card.html',
   styleUrl: './word-card.scss',
 })

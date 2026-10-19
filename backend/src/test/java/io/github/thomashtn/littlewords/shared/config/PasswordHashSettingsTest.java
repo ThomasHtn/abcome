@@ -34,6 +34,7 @@ class PasswordHashSettingsTest {
         .withUserConfiguration(SettingsOnly.class)
         .withPropertyValues(
             "app.child-name=Alix",
+            "app.branding.name=ABCome",
             "app.time-zone=Europe/Paris",
             "app.auth.max-failures=5",
             "app.auth.initial-lockout=PT1M",

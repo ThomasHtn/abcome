@@ -20,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
  *
  * @param apiDocsEnabled whether the OpenAPI document and Swagger UI are served and reachable
  * @param childName      first name of the child, kept out of the repository and shown only after login
+ * @param branding       name of the app, so each family's deployment carries its own
  * @param timeZone       zone of the family, in which "today" is judged
  * @param auth           family and reader passwords, and login lockout
  * @param recording      limits of an uploaded recording
@@ -29,6 +30,7 @@ import org.springframework.validation.annotation.Validated;
 public record ApplicationProperties(
     boolean apiDocsEnabled,
     @NotBlank(message = "CHILD_NAME must be set") String childName,
+    @NotNull @Valid Branding branding,
     @NotNull ZoneId timeZone,
     @NotNull @Valid Auth auth,
     @NotNull @Valid Recording recording
@@ -170,6 +172,27 @@ public record ApplicationProperties(
             }
             Matcher matcher = MEMORY_COST.matcher(hash);
             return !matcher.find() || Long.parseLong(matcher.group(1)) <= MAX_MEMORY_COST_KIB;
+        }
+    }
+
+    /**
+     * Name of the app, shown on the login screen and in the page titles.
+     *
+     * @param name       name of the app, such as {@code ABCome}
+     * @param nameAccent end of the name drawn in the accent colour on the login screen, such as {@code ome};
+     *                   empty for none
+     */
+    public record Branding(@NotBlank(message = "APP_NAME must be set") String name, String nameAccent) {
+
+        /**
+         * Tells whether the accent is the end of the name, the only part the login screen can colour.
+         *
+         * @return {@code true} when the accent is empty or ends the name, or the name is missing
+         *         (already reported by {@link NotBlank})
+         */
+        @AssertTrue(message = "APP_NAME_ACCENT must be the end of APP_NAME, or empty")
+        public boolean isAccentEndOfName() {
+            return name == null || nameAccent == null || name.endsWith(nameAccent);
         }
     }
 

@@ -1,3 +1,5 @@
+import { AppLocale } from '@core/i18n/i18n.model';
+
 /**
  * Backend routes, declared once here; components never build URLs.
  */
@@ -18,9 +20,14 @@ export const API_ENDPOINTS = {
   logout: '/api/auth/logout',
 
   /**
-   * Built-in list of common first words, read-only.
+   * Name of the app, open without a session.
    */
-  dictionary: '/api/dictionary',
+  branding: '/api/branding',
+
+  /**
+   * Built-in list of common first words in one language, read-only.
+   */
+  dictionary: (language: AppLocale): string => `/api/dictionary?language=${language}`,
 
   /**
    * Every word with its stages and sounds, returned whole.

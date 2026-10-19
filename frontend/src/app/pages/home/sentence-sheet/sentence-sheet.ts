@@ -7,6 +7,8 @@ import {
   signal,
 } from '@angular/core';
 
+import { translate, TranslocoPipe } from '@jsverse/transloco';
+
 import { AuthSession } from '@core/auth/auth-session';
 import { todayIso } from '@core/date/date.utils';
 import { Celebration } from '@core/feedback/celebration';
@@ -31,7 +33,7 @@ import { TextField } from '@shared/text-field/text-field';
 @Component({
   selector: 'app-sentence-sheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [BottomSheet, Button, PronunciationForm, TextField],
+  imports: [BottomSheet, Button, PronunciationForm, TextField, TranslocoPipe],
   templateUrl: './sentence-sheet.html',
 })
 export class SentenceSheet {
@@ -53,7 +55,14 @@ export class SentenceSheet {
   /**
    * First name of the child, given by the server with the session.
    */
-  protected readonly childName = inject(AuthSession).childName;
+  private readonly childName = inject(AuthSession).childName;
+
+  /**
+   * Label of the spoken form, naming the child.
+   */
+  protected readonly spokenLabel = computed(() =>
+    translate('home.sentenceSheet.spokenLabel', { childName: this.childName() }),
+  );
 
   /**
    * Tells the page the sheet is done, saved or not.
@@ -120,11 +129,11 @@ export class SentenceSheet {
         label: this.label().trim(),
         pronunciation: toPronunciationRequest(this.draft()),
       });
-      this.toasts.show('Nouvelle phrase notée');
+      this.toasts.show(translate('home.sentenceSheet.saved'));
       this.celebration.play();
       this.closed.emit();
     } catch {
-      this.error.set("La phrase n'a pas pu être enregistrée. Réessaie.");
+      this.error.set(translate('home.sentenceSheet.saveFailed'));
     } finally {
       this.busy.set(false);
     }

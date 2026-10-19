@@ -1,5 +1,7 @@
 import { NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, model } from '@angular/core';
+
+import { translate, TranslocoPipe } from '@jsverse/transloco';
 
 import { PRONUNCIATION_STATUSES, STATUS_LABELS } from '@core/words/word.constants';
 import { PronunciationStatus } from '@core/words/word.model';
@@ -17,7 +19,7 @@ let nextPickerId = 0;
 @Component({
   selector: 'app-status-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgOptimizedImage],
+  imports: [NgOptimizedImage, TranslocoPipe],
   templateUrl: './status-picker.html',
   styleUrl: './status-picker.scss',
 })
@@ -28,9 +30,14 @@ export class StatusPicker {
   public readonly value = model<PronunciationStatus>('almost');
 
   /**
-   * Group legend.
+   * Group legend; "Prononciation" when not given.
    */
-  public readonly label = input('Prononciation');
+  public readonly label = input<string>();
+
+  /**
+   * Legend as shown.
+   */
+  protected readonly shownLabel = computed(() => this.label() ?? translate('statusPicker.label'));
 
   /**
    * Statuses in picker order, furthest first.
@@ -38,7 +45,7 @@ export class StatusPicker {
   protected readonly statuses = PRONUNCIATION_STATUSES;
 
   /**
-   * French labels of the tiles.
+   * Translation keys of the tile labels.
    */
   protected readonly labels = STATUS_LABELS;
 

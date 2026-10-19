@@ -1,3 +1,5 @@
+import { translate } from '@jsverse/transloco';
+
 import { SearchKey, TextRange } from './text.model';
 
 /**
@@ -119,13 +121,9 @@ export function rankByQuery<T>(
 }
 
 /**
- * No-break space kept inside French guillemets, so « and » never end up alone at a line break.
- */
-const NO_BREAK_SPACE = '\u00A0';
-
-/**
- * Quotes a word or a sentence the French way, the one way UI copy quotes: « lapin ».
+ * Quotes a word or a sentence the way of the language, the one way UI copy quotes: « lapin »,
+ * with no-break spaces so the French guillemets never end up alone at a line break.
  */
 export function quote(text: string): string {
-  return `\u00AB${NO_BREAK_SPACE}${text}${NO_BREAK_SPACE}\u00BB`;
+  return translate('text.quote', { text });
 }

@@ -21,16 +21,14 @@ export const RECORDER_TICK_MS = 100;
 export const LEVEL_GAIN = 3;
 
 /**
- * French explanation of each microphone failure.
+ * Translation key of the explanation of each microphone failure.
  */
-export const RECORDER_ERROR_MESSAGES: Readonly<Record<RecorderErrorKind, string>> = {
-  unsupported: 'Ce navigateur ne sait pas enregistrer de son. Essaie avec Safari ou Chrome à jour.',
-  denied:
-    'Le micro est bloqué. Sur iPhone\u00A0: ouvre Réglages, cherche «\u00A0Safari\u00A0», puis Micro. ' +
-    'Ailleurs\u00A0: les réglages du site, dans le navigateur.',
-  missing: 'Aucun micro trouvé sur cet appareil.',
-  busy: 'Le micro est déjà utilisé (un appel, une autre appli). Libère-le puis réessaie.',
-  failed: "L'enregistrement n'a pas marché. Réessaie.",
+export const RECORDER_ERROR_KEYS: Readonly<Record<RecorderErrorKind, string>> = {
+  unsupported: 'recordingNew.error.unsupported',
+  denied: 'recordingNew.error.denied',
+  missing: 'recordingNew.error.missing',
+  busy: 'recordingNew.error.busy',
+  failed: 'recordingNew.error.failed',
 };
 
 /**

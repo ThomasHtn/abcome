@@ -1,6 +1,7 @@
 import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 
-import { LOGIN_MESSAGES } from './login.constants';
+import { translate } from '@jsverse/transloco';
+
 import { loginErrorMessage, loginMascotState, tooManyAttemptsMessage } from './login.utils';
 
 /**
@@ -16,8 +17,8 @@ function refusal(status: number, code: string | null, retryAfter?: string): Http
 
 describe('loginErrorMessage', () => {
   it('says the password is wrong for INVALID_CREDENTIALS and for a bare 401', () => {
-    expect(loginErrorMessage(refusal(401, 'INVALID_CREDENTIALS'))).toBe(LOGIN_MESSAGES.invalid);
-    expect(loginErrorMessage(refusal(401, null))).toBe(LOGIN_MESSAGES.invalid);
+    expect(loginErrorMessage(refusal(401, 'INVALID_CREDENTIALS'))).toBe(translate('login.invalid'));
+    expect(loginErrorMessage(refusal(401, null))).toBe(translate('login.invalid'));
   });
 
   it('gives the lockout time in minutes', () => {
@@ -27,8 +28,8 @@ describe('loginErrorMessage', () => {
   });
 
   it('falls back to a connection message for anything else', () => {
-    expect(loginErrorMessage(refusal(0, null))).toBe(LOGIN_MESSAGES.unreachable);
-    expect(loginErrorMessage(new Error('boom'))).toBe(LOGIN_MESSAGES.unreachable);
+    expect(loginErrorMessage(refusal(0, null))).toBe(translate('login.unreachable'));
+    expect(loginErrorMessage(new Error('boom'))).toBe(translate('login.unreachable'));
   });
 });
 
@@ -39,12 +40,12 @@ describe('tooManyAttemptsMessage', () => {
   });
 
   it('speaks of seconds for a short burst limit', () => {
-    expect(tooManyAttemptsMessage(1)).toBe(LOGIN_MESSAGES.busy);
-    expect(tooManyAttemptsMessage(59)).toBe(LOGIN_MESSAGES.busy);
+    expect(tooManyAttemptsMessage(1)).toBe(translate('login.busy'));
+    expect(tooManyAttemptsMessage(59)).toBe(translate('login.busy'));
   });
 
   it('stays vague without a delay', () => {
-    expect(tooManyAttemptsMessage(null)).toBe(LOGIN_MESSAGES.tooManyAttempts);
+    expect(tooManyAttemptsMessage(null)).toBe(translate('login.tooManyAttempts'));
   });
 });
 

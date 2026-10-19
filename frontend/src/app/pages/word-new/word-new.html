@@ -1,4 +1,4 @@
-<app-page-header heading="Nouveau mot" backLink="/" />
+<app-page-header [heading]="'wordNew.heading' | transloco" backLink="/" />
 
 <div class="word-new enter motion-step-1 flex flex-col gap-4.5">
   <!-- Lapinou asks the question of the current step. -->
@@ -18,10 +18,10 @@
         </span>
         <span class="word-new__chosen-text flex min-w-0 flex-col items-start gap-1">
           <span class="word-new__label">{{ chosen.label }}</span>
-          <span class="word-new__category">{{ categoryLabels[chosen.category] }}</span>
+          <span class="word-new__category">{{ categoryLabels[chosen.category] | transloco }}</span>
         </span>
         <button app-button type="button" variant="outline" size="sm" (click)="change()">
-          Changer
+          {{ 'wordNew.change' | transloco }}
         </button>
       </div>
 
@@ -29,15 +29,15 @@
         <!-- Already in the notebook: progress goes on its page, not in a duplicate. -->
         <div class="word-new__known pop flex flex-col gap-3" role="status">
           <p class="word-new__known-title">
-            {{ childName() }} dit déjà {{ word.label | quote }}&nbsp;!
+            {{
+              'wordNew.alreadyKnownTitle'
+                | transloco: { childName: childName(), word: word.label | quote }
+            }}
           </p>
-          <p class="word-new__known-text">
-            Pour noter qu'il le prononce mieux, ajoute une étape depuis sa page plutôt que de créer
-            un doublon.
-          </p>
-          <a app-button variant="secondary" block [routerLink]="['/words', word.id]"
-            >Voir sa page</a
-          >
+          <p class="word-new__known-text">{{ 'wordNew.alreadyKnownText' | transloco }}</p>
+          <a app-button variant="secondary" block [routerLink]="['/words', word.id]">{{
+            'wordNew.openWord' | transloco
+          }}</a>
         </div>
       } @else {
         <!-- First stage: how, how well and when. -->
@@ -47,7 +47,7 @@
   } @else {
     <!-- Step 1: find the word. -->
     <app-word-picker
-      searchLabel="Chercher dans le dictionnaire"
+      [searchLabel]="'wordNew.searchLabel' | transloco"
       [words]="words()"
       [entries]="entries()"
       [(query)]="query"
@@ -71,7 +71,7 @@
         <span class="word-new__plus" aria-hidden="true">
           <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
         </span>
-        Enregistrer le mot
+        {{ 'wordNew.save' | transloco }}
       } @else {
         {{ blocker() }}
       }

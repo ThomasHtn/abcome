@@ -10,7 +10,7 @@ export interface FilterChipOption<T extends string> {
   value: T;
 
   /**
-   * French text of the chip.
+   * Text of the chip, already translated.
    */
   label: string;
 

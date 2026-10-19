@@ -3,6 +3,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
+import { translate } from '@jsverse/transloco';
+
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
 import { ServerStatus } from '@core/http/server-status';
 
@@ -52,7 +54,7 @@ describe('AuthSession', () => {
     http.expectOne(API_ENDPOINTS.session).error(new ProgressEvent('error'));
     expect(await offline).toBe(true);
     expect(session.status()).toBe('signed-in');
-    expect(session.childName()).toBe(CHILD_NAME_FALLBACK);
+    expect(session.childName()).toBe(translate(CHILD_NAME_FALLBACK));
     expect(session.readOnly()).toBe(true);
   });
 

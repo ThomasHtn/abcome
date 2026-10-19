@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+
+import { translate } from '@jsverse/transloco';
 
 import { Icon } from '@shared/icon/icon';
 import { IconButton } from '@shared/icon-button/icon-button';
@@ -27,7 +29,14 @@ export class PageHeader {
   public readonly backLink = input<string | null>(null);
 
   /**
-   * Screen reader name of the back link ("Retour à l'accueil").
+   * Screen reader name of the back link; "Retour à l'accueil" when not given.
    */
-  public readonly backLabel = input("Retour à l'accueil");
+  public readonly backLabel = input<string>();
+
+  /**
+   * Back link name as read aloud.
+   */
+  protected readonly shownBackLabel = computed(
+    () => this.backLabel() ?? translate('pageHeader.back'),
+  );
 }

@@ -3,14 +3,25 @@ package io.github.thomashtn.littlewords.dictionary.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
+import java.io.Serializable;
 
 /**
- * First word of the IFDC-based dictionary, seeded by Flyway and never written by the application.
+ * First word of a dictionary (IFDC for French, CDI for English), seeded by Flyway and never written by the
+ * application.
  */
 @Entity
 @Table(name = "dictionary_entry")
+@IdClass(DictionaryEntry.Key.class)
 public class DictionaryEntry {
+
+    /**
+     * Code of the dictionary's language; kept as text because Hibernate converts no identifier.
+     */
+    @Id
+    @Column(name = "language")
+    private String language;
 
     /**
      * Word as shown, with its accents.
@@ -41,6 +52,15 @@ public class DictionaryEntry {
      * Constructor required by JPA.
      */
     protected DictionaryEntry() {
+    }
+
+    /**
+     * Returns the language of the dictionary holding the word.
+     *
+     * @return language
+     */
+    public DictionaryLanguage getLanguage() {
+        return DictionaryLanguage.fromCode(language);
     }
 
     /**
@@ -77,5 +97,14 @@ public class DictionaryEntry {
      */
     public int getAcquisitionRank() {
         return acquisitionRank;
+    }
+
+    /**
+     * Identifier of an entry: a label is unique within its language only.
+     *
+     * @param language code of the dictionary's language
+     * @param label    word as shown
+     */
+    public record Key(String language, String label) implements Serializable {
     }
 }

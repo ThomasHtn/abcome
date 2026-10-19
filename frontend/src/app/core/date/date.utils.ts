@@ -1,3 +1,7 @@
+import { translate } from '@jsverse/transloco';
+
+import { activeLocale } from '@core/i18n/i18n.utils';
+
 import { DAY_MS, FAMILY_TIME_ZONE, LONG_MONTHS, SHORT_MONTHS, WEEKDAYS } from './date.constants';
 import { DayAndMonth } from './date.model';
 
@@ -22,7 +26,7 @@ function parts(iso: string): [number, number, number] {
  */
 export function formatShortDate(iso: string): string {
   const [, month, day] = parts(iso);
-  return `${day} ${SHORT_MONTHS[month - 1]}`;
+  return translate('date.short', { day, month: translate(SHORT_MONTHS[month - 1]) });
 }
 
 /**
@@ -30,7 +34,7 @@ export function formatShortDate(iso: string): string {
  */
 export function formatShortDateWithYear(iso: string): string {
   const [year] = parts(iso);
-  return `${formatShortDate(iso)} ${year}`;
+  return translate('date.shortWithYear', { date: formatShortDate(iso), year });
 }
 
 /**
@@ -39,8 +43,10 @@ export function formatShortDateWithYear(iso: string): string {
  */
 export function formatLongDate(iso: string, currentYear?: number): string {
   const [year, month, day] = parts(iso);
-  const date = `${day} ${LONG_MONTHS[month - 1]}`;
-  return year === currentYear ? date : `${date} ${year}`;
+  const name = translate(LONG_MONTHS[month - 1]);
+  return year === currentYear
+    ? translate('date.long', { day, month: name })
+    : translate('date.longWithYear', { day, month: name, year });
 }
 
 /**
@@ -48,7 +54,7 @@ export function formatLongDate(iso: string, currentYear?: number): string {
  */
 export function dayAndMonth(iso: string): DayAndMonth {
   const [, month, day] = parts(iso);
-  return { day: String(day), month: SHORT_MONTHS[month - 1].replace('.', '') };
+  return { day: String(day), month: translate(SHORT_MONTHS[month - 1]).replace('.', '') };
 }
 
 /**
@@ -56,9 +62,11 @@ export function dayAndMonth(iso: string): DayAndMonth {
  */
 export function formatWeekdayDate(iso: string, currentYear?: number): string {
   const [year, month, day] = parts(iso);
-  const weekday = WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()];
-  const date = `${weekday} ${day} ${LONG_MONTHS[month - 1]}`;
-  return currentYear === undefined || year === currentYear ? date : `${date} ${year}`;
+  const weekday = translate(WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()]);
+  const name = translate(LONG_MONTHS[month - 1]);
+  return currentYear === undefined || year === currentYear
+    ? translate('date.weekday', { weekday, day, month: name })
+    : translate('date.weekdayWithYear', { weekday, day, month: name, year });
 }
 
 /**
@@ -74,6 +82,7 @@ export function addDays(iso: string, days: number): string {
  */
 export function formatMonthYear(iso: string): string {
   const [year, month] = parts(iso);
-  const name = LONG_MONTHS[month - 1];
-  return `${name.charAt(0).toLocaleUpperCase('fr')}${name.slice(1)} ${year}`;
+  const name = translate(LONG_MONTHS[month - 1]);
+  const title = `${name.charAt(0).toLocaleUpperCase(activeLocale())}${name.slice(1)}`;
+  return translate('date.monthYear', { month: title, year });
 }

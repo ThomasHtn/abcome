@@ -3,7 +3,7 @@ import { PronunciationStatus, WordChange, WordKind } from '@core/words/word.mode
 import { FilterChipOption } from '@shared/filter-chips/filter-chips.model';
 import { IconName } from '@shared/icon/icon.model';
 
-import { StatusFilter } from './home.model';
+import { HomeTab, StatusFilter } from './home.model';
 
 /**
  * Value of `?tab=` that opens the sentences tab.
@@ -16,16 +16,16 @@ export const SENTENCES_TAB_PARAM = 'sentences';
 export const SEARCH_PARAM = 'q';
 
 /**
- * Lapinou's line while the notebook is loading or failed to load: an empty count would read as an
- * empty notebook.
+ * Key of Lapinou's line while the notebook is loading or failed to load: an empty count would read
+ * as an empty notebook.
  */
-export const SUMMARY_PENDING_HEADLINE = 'Coucou\u00A0!';
+export const SUMMARY_PENDING_HEADLINE = 'home.summary.pendingHeadline';
 
 /**
- * Status filters, best first.
+ * Status filters, best first; each label is a translation key, translated by the screen.
  */
 export const STATUS_FILTER_OPTIONS: readonly FilterChipOption<StatusFilter>[] = [
-  { value: 'all', label: 'Tous', tone: 'neutral' },
+  { value: 'all', label: 'home.filterAllWords', tone: 'neutral' },
   { value: 'mastered', label: STATUS_LABELS.mastered, tone: 'mastered' },
   { value: 'almost', label: STATUS_LABELS.almost, tone: 'almost' },
   { value: 'learning', label: STATUS_LABELS.learning, tone: 'learning' },
@@ -36,7 +36,7 @@ export const STATUS_FILTER_OPTIONS: readonly FilterChipOption<StatusFilter>[] = 
  */
 export const SENTENCE_STATUS_FILTER_OPTIONS: readonly FilterChipOption<StatusFilter>[] =
   STATUS_FILTER_OPTIONS.map((option) =>
-    option.value === 'all' ? { ...option, label: 'Toutes' } : option,
+    option.value === 'all' ? { ...option, label: 'home.filterAllSentences' } : option,
   );
 
 /**
@@ -69,18 +69,41 @@ export const CHANGE_ICONS: Readonly<Record<WordChange, IconName>> = {
 };
 
 /**
- * What the news tag says to screen readers, agreed with the entry's kind.
+ * Key of what the news tag says to screen readers, agreed with the entry's kind.
  */
 export const CHANGE_LABELS: Readonly<Record<WordKind, Readonly<Record<WordChange, string>>>> = {
-  word: { entry: 'nouveau mot', pronunciation: 'nouvelle prononciation', recording: 'nouveau son' },
+  word: {
+    entry: 'home.change.newWord',
+    pronunciation: 'home.change.newPronunciation',
+    recording: 'home.change.newSound',
+  },
   sentence: {
-    entry: 'nouvelle phrase',
-    pronunciation: 'nouvelle prononciation',
-    recording: 'nouveau son',
+    entry: 'home.change.newSentence',
+    pronunciation: 'home.change.newPronunciation',
+    recording: 'home.change.newSound',
   },
 };
 
 /**
- * Noun of the news count in the mascot card ("3 nouveautés depuis ta visite").
+ * Key of each tab's name, on its button and on the list while the search hides the tabs.
  */
-export const NEWS_NOUN = 'nouveauté';
+export const TAB_LABELS: Readonly<Record<HomeTab, string>> = {
+  words: 'home.tabWords',
+  sentences: 'home.tabSentences',
+};
+
+/**
+ * Key of the mascot card's headline while a tab is empty.
+ */
+export const SUMMARY_EMPTY_HEADLINES: Readonly<Record<WordKind, string>> = {
+  word: 'home.summary.emptyWords',
+  sentence: 'home.summary.emptySentences',
+};
+
+/**
+ * Key of the latest entry's label in the mascot card, agreed with its noun.
+ */
+export const SUMMARY_LATEST_LABELS: Readonly<Record<WordKind, string>> = {
+  word: 'home.summary.latestWordLabel',
+  sentence: 'home.summary.latestSentenceLabel',
+};

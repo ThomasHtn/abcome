@@ -32,24 +32,44 @@ describe('DictionaryApi', () => {
   }
 
   it('retries a failed load when the network returns', async () => {
-    http.expectOne(API_ENDPOINTS.dictionary).error(new ProgressEvent('error'));
+    http.expectOne(API_ENDPOINTS.dictionary('fr')).error(new ProgressEvent('error'));
     await settle();
 
     window.dispatchEvent(new Event('online'));
     TestBed.tick();
-    http.expectOne(API_ENDPOINTS.dictionary).flush([]);
+    http.expectOne(API_ENDPOINTS.dictionary('fr')).flush([]);
     await settle();
 
     expect(api.entries.hasValue()).toBe(true);
   });
 
   it('loads once while it succeeds, even when the app comes back to the screen', async () => {
-    http.expectOne(API_ENDPOINTS.dictionary).flush([]);
+    http.expectOne(API_ENDPOINTS.dictionary('fr')).flush([]);
     await settle();
 
     document.dispatchEvent(new Event('visibilitychange'));
     TestBed.tick();
 
-    http.expectNone(API_ENDPOINTS.dictionary);
+    http.expectNone(API_ENDPOINTS.dictionary('fr'));
+  });
+});
+
+describe('DictionaryApi in English', () => {
+  afterEach(() => {
+    document.documentElement.lang = '';
+  });
+
+  it('asks for the dictionary of the interface language', () => {
+    document.documentElement.lang = 'en';
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    TestBed.inject(DictionaryApi);
+    const http = TestBed.inject(HttpTestingController);
+    TestBed.inject(AuthSession).status.set('signed-in');
+    TestBed.tick();
+
+    http.expectOne('/api/dictionary?language=en').flush([]);
+    http.verify();
   });
 });

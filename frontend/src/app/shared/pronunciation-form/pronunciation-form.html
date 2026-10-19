@@ -3,7 +3,7 @@
   <app-text-field
     required
     [label]="shownSpokenLabel()"
-    [placeholder]="spokenPlaceholder()"
+    [placeholder]="shownSpokenPlaceholder()"
     [maxLength]="spokenMaxLength()"
     [value]="draft().spoken"
     (valueChange)="update({ spoken: $event })"
@@ -14,7 +14,7 @@
 
   <!-- When it was said. -->
   <app-date-field
-    [label]="dateLabel()"
+    [label]="shownDateLabel()"
     [value]="draft().date"
     (valueChange)="update({ date: $event })"
   />

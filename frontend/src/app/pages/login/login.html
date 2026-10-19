@@ -7,8 +7,10 @@
     class="login__intro enter flex flex-1 flex-col items-center justify-center gap-2.5 px-6 pt-10 pb-6 md:flex-none"
   >
     <app-mascot priority [state]="mascotState()" [size]="170" />
-    <h1 class="login__title">ABC<span class="login__title-accent">ome</span></h1>
-    <p class="login__tagline">Le carnet des premiers mots</p>
+    <h1 class="login__title">
+      {{ nameStart() }}<span class="login__title-accent">{{ nameAccent() }}</span>
+    </h1>
+    <p class="login__tagline">{{ 'login.tagline' | transloco }}</p>
   </div>
 
   <!-- Password sheet rising from the bottom. -->
@@ -20,7 +22,7 @@
     <!-- Hidden account name, so password managers can save the family password. -->
     <input type="text" name="username" autocomplete="username" value="famille" hidden />
 
-    <label class="login__label" for="login-password">Mot de passe</label>
+    <label class="login__label" for="login-password">{{ 'login.passwordLabel' | transloco }}</label>
 
     <!-- Pill holding the field and the show/hide toggle; shaken once after a refusal. -->
     <div
@@ -47,9 +49,7 @@
       <button
         class="login__toggle"
         type="button"
-        [attr.aria-label]="
-          passwordVisible() ? 'Cacher le mot de passe' : 'Afficher le mot de passe'
-        "
+        [attr.aria-label]="toggleLabel()"
         (click)="toggleVisibility()"
       >
         @if (passwordVisible()) {
@@ -72,7 +72,7 @@
     </p>
 
     <button app-button type="submit" size="lg" block [disabled]="!canSubmit()">
-      Ouvrir le carnet
+      {{ 'login.submit' | transloco }}
       <svg app-icon name="arrow-right" [size]="20" [strokeWidth]="2.4"></svg>
     </button>
   </form>

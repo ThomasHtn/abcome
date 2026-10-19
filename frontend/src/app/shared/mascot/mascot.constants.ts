@@ -11,10 +11,10 @@ export const MASCOT_JUMP_MS = 750;
 export const MASCOT_ASPECT_RATIO = 1.25;
 
 /**
- * French description of each state, for the image's alternative text.
+ * Translation key describing each state, for the image's alternative text.
  */
-export const MASCOT_ALT: Readonly<Record<MascotState, string>> = {
-  idle: 'Lapinou, la mascotte',
-  hiding: 'Lapinou se cache les yeux',
-  jump: 'Lapinou saute de joie',
+export const MASCOT_ALT_KEYS: Readonly<Record<MascotState, string>> = {
+  idle: 'mascot.idleAlt',
+  hiding: 'mascot.hidingAlt',
+  jump: 'mascot.jumpAlt',
 };

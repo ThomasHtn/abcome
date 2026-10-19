@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
 /**
- * IFDC category of a word, used to group suggestions; the frontend shows its French label.
+ * CDI category of a word, shared by the French and English dictionaries, used to group suggestions; the frontend
+ * shows its label in the interface language.
  */
 public enum WordCategory {
 

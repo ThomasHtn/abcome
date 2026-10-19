@@ -1,15 +1,24 @@
 <div class="home flex flex-col" [class.home--read-only]="readOnly()">
   <!-- Title of the open tab and the log out button. -->
   <header class="home__header enter flex items-center justify-between gap-3">
-    <h1 class="home__title">
-      Les {{ activeTab() === 'words' ? 'mots' : 'phrases' }} de
-      <span class="home__child">{{ childName() }}</span>
-    </h1>
+    @if (activeTab() === 'words') {
+      <!-- Each language places the name its own way around the salmon span ("Côme's words"). -->
+      <h1 class="home__title">
+        {{ 'home.titleWordsBefore' | transloco }}<span class="home__child">{{ childName() }}</span
+        >{{ 'home.titleWordsAfter' | transloco }}
+      </h1>
+    } @else {
+      <h1 class="home__title">
+        {{ 'home.titleSentencesBefore' | transloco
+        }}<span class="home__child">{{ childName() }}</span
+        >{{ 'home.titleSentencesAfter' | transloco }}
+      </h1>
+    }
     <button
       app-icon-button
       type="button"
       tone="ghost"
-      aria-label="Se déconnecter"
+      [attr.aria-label]="'home.logout' | transloco"
       (click)="logoutOpen.set(true)"
     >
       <svg app-icon name="log-out" [size]="22" [strokeWidth]="2"></svg>
@@ -37,7 +46,7 @@
           app-icon-button
           type="button"
           tone="tint"
-          aria-label="Fermer la recherche"
+          [attr.aria-label]="'home.closeSearch' | transloco"
           (click)="closeSearch()"
         >
           <svg app-icon name="x" [size]="18" [strokeWidth]="2.4"></svg>
@@ -50,7 +59,7 @@
         <div
           class="home__tabs grid min-w-0 flex-1 grid-cols-2 gap-1"
           role="tablist"
-          aria-label="Type de notes"
+          [attr.aria-label]="'home.tabsLabel' | transloco"
         >
           <button
             #wordsTab
@@ -66,11 +75,11 @@
             (keydown.arrowleft)="switchTabByKey()"
             (keydown.arrowright)="switchTabByKey()"
           >
-            Mots
+            {{ tabLabels.words | transloco }}
             <!-- Lavender dot while the other tab is open and some word changed elsewhere. -->
             @if (activeTab() !== 'words' && wordNews() > 0) {
               <span class="home__tab-news" aria-hidden="true"></span>
-              <span class="sr-only">, du nouveau</span>
+              <span class="sr-only">{{ 'home.tabNews' | transloco }}</span>
             }
           </button>
           <button
@@ -87,11 +96,11 @@
             (keydown.arrowleft)="switchTabByKey()"
             (keydown.arrowright)="switchTabByKey()"
           >
-            Phrases
+            {{ tabLabels.sentences | transloco }}
             <!-- Lavender dot while the other tab is open and some sentence changed elsewhere. -->
             @if (activeTab() !== 'sentences' && sentenceNews() > 0) {
               <span class="home__tab-news" aria-hidden="true"></span>
-              <span class="sr-only">, du nouveau</span>
+              <span class="sr-only">{{ 'home.tabNews' | transloco }}</span>
             }
           </button>
         </div>
@@ -111,7 +120,7 @@
     <!-- Status filters, sharing the width so all four always fit on one row. -->
     <app-filter-chips
       class="md:w-96 md:flex-none"
-      label="Filtrer par couleur"
+      [label]="'home.filterLabel' | transloco"
       fill
       [options]="filterOptions()"
       [value]="activeFilter()"
@@ -127,16 +136,16 @@
     [attr.aria-labelledby]="
       searchShown() ? null : activeTab() === 'words' ? 'home-tab-words' : 'home-tab-sentences'
     "
-    [attr.aria-label]="searchShown() ? (activeTab() === 'words' ? 'Mots' : 'Phrases') : null"
+    [attr.aria-label]="searchShown() ? (tabLabels[activeTab()] | transloco) : null"
   >
     @switch (openListState()) {
       @case ('loading') {
-        <p class="home__message" role="status">Ouverture du carnet…</p>
+        <p class="home__message" role="status">{{ 'home.loading' | transloco }}</p>
       }
       @case ('error') {
         <!-- The list could not be loaded: say so and offer a retry. -->
         <div class="home__message flex flex-col items-center gap-3" role="alert">
-          <p class="home__message-text">Le carnet n'a pas pu s'ouvrir.</p>
+          <p class="home__message-text">{{ 'home.loadFailed' | transloco }}</p>
           <button
             app-button
             type="button"
@@ -144,7 +153,7 @@
             size="sm"
             (click)="wordsApi.words.reload()"
           >
-            Réessayer
+            {{ 'home.retry' | transloco }}
           </button>
         </div>
       }
@@ -179,7 +188,7 @@
                   routerLink="/words/new"
                   [queryParams]="{ word: trimmedQuery() }"
                 >
-                  Ajouter {{ trimmedQuery() | quote }} à ses mots
+                  {{ 'home.addSearchedWord' | transloco: { query: (trimmedQuery() | quote) } }}
                 </a>
               }
             </div>
@@ -219,9 +228,13 @@
         <span class="home__plus" aria-hidden="true">
           <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
         </span>
-        Ajouter un mot
+        {{ 'home.addWord' | transloco }}
       </a>
-      <a class="home__record" routerLink="/recordings/new" aria-label="Enregistrer un son">
+      <a
+        class="home__record"
+        routerLink="/recordings/new"
+        [attr.aria-label]="'home.recordSound' | transloco"
+      >
         <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
       </a>
     } @else {
@@ -235,9 +248,13 @@
         <span class="home__plus" aria-hidden="true">
           <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
         </span>
-        Ajouter une phrase
+        {{ 'home.addSentence' | transloco }}
       </button>
-      <a class="home__record" routerLink="/recordings/new" aria-label="Enregistrer un son">
+      <a
+        class="home__record"
+        routerLink="/recordings/new"
+        [attr.aria-label]="'home.recordSound' | transloco"
+      >
         <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
       </a>
     }
@@ -251,14 +268,10 @@
 
 <!-- Logout question. -->
 <app-confirm-sheet
-  heading="Se déconnecter ?"
-  [message]="
-    'Les mots de ' +
-    childName() +
-    ' restent enregistrés. Il faudra retaper le mot de passe pour rouvrir le carnet.'
-  "
-  confirmLabel="Se déconnecter"
-  cancelLabel="Rester"
+  [heading]="'home.logoutHeading' | transloco"
+  [message]="logoutMessage()"
+  [confirmLabel]="'home.logout' | transloco"
+  [cancelLabel]="'home.logoutCancel' | transloco"
   tone="dark"
   [busy]="loggingOut()"
   [(open)]="logoutOpen"

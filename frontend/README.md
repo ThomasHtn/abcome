@@ -39,6 +39,17 @@ Imports go `core` <- `shared` <- `pages`, a page never imports another page (ESL
 - BEM class names written in full (`.word-card__date`, never `&__`), none that Tailwind owns.
 - Animations inside `@include motion { ... }` (reduced motion).
 
+## Translations
+
+[Transloco](https://jsverse.gitbook.io/transloco): texts live in `src/i18n/fr.json` and `src/i18n/en.json`, the code only holds keys. `provideI18n()` (`core/i18n/`) picks the first browser language the app speaks (French otherwise) and loads its file before the first screen. No switch at runtime; a reload picks the language again.
+
+- Keys are grouped by screen or feature (`login.tagline`, `home.wordCard.ariaLabel`), parameters are named (`{{ childName }}`).
+- Templates: `{{ 'login.tagline' | transloco }}`, `[attr.aria-label]="'key' | transloco"`, `{{ 'key' | transloco: { childName: childName() } }}`.
+- TS: `translate('key', { name: value })` at use time, never in a module-level constant (translations load after the imports); constants hold keys.
+- Plurals go through `isSingular(count)` and two keys. A sentence wrapping a styled `<span>` is split into `...Before` and `...After` keys around it.
+- A text change edits both files. A spec checks they have the same keys and parameters.
+- Specs run in French (`src/test-providers.ts`); a key missing from `fr.json` fails the spec.
+
 ## Routes
 
 Lazy-loaded from `app.routes.ts`. URL parameters bind to page inputs (`withComponentInputBinding`).
@@ -66,13 +77,15 @@ Lists are loaded whole, shared by every screen and patched locally after each wr
 | `core/feedback/`                    | `ToastQueue.show(text)`, `Celebration.play()` (confetti)               |
 | `core/words/word.utils.ts`          | Current stage and status, sorting, counting, search                    |
 | `core/words/seen-words.ts`          | Seen marks: `changeOf(word)`, `markSeen(word)`, `markListed(words)`    |
-| `core/words/word.constants.ts`      | Statuses and French labels                                             |
+| `core/words/word.constants.ts`      | Statuses and their labels                                              |
 | `core/text/text.utils.ts`           | Normalization and search ranking (twin of the backend)                 |
 | `core/date/date.utils.ts`           | `todayIso()` (Paris) and date formatting                               |
 | `core/http/api-error.utils.ts`      | `apiErrorCode(error)`, `retryAfterSeconds(error)`, `isNotFound(error)` |
 | `core/http/resource.utils.ts`       | `resourceValue(resource, fallback)`, `keepValueOnError(resource)`      |
 | `core/http/stale-build.utils.ts`    | Reloads a screen whose lazy bundle went away with a deployment         |
 | `core/recordings/`                  | Duration and size limits, MIME type choice, decoded waveforms          |
+| `core/branding/`                    | `BrandingApi.name()`, `nameAccent()`; tab titles end with the app name |
+| `core/i18n/`                        | `provideI18n()`, `activeLocale()`, `isSingular(count)` for plurals     |
 
 Test factories `aWord()` and `aPronunciation()` are in `core/words/word.fixtures.ts`.
 

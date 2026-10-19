@@ -5,7 +5,7 @@
   [class.audio-button--sm]="size() === 'sm'"
   [class.audio-button--lg]="size() === 'lg'"
   [class.audio-button--playing]="playing()"
-  [attr.aria-label]="playing() ? 'Arrêter le son' : label()"
+  [attr.aria-label]="name()"
   (click)="toggle()"
 >
   @if (playing()) {

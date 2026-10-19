@@ -14,7 +14,7 @@
 
   <groupId>io.github.thomashtn</groupId>
   <artifactId>littlewords</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
 
   <name>Little Words</name>
   <description>Backend of Little Words: REST API for a toddler's first words, pronunciation stages and recordings.</description>

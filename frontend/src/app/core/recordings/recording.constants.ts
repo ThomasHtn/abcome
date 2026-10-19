@@ -4,7 +4,7 @@
 export const RECORDING_MAX_DURATION_MS = 15_000;
 
 /**
- * Largest upload the API and Traefik accept, 2 MB.
+ * Largest upload the API and the reverse proxy accept, 2 MB.
  */
 export const RECORDING_MAX_BYTES = 2 * 1024 * 1024;
 

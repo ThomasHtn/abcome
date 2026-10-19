@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 
+import { TranslocoPipe } from '@jsverse/transloco';
+
 import { AuthSession } from '@core/auth/auth-session';
 import { Mascot } from '@shared/mascot/mascot';
 
@@ -11,7 +13,7 @@ import { HomeSummary } from '../home.model';
 @Component({
   selector: 'app-home-summary',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Mascot],
+  imports: [Mascot, TranslocoPipe],
   templateUrl: './home-summary.html',
   styleUrl: './home-summary.scss',
 })

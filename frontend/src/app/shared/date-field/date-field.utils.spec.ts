@@ -1,8 +1,5 @@
-import {
-  DATE_IN_FUTURE_MESSAGE,
-  DATE_MISSING_MESSAGE,
-  DATE_TOO_OLD_MESSAGE,
-} from './date-field.constants';
+import { translate } from '@jsverse/transloco';
+
 import { dateDisplay, dateFieldError } from './date-field.utils';
 
 describe('dateFieldError', () => {
@@ -13,16 +10,16 @@ describe('dateFieldError', () => {
   });
 
   it("flags a day before the notebook's first day, most likely a mistyped year", () => {
-    expect(dateFieldError('0202-10-12', '2026-10-17')).toBe(DATE_TOO_OLD_MESSAGE);
+    expect(dateFieldError('0202-10-12', '2026-10-17')).toBe(translate('dateField.tooOld'));
   });
 
   it('asks for a date when the field is empty', () => {
-    expect(dateFieldError('', '2026-10-17')).toBe(DATE_MISSING_MESSAGE);
+    expect(dateFieldError('', '2026-10-17')).toBe(translate('dateField.missing'));
   });
 
   it('refuses a day after today', () => {
-    expect(dateFieldError('2026-10-18', '2026-10-17')).toBe(DATE_IN_FUTURE_MESSAGE);
-    expect(dateFieldError('2099-05-05', '2026-10-17')).toBe(DATE_IN_FUTURE_MESSAGE);
+    expect(dateFieldError('2026-10-18', '2026-10-17')).toBe(translate('dateField.inFuture'));
+    expect(dateFieldError('2099-05-05', '2026-10-17')).toBe(translate('dateField.inFuture'));
   });
 });
 

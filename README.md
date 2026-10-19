@@ -107,16 +107,11 @@ Three months later the same child says "rabbit" perfectly, and nobody remembers 
 
 ## Get it
 
-You bring the toddler, Little Words brings the rest. You need Docker, a PostgreSQL database and a reverse proxy (the compose file plugs into Traefik).
+You bring the toddler, Little Words brings the rest. It ships as two Docker images (API and web) and needs a PostgreSQL database and a reverse proxy that serves both on one origin.
 
-```bash
-git clone https://github.com/ThomasHtn/littlewords.git && cd littlewords
-cp .env.example .env    # database, passphrase hash, your child's first name
-docker compose -f docker-compose.prod.yml up -d --build
-```
+The repository holds no deployment of its own: your server owns its compose file, domain, TLS and secrets. What a deployment must provide (routing, variables, health checks, backups) is in [backend/README.md](backend/README.md#deployment).
 
-Step-by-step guide (database, passphrase hash, monitoring): [backend/README.md](backend/README.md#deployment).
-Rather tinker first? [CONTRIBUTING.md](CONTRIBUTING.md) runs it locally in a few commands.
+Rather try it first? `docker compose up --build` runs the whole app on http://localhost:8000 ([CONTRIBUTING.md](CONTRIBUTING.md#setup)).
 
 <br>
 
@@ -126,17 +121,17 @@ Everything is called `littlewords`: repository, Java package, Docker images, con
 
 | Layer | Stack |
 |---|---|
-| Frontend | Angular 22 (standalone, zoneless, signals), Tailwind 4 for layout and SCSS for visuals, served by nginx |
+| Frontend | Angular 22 (standalone, zoneless, signals), Tailwind 4 for layout and SCSS for visuals, Transloco (French, English), served by nginx |
 | Backend | Spring Boot 4 on Java 25: Spring Security, Data JPA, Flyway, springdoc |
 | Database | PostgreSQL 17, recordings stored as `bytea` in their own table |
 | Auth | Shared family passphrase (Argon2id), optional read-only one, session cookie, CSRF, login lockout |
-| Deployment | `docker-compose.prod.yml`: `/api/*` to the backend, the rest to the frontend |
+| Deployment | Two images behind your reverse proxy: `/api/*` to the backend, the rest to the frontend |
 | Quality | Spotless, Checkstyle, SpotBugs, JaCoCo, Testcontainers; ESLint, Stylelint, Prettier, vitest; GitHub Actions |
 
-The interface and the word dictionary are in French; the screenshots above are translated.
+The interface speaks French or English, following the browser (French when it offers neither); so do the word suggestions (French IFDC or American English CDI). The app name is set per deployment (`APP_NAME`), so each family runs its own notebook.
 
 - [CONTRIBUTING.md](CONTRIBUTING.md): setup, code map, conventions. Start here.
 - [backend/README.md](backend/README.md): commands, family password, packages, deployment, monitoring.
 - [frontend/README.md](frontend/README.md): commands, folders, routes, styles, components.
-- [docs/dictionary/README.md](docs/dictionary/README.md): where the word list comes from (IFDC via Wordbank, CC BY 4.0).
+- [docs/dictionary/README.md](docs/dictionary/README.md): where the word lists come from (IFDC and CDI via Wordbank, CC BY 4.0).
 - API reference: Swagger UI at `/swagger-ui.html` when `API_DOCS_ENABLED=true` (dev only).

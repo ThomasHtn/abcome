@@ -11,6 +11,8 @@ import {
   untracked,
 } from '@angular/core';
 
+import { translate } from '@jsverse/transloco';
+
 import { ToastQueue } from '@core/feedback/toast-queue';
 import { Icon } from '@shared/icon/icon';
 
@@ -22,11 +24,6 @@ const ICON_SIZES = {
   md: { play: 22, stop: 18 },
   lg: { play: 40, stop: 34 },
 } as const;
-
-/**
- * Toast of a sound the device cannot play (a WebM on an old iPhone) or that did not download.
- */
-const PLAYBACK_FAILURE = "Ce son n'a pas pu être lu sur cet appareil.";
 
 /**
  * Stops the sound playing now, so starting another one cuts it: one sound at a time on a screen.
@@ -96,6 +93,13 @@ export class AudioButton {
   protected readonly iconSize = computed(() => ICON_SIZES[this.size()]);
 
   /**
+   * Screen reader name, which follows what a press will do.
+   */
+  protected readonly name = computed(() =>
+    this.playing() ? translate('audioButton.stop') : this.label(),
+  );
+
+  /**
    * Stops the sound when its source changes or the button goes away.
    */
   constructor() {
@@ -159,7 +163,8 @@ export class AudioButton {
       return;
     }
     this.setPlaying(false);
-    this.toasts.show(PLAYBACK_FAILURE, 'error');
+    // A WebM on an old iPhone, or a sound that did not download.
+    this.toasts.show(translate('audioButton.playbackFailed'), 'error');
   }
 
   /**

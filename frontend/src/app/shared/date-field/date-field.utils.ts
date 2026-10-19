@@ -1,13 +1,8 @@
+import { translate } from '@jsverse/transloco';
+
 import { FIRST_NOTEBOOK_DAY } from '@core/date/date.constants';
 import { addDays, formatWeekdayDate, todayIso } from '@core/date/date.utils';
 
-import {
-  DATE_EMPTY_TEXT,
-  DATE_IN_FUTURE_MESSAGE,
-  DATE_MISSING_MESSAGE,
-  DATE_TOO_OLD_MESSAGE,
-  RELATIVE_DAYS,
-} from './date-field.constants';
 import { DateDisplay } from './date-field.model';
 
 /**
@@ -17,13 +12,13 @@ import { DateDisplay } from './date-field.model';
  */
 export function dateFieldError(value: string, today: string = todayIso()): string | null {
   if (value === '') {
-    return DATE_MISSING_MESSAGE;
+    return translate('dateField.missing');
   }
-  // ISO days compare as text.
+  // ISO days compare as text; the API refuses a future day.
   if (value > today) {
-    return DATE_IN_FUTURE_MESSAGE;
+    return translate('dateField.inFuture');
   }
-  return value < FIRST_NOTEBOOK_DAY ? DATE_TOO_OLD_MESSAGE : null;
+  return value < FIRST_NOTEBOOK_DAY ? translate('dateField.tooOld') : null;
 }
 
 /**
@@ -32,15 +27,15 @@ export function dateFieldError(value: string, today: string = todayIso()): strin
  */
 export function dateDisplay(value: string, today: string = todayIso()): DateDisplay {
   if (value === '') {
-    return { title: DATE_EMPTY_TEXT, detail: null };
+    return { title: translate('dateField.empty'), detail: null };
   }
   const currentYear = Number.parseInt(today.slice(0, 4), 10);
   const date = formatWeekdayDate(value, currentYear);
   if (value === today) {
-    return { title: RELATIVE_DAYS.today, detail: date };
+    return { title: translate('dateField.today'), detail: date };
   }
   if (value === addDays(today, -1)) {
-    return { title: RELATIVE_DAYS.yesterday, detail: date };
+    return { title: translate('dateField.yesterday'), detail: date };
   }
   return { title: date, detail: null };
 }

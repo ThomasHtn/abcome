@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, input, model, output } from '@angular/core';
 
+import { TranslocoPipe } from '@jsverse/transloco';
+
 import { DictionaryEntry } from '@core/dictionary/dictionary.model';
 import { frequentShortcuts } from '@core/dictionary/dictionary.utils';
-import { CATEGORY_LABELS, STATUS_LABELS } from '@core/words/word.constants';
+import { CATEGORY_LABELS, LABEL_MAX_LENGTHS, STATUS_LABELS } from '@core/words/word.constants';
 import { Word } from '@core/words/word.model';
 import { currentPronunciation, sortByFirstSaidDesc } from '@core/words/word.utils';
 import { Icon } from '@shared/icon/icon';
@@ -10,7 +12,7 @@ import { QuotePipe } from '@shared/quote/quote.pipe';
 import { SearchField } from '@shared/search-field/search-field';
 import { StatusDot } from '@shared/status-dot/status-dot';
 
-import { WORD_PICKER_RECENT_COUNT, WORD_TOO_LONG_MESSAGE } from './word-picker.constants';
+import { WORD_PICKER_RECENT_COUNT } from './word-picker.constants';
 import { WordChoice, WordPickerEmptyState } from './word-picker.model';
 import {
   buildSuggestions,
@@ -33,7 +35,7 @@ let nextPickerId = 0;
 @Component({
   selector: 'app-word-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [QuotePipe, Icon, SearchField, StatusDot],
+  imports: [QuotePipe, Icon, SearchField, StatusDot, TranslocoPipe],
   templateUrl: './word-picker.html',
   styleUrl: './word-picker.scss',
 })
@@ -74,12 +76,12 @@ export class WordPicker {
   protected readonly id = `word-picker-${nextPickerId++}`;
 
   /**
-   * French category names.
+   * Translation keys of the category names.
    */
   protected readonly categoryLabels = CATEGORY_LABELS;
 
   /**
-   * French status names, read out beside the decorative status dot.
+   * Translation keys of the status names, read out beside the decorative status dot.
    */
   protected readonly statusLabels = STATUS_LABELS;
 
@@ -113,9 +115,9 @@ export class WordPicker {
   protected readonly tooLong = computed(() => isTooLongForWord(this.query()));
 
   /**
-   * Why a too long text is not offered as a new word.
+   * Longest word label, named when the typed text is too long to be offered as a new word.
    */
-  protected readonly tooLongMessage = WORD_TOO_LONG_MESSAGE;
+  protected readonly wordMaxLength = LABEL_MAX_LENGTHS.word;
 
   /**
    * Notebook words shown before typing, with their current spoken form; empty in `frequent` mode.

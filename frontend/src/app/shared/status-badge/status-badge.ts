@@ -1,8 +1,8 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-import { STATUS_LABELS } from '@core/words/word.constants';
 import { PronunciationStatus } from '@core/words/word.model';
+import { statusLabel } from '@core/words/word.utils';
 
 /**
  * A pronunciation status, never by color alone: colored dot with its glyph, plus the label as a pill
@@ -32,9 +32,9 @@ export class StatusBadge {
   public readonly size = input<'sm' | 'md' | 'lg'>('md');
 
   /**
-   * French label of the status.
+   * Label of the status, in the app's language.
    */
-  protected readonly label = computed(() => STATUS_LABELS[this.status()]);
+  protected readonly label = computed(() => statusLabel(this.status()));
 
   /**
    * White glyph drawn on the dot.

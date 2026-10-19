@@ -1,6 +1,6 @@
 <fieldset class="status-picker">
   <!-- Question of the group, styled like the other field labels. -->
-  <legend class="status-picker__legend">{{ label() }}</legend>
+  <legend class="status-picker__legend">{{ shownLabel() }}</legend>
 
   <!-- One tile per status: a hidden native radio inside its label. -->
   <div class="grid grid-cols-3 gap-2">
@@ -22,7 +22,7 @@
         <span class="status-picker__dot" aria-hidden="true">
           <img alt="" width="16" height="16" [ngSrc]="'assets/status/' + status + '.svg'" />
         </span>
-        {{ labels[status] }}
+        {{ labels[status] | transloco }}
       </label>
     }
   </div>

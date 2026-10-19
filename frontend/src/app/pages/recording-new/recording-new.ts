@@ -9,6 +9,8 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { translate, TranslocoPipe } from '@jsverse/transloco';
+
 import { AuthSession } from '@core/auth/auth-session';
 import { todayIso } from '@core/date/date.utils';
 import { DictionaryEntry } from '@core/dictionary/dictionary.model';
@@ -57,7 +59,7 @@ import { RecordingClip } from './recording-clip/recording-clip';
 import {
   LEVEL_BAR_COUNT,
   MIN_KEEP_MS,
-  RECORDER_ERROR_MESSAGES,
+  RECORDER_ERROR_KEYS,
   TRIM_BAR_COUNT,
 } from './recording-new.constants';
 import {
@@ -93,6 +95,7 @@ import { RecordingTrim } from './recording-trim/recording-trim';
   providers: [AudioRecorder],
   imports: [
     QuotePipe,
+    TranslocoPipe,
     RouterLink,
     ActionBar,
     AudioButton,
@@ -376,6 +379,31 @@ export class RecordingNewPage {
   protected readonly kind = computed(() => this.targetWord()?.kind ?? 'word');
 
   /**
+   * Overline above the chosen word on the note step: a new stage of a notebook word, or a new word.
+   */
+  protected readonly targetOverline = computed(() =>
+    this.targetWord()
+      ? translate('recordingNew.overline.newStage')
+      : translate('recordingNew.overline.newWord'),
+  );
+
+  /**
+   * Label of the spoken field, naming the child.
+   */
+  protected readonly spokenLabel = computed(() =>
+    translate('recordingNew.spokenLabel', { childName: this.childName() }),
+  );
+
+  /**
+   * Label of the date field: when the stage was heard, or when a new word was first said.
+   */
+  protected readonly dateLabel = computed(() =>
+    this.targetWord()
+      ? translate('recordingNew.dateLabel.heard')
+      : translate('recordingNew.dateLabel.first'),
+  );
+
+  /**
    * Text of the save button.
    */
   protected readonly saveText = computed(() => saveButtonText(this.ready(), !this.targetWord()));
@@ -396,7 +424,7 @@ export class RecordingNewPage {
   });
 
   /**
-   * French category names.
+   * Translation keys of the category names.
    */
   protected readonly categoryLabels = CATEGORY_LABELS;
 
@@ -417,7 +445,7 @@ export class RecordingNewPage {
     try {
       const clip = await this.recorder.record();
       if (clip.blob.size > RECORDING_MAX_BYTES) {
-        this.fail('Ce son est trop lourd. Recommence un peu plus court.');
+        this.fail(translate('recordingNew.tooHeavy'));
         return;
       }
       this.recorded.set(clip);
@@ -426,9 +454,11 @@ export class RecordingNewPage {
       void this.prepareTrim(clip);
     } catch (error) {
       this.fail(
-        error instanceof RecorderError
-          ? RECORDER_ERROR_MESSAGES[error.kind]
-          : RECORDER_ERROR_MESSAGES.failed,
+        translate(
+          error instanceof RecorderError
+            ? RECORDER_ERROR_KEYS[error.kind]
+            : RECORDER_ERROR_KEYS.failed,
+        ),
       );
     }
   }
@@ -624,15 +654,12 @@ export class RecordingNewPage {
     switch (apiErrorCode(error)) {
       case 'WORD_ALREADY_EXISTS':
         this.wordsApi.words.reload();
-        this.toasts.show(
-          `${quote(label)} est déjà dans ses mots, choisis-le dans la liste.`,
-          'error',
-        );
+        this.toasts.show(translate('recordingNew.alreadyExists', { label: quote(label) }), 'error');
         this.changeWord();
         return;
       case 'PAYLOAD_TOO_LARGE':
       case 'UNSUPPORTED_MEDIA_TYPE':
-        this.toasts.show("Ce son n'est pas accepté. Recommence l'enregistrement.", 'error');
+        this.toasts.show(translate('recordingNew.rejected'), 'error');
         return;
       default:
         this.toasts.show(this.uploadFailure(), 'error');
@@ -644,11 +671,11 @@ export class RecordingNewPage {
    */
   private uploadFailure(): string {
     if (this.pending === null) {
-      return "Le son n'a pas pu être enregistré, réessaie.";
+      return translate('recordingNew.uploadFailed');
     }
     return this.targetWord()
-      ? "La prononciation est notée, mais le son n'est pas parti. Réessaie."
-      : "Le mot est noté, mais le son n'est pas parti. Réessaie.";
+      ? translate('recordingNew.uploadFailedStage')
+      : translate('recordingNew.uploadFailedWord');
   }
 
   /**

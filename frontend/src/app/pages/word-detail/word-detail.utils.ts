@@ -1,3 +1,5 @@
+import { translate } from '@jsverse/transloco';
+
 import {
   formatLongDate,
   formatShortDate,
@@ -7,12 +9,37 @@ import {
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
 import { formatDurationInWords } from '@core/recordings/recording.utils';
 import { quote } from '@core/text/text.utils';
-import { STATUS_LABELS } from '@core/words/word.constants';
 import { PronunciationStatus, Recording, Word } from '@core/words/word.model';
-import { sortPronunciations } from '@core/words/word.utils';
+import { sortPronunciations, statusLabel } from '@core/words/word.utils';
 
 import { LONG_TITLE_LENGTH, VERY_LONG_TITLE_LENGTH } from './word-detail.constants';
-import { GallerySound, SoundSheetCopy, TimelineStage, TitleLength } from './word-detail.model';
+import {
+  GallerySound,
+  KindCopy,
+  SoundSheetCopy,
+  TimelineStage,
+  TitleLength,
+} from './word-detail.model';
+
+/**
+ * Wording of the page with every key of `keys` translated; the list query passes through.
+ */
+export function translatedCopy(keys: KindCopy): KindCopy {
+  return {
+    deleteAction: translate(keys.deleteAction),
+    renameAction: translate(keys.renameAction),
+    deletedSuffix: translate(keys.deletedSuffix),
+    notFound: translate(keys.notFound),
+    loading: translate(keys.loading),
+    renamed: translate(keys.renamed),
+    emptyLabel: translate(keys.emptyLabel),
+    labelField: translate(keys.labelField),
+    renameFailed: translate(keys.renameFailed),
+    deleteFailed: translate(keys.deleteFailed),
+    lastStageMessage: translate(keys.lastStageMessage),
+    listQuery: keys.listQuery,
+  };
+}
 
 /**
  * Title of the stage at `index` (oldest first) among `count`: the first time, the latest, or its rank.
@@ -20,12 +47,12 @@ import { GallerySound, SoundSheetCopy, TimelineStage, TitleLength } from './word
  */
 export function stageTitle(index: number, count: number, date: string, today: string): string {
   if (index === 0) {
-    return 'Première fois';
+    return translate('wordDetail.stageFirst');
   }
   if (index === count - 1) {
-    return date === today ? "Aujourd'hui" : 'Maintenant';
+    return date === today ? translate('wordDetail.stageToday') : translate('wordDetail.stageNow');
   }
-  return `Étape ${index + 1}`;
+  return translate('wordDetail.stageNumber', { number: index + 1 });
 }
 
 /**
@@ -42,13 +69,18 @@ export function timelineStages(word: Word, today: string): TimelineStage[] {
         pronunciation,
         title,
         caption: `${title} · ${date}`,
-        ariaLabel:
-          `${title}\u00A0: ${pronunciation.spoken}, ${STATUS_LABELS[pronunciation.status]}, ` +
-          `le ${formatLongDate(pronunciation.date)}. Modifier`,
+        ariaLabel: translate('wordDetail.stageAriaLabel', {
+          title,
+          spoken: pronunciation.spoken,
+          status: statusLabel(pronunciation.status),
+          date: formatLongDate(pronunciation.date),
+        }),
         latest: index === stages.length - 1,
         oldest: index === 0,
         sounds: sounds.filter((sound) => sound.recording.pronunciationId === pronunciation.id),
-        soundsLabel: `Sons de ${quote(pronunciation.spoken)}`,
+        soundsLabel: translate('wordDetail.stageSoundsLabel', {
+          spoken: quote(pronunciation.spoken),
+        }),
       };
     })
     .reverse();
@@ -58,14 +90,16 @@ export function timelineStages(word: Word, today: string): TimelineStage[] {
  * Main button: "Il le dit mieux !" while there is progress to make, a plain add once mastered.
  */
 export function progressLabel(status: PronunciationStatus): string {
-  return status === 'mastered' ? 'Ajouter une prononciation' : 'Il le dit mieux\u00A0!';
+  return status === 'mastered'
+    ? translate('wordDetail.progressAdd')
+    : translate('wordDetail.progressBetter');
 }
 
 /**
  * Label of the day in the stage form: the first stage is "the first time", any other one was heard.
  */
 export function stageDateLabel(firstStage: boolean): string {
-  return firstStage ? 'Dit pour la première fois le' : 'Entendu le';
+  return firstStage ? translate('wordDetail.dateFirstSaid') : translate('wordDetail.dateHeard');
 }
 
 /**
@@ -86,16 +120,25 @@ export function gallerySounds(recordings: readonly Recording[], today: string): 
     const recordedOn = formatLongDate(day, currentYear);
     const length = formatDurationInWords(recording.durationMs);
     // The length tells apart two sounds of the same day.
-    const name = `le son enregistré le ${recordedOn}, ${length}`;
     return {
       recording,
       src: API_ENDPOINTS.recording(recording.id),
       day: formatShortDate(day),
       recordedOn,
       length,
-      listenLabel: `Écouter ${name}`,
-      actionsLabel: `Actions sur ${name}`,
+      listenLabel: translate('wordDetail.soundListenLabel', { date: recordedOn, length }),
+      actionsLabel: translate('wordDetail.soundActionsLabel', { date: recordedOn, length }),
     };
+  });
+}
+
+/**
+ * Screen reader name of a stage in the move sheet, read before its spoken form is shown.
+ */
+export function moveTargetLabel(stage: TimelineStage): string {
+  return translate('wordDetail.moveTargetLabel', {
+    spoken: stage.pronunciation.spoken,
+    title: stage.title,
   });
 }
 
@@ -118,8 +161,12 @@ export function soundSheetCopy(
   childName: string,
 ): SoundSheetCopy {
   return {
-    heading: `Son enregistré le ${sound.recordedOn}`,
-    text: `${childName} y dit ${quote(spoken)}. Il dure ${sound.length}.`,
+    heading: translate('wordDetail.soundSheetHeading', { date: sound.recordedOn }),
+    text: translate('wordDetail.soundSheetText', {
+      childName,
+      spoken: quote(spoken),
+      length: sound.length,
+    }),
   };
 }
 
@@ -127,10 +174,11 @@ export function soundSheetCopy(
  * Consequence of deleting a sound, naming it the way the actions sheet does.
  */
 export function removeSoundText(sound: GallerySound, spoken: string, childName: string): string {
-  return (
-    `Le son enregistré le ${sound.recordedOn}, où ${childName} dit ${quote(spoken)}, sera effacé. ` +
-    'On ne pourra pas revenir en arrière.'
-  );
+  return translate('wordDetail.removeSoundText', {
+    date: sound.recordedOn,
+    childName,
+    spoken: quote(spoken),
+  });
 }
 
 /**
@@ -142,14 +190,17 @@ export function removeStageText(
   soundCount: number,
   heirSpoken: string | undefined,
 ): string {
-  const sentences = [`Cette prononciation du ${formatLongDate(date)} sera effacée.`];
+  const sentences = [translate('wordDetail.removeStageErased', { date: formatLongDate(date) })];
   if (soundCount > 0 && heirSpoken !== undefined) {
     sentences.push(
       soundCount === 1
-        ? `Le son de cette prononciation sera rangé avec ${quote(heirSpoken)}.`
-        : `Ses ${soundCount} sons seront rangés avec ${quote(heirSpoken)}.`,
+        ? translate('wordDetail.removeStageSoundOne', { spoken: quote(heirSpoken) })
+        : translate('wordDetail.removeStageSoundOther', {
+            count: soundCount,
+            spoken: quote(heirSpoken),
+          }),
     );
   }
-  sentences.push('On ne pourra pas revenir en arrière.');
+  sentences.push(translate('wordDetail.cannotUndo'));
   return sentences.join(' ');
 }

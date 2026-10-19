@@ -2,10 +2,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
+import { translate } from '@jsverse/transloco';
+
 import { AuthSession } from '@core/auth/auth-session';
 
 import { LoginPage } from './login';
-import { LOGIN_MESSAGES, LOGIN_SUCCESS_DELAY_MS } from './login.constants';
+import { LOGIN_SUCCESS_DELAY_MS } from './login.constants';
 
 describe('LoginPage', () => {
   /**
@@ -67,7 +69,7 @@ describe('LoginPage', () => {
   it('tells who to ask for the shared password, as the field description', () => {
     const element = render();
 
-    expect(element.querySelector('#login-help')!.textContent).toContain(LOGIN_MESSAGES.hint);
+    expect(element.querySelector('#login-help')!.textContent).toContain(translate('login.hint'));
   });
 
   it('shows the mascot hiding his eyes while a hidden password is typed', () => {
@@ -97,7 +99,7 @@ describe('LoginPage', () => {
 
     await submit(element);
     expect(signIn).toHaveBeenCalledWith('secret');
-    expect(element.querySelector('#login-help')!.textContent).toContain(LOGIN_MESSAGES.success);
+    expect(element.querySelector('#login-help')!.textContent).toContain(translate('login.success'));
     expect(navigate).not.toHaveBeenCalled();
 
     vi.advanceTimersByTime(LOGIN_SUCCESS_DELAY_MS);
@@ -131,7 +133,7 @@ describe('LoginPage', () => {
 
     await submit(element);
     const help = element.querySelector('#login-help')!;
-    expect(help.textContent).toContain(LOGIN_MESSAGES.invalid);
+    expect(help.textContent).toContain(translate('login.invalid'));
     expect(help.getAttribute('role')).toBe('alert');
     expect(input.getAttribute('aria-invalid')).toBe('true');
   });

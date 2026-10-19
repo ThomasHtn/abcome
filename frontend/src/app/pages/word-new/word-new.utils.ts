@@ -1,3 +1,5 @@
+import { translate } from '@jsverse/transloco';
+
 import { dateFieldError } from '@shared/date-field/date-field.utils';
 import { PronunciationDraft } from '@shared/pronunciation-form/pronunciation-form.model';
 import { WordChoice } from '@shared/word-picker/word-picker.model';
@@ -12,11 +14,9 @@ export function wordNewQuestion(
   childName: string,
 ): string {
   if (!choice) {
-    return `Quel mot ${childName} a-t-il dit\u00A0?`;
+    return translate('wordNew.questionPick', { childName });
   }
-  return known
-    ? `${childName} le dit déjà\u00A0!`
-    : `Super\u00A0! Et comment ${childName} l'a dit\u00A0?`;
+  return translate(known ? 'wordNew.questionKnown' : 'wordNew.questionSpoken', { childName });
 }
 
 /**
@@ -25,7 +25,9 @@ export function wordNewQuestion(
  */
 export function saveBlocker(draft: PronunciationDraft, today: string): string {
   const spokenTyped = draft.spoken.trim() !== '';
-  return spokenTyped && dateFieldError(draft.date, today) !== null
-    ? "Choisis d'abord le jour"
-    : "Note d'abord comment il le dit";
+  return translate(
+    spokenTyped && dateFieldError(draft.date, today) !== null
+      ? 'wordNew.blockerDate'
+      : 'wordNew.blockerSpoken',
+  );
 }

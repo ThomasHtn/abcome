@@ -20,7 +20,7 @@
           app-icon-button
           class="bottom-sheet__close"
           type="button"
-          aria-label="Fermer"
+          [attr.aria-label]="'bottomSheet.close' | transloco"
           (click)="close()"
         >
           <svg app-icon name="x" [size]="18" [strokeWidth]="2.4"></svg>

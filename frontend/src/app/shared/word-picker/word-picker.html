@@ -5,7 +5,10 @@
   @if (!blank()) {
     <!-- Matches, the typed part in bold. -->
     @if (suggestions().length > 0) {
-      <ul class="word-picker__suggestions flex flex-col" aria-label="Suggestions">
+      <ul
+        class="word-picker__suggestions flex flex-col"
+        [attr.aria-label]="'wordPicker.suggestions' | transloco"
+      >
         @for (suggestion of suggestions(); track suggestion.label) {
           <li>
             <button
@@ -18,9 +21,13 @@
                 <b class="word-picker__head">{{ suggestion.head }}</b
                 >{{ suggestion.tail }}
               </span>
-              <span class="word-picker__chip">{{ categoryLabels[suggestion.category] }}</span>
+              <span class="word-picker__chip">{{
+                categoryLabels[suggestion.category] | transloco
+              }}</span>
               @if (suggestion.word) {
-                <span class="word-picker__chip word-picker__chip--known">déjà dit</span>
+                <span class="word-picker__chip word-picker__chip--known">{{
+                  'wordPicker.alreadySaid' | transloco
+                }}</span>
               }
             </button>
           </li>
@@ -36,17 +43,21 @@
         (click)="pickOffer(label)"
       >
         <svg app-icon name="circle-plus" [size]="22" [strokeWidth]="2.2"></svg>
-        Pas dans le dictionnaire&nbsp;: ajouter {{ label | quote }} quand même
+        {{ 'wordPicker.addAnyway' | transloco: { label: label | quote } }}
       </button>
     } @else if (tooLong()) {
       <!-- Too long to be a word: say why nothing is offered. -->
-      <p class="word-picker__too-long" role="status">{{ tooLongMessage }}</p>
+      <p class="word-picker__too-long" role="status">
+        {{ 'wordPicker.tooLong' | transloco: { max: wordMaxLength } }}
+      </p>
     }
   } @else {
     <!-- Before typing: the notebook's recent words... -->
     @if (recentWords().length > 0) {
       <section class="mt-1.5 flex flex-col gap-2" [attr.aria-labelledby]="id + '-recent'">
-        <h2 class="word-picker__section" [id]="id + '-recent'">Ses mots</h2>
+        <h2 class="word-picker__section" [id]="id + '-recent'">
+          {{ 'wordPicker.recentWords' | transloco }}
+        </h2>
         <ul class="flex flex-col gap-2">
           @for (recent of recentWords(); track recent.word.id) {
             <li>
@@ -60,7 +71,7 @@
                   <span class="word-picker__caption">{{ recent.word.label }}</span>
                 </span>
                 <app-status-dot [status]="recent.current.status" />
-                <span class="sr-only">{{ statusLabels[recent.current.status] }}</span>
+                <span class="sr-only">{{ statusLabels[recent.current.status] | transloco }}</span>
               </button>
             </li>
           }
@@ -71,7 +82,9 @@
     <!-- ...or the frequent first words not said yet. -->
     @if (shortcuts().length > 0) {
       <section class="mt-1.5 flex flex-col gap-2.5" [attr.aria-labelledby]="id + '-frequent'">
-        <h2 class="word-picker__section" [id]="id + '-frequent'">Mots fréquents à cet âge</h2>
+        <h2 class="word-picker__section" [id]="id + '-frequent'">
+          {{ 'wordPicker.frequentWords' | transloco }}
+        </h2>
         <ul class="flex flex-wrap gap-2">
           @for (shortcut of shortcuts(); track shortcut.label) {
             <li>

@@ -91,9 +91,9 @@ describe('tabFromParam', () => {
 
 describe('countWithNoun', () => {
   it('agrees the noun in number', () => {
-    expect(countWithNoun(0, 'mot')).toBe('0 mot');
-    expect(countWithNoun(1, 'mot')).toBe('1 mot');
-    expect(countWithNoun(3, 'phrase')).toBe('3 phrases');
+    expect(countWithNoun(0, 'word')).toBe('0 mot');
+    expect(countWithNoun(1, 'word')).toBe('1 mot');
+    expect(countWithNoun(3, 'sentence')).toBe('3 phrases');
   });
 });
 
@@ -254,7 +254,7 @@ describe('listState', () => {
 
 describe('groupByMonth', () => {
   it('cuts the newest-first list into titled and counted months, the stagger running on', () => {
-    const groups = groupByMonth([GATEAU, LAPIN, MAMAN], 'mot');
+    const groups = groupByMonth([GATEAU, LAPIN, MAMAN], 'word');
 
     expect(
       groups.map(({ key, title, countText, offset }) => [key, title, countText, offset]),
@@ -267,14 +267,14 @@ describe('groupByMonth', () => {
   });
 
   it('keeps the words of one month together and counts them', () => {
-    const [october] = groupByMonth([GATEAU, { ...GATEAU, id: 9, label: 'eau' }], 'mot');
+    const [october] = groupByMonth([GATEAU, { ...GATEAU, id: 9, label: 'eau' }], 'word');
 
     expect(october.countText).toBe('2 mots');
     expect(october.cards.map((card) => card.label)).toEqual(['gâteau', 'eau']);
   });
 
   it('tags each card with what changed in its entry', () => {
-    const groups = groupByMonth([GATEAU, LAPIN], 'mot', (word) =>
+    const groups = groupByMonth([GATEAU, LAPIN], 'word', (word) =>
       word.id === LAPIN.id ? 'pronunciation' : null,
     );
 
@@ -285,6 +285,6 @@ describe('groupByMonth', () => {
   });
 
   it('gives no month for an empty list', () => {
-    expect(groupByMonth([], 'phrase')).toEqual([]);
+    expect(groupByMonth([], 'sentence')).toEqual([]);
   });
 });

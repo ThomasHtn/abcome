@@ -200,6 +200,7 @@ class LoginAttemptLimiterTest {
             new ApplicationProperties(
                 false,
                 "Alix",
+                new ApplicationProperties.Branding("ABCome", "ome"),
                 ZoneId.of("Europe/Paris"),
                 new ApplicationProperties.Auth(
                     "$argon2id$unused", "", BUDGET, FIRST_LOCKOUT, MAX_LOCKOUT, 2, lockoutEnabled

@@ -1,6 +1,11 @@
 @if (tappable()) {
   <!-- Tappable mascot: a real button, its name says what a tap does. -->
-  <button class="mascot__button" type="button" aria-label="Faire coucou à Lapinou" (click)="jump()">
+  <button
+    class="mascot__button"
+    type="button"
+    [attr.aria-label]="'mascot.wave' | transloco"
+    (click)="jump()"
+  >
     @for (frame of frames(); track frame.key) {
       <img
         class="mascot__image"

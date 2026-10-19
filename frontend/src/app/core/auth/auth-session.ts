@@ -2,6 +2,7 @@ import { HttpClient, HttpErrorResponse, HttpStatusCode } from '@angular/common/h
 import { computed, effect, inject, Service, signal, untracked } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { translate } from '@jsverse/transloco';
 import { firstValueFrom } from 'rxjs';
 
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
@@ -54,7 +55,7 @@ export class AuthSession {
   /**
    * First name of the child, given by the server with the session; a neutral one until then.
    */
-  public readonly childName = signal(CHILD_NAME_FALLBACK);
+  public readonly childName = signal(translate(CHILD_NAME_FALLBACK));
 
   /**
    * Whether the visitor may only look, which hides every write; the API refuses a reader's writes anyway.

@@ -3,13 +3,18 @@
   <div class="word-detail__gone pop flex flex-1 flex-col items-center justify-center gap-4">
     <h1 class="word-detail__gone-title">{{ label | quote }} {{ copy().deletedSuffix }}</h1>
     <a app-button variant="secondary" routerLink="/" [queryParams]="copy().listQuery">
-      Retour à la liste
+      {{ 'wordDetail.backToList' | transloco }}
     </a>
   </div>
 } @else if (word(); as word) {
   <!-- Back to the list, and the "⋯" menu of the word, which a reader does not get. -->
   <header class="word-detail__header enter flex items-center justify-between">
-    <button app-icon-button type="button" aria-label="Retour à la liste" (click)="back()">
+    <button
+      app-icon-button
+      type="button"
+      [attr.aria-label]="'wordDetail.backToListLabel' | transloco"
+      (click)="back()"
+    >
       <svg app-icon name="chevron-left" [size]="24" [strokeWidth]="2.4"></svg>
     </button>
     @if (!readOnly()) {
@@ -17,7 +22,7 @@
         app-icon-button
         type="button"
         aria-haspopup="dialog"
-        [attr.aria-label]="'Actions sur ' + (word.label | quote)"
+        [attr.aria-label]="actionsLabel()"
         (click)="open('actions')"
       >
         <svg app-icon name="ellipsis" [size]="24" [strokeWidth]="2.4"></svg>
@@ -52,7 +57,9 @@
       class="enter motion-step-2 flex flex-col gap-3 lg:col-span-3"
       aria-labelledby="word-progress"
     >
-      <h2 id="word-progress" class="word-detail__section">Ses progrès</h2>
+      <h2 id="word-progress" class="word-detail__section">
+        {{ 'wordDetail.progressTitle' | transloco }}
+      </h2>
 
       <ol class="word-detail__stages flex flex-col gap-3.5">
         @for (stage of stages(); track stage.pronunciation.id; let index = $index) {
@@ -115,10 +122,12 @@
         <!-- No sound yet: the microphone of the bar records the first one, a reader just waits. -->
         <p class="word-detail__no-sound">
           @if (readOnly()) {
-            Pas encore de son.
+            {{ 'wordDetail.noSoundReader' | transloco }}
           } @else {
-            Pas encore de son. Touche le micro pour enregistrer {{ childName() }} dire
-            {{ word.label | quote }}.
+            {{
+              'wordDetail.noSound'
+                | transloco: { childName: childName(), label: (word.label | quote) }
+            }}
           }
         </p>
       }
@@ -138,7 +147,7 @@
         class="word-detail__record"
         routerLink="/recordings/new"
         [queryParams]="{ word: word.id }"
-        [attr.aria-label]="'Enregistrer un son de ' + (word.label | quote)"
+        [attr.aria-label]="recordLabel()"
       >
         <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
       </a>
@@ -170,7 +179,7 @@
         <span class="word-detail__action-icon" aria-hidden="true">
           <svg app-icon name="trash-2" [size]="20" [strokeWidth]="2.2"></svg>
         </span>
-        Supprimer {{ copy().theNoun }}
+        {{ copy().deleteAction }}
       </button>
     </div>
   </app-bottom-sheet>
@@ -190,13 +199,15 @@
     />
     @if (editing()) {
       <button class="word-detail__remove-stage" type="button" (click)="askRemoveStage()">
-        Retirer cette prononciation
+        {{ 'wordDetail.removeStage' | transloco }}
       </button>
     }
     <div sheetActions class="mt-1 grid grid-cols-2 gap-2.5">
-      <button app-button type="button" variant="outline" (click)="sheet.set(null)">Annuler</button>
+      <button app-button type="button" variant="outline" (click)="sheet.set(null)">
+        {{ 'wordDetail.cancel' | transloco }}
+      </button>
       <button app-button type="button" [disabled]="!draftReady() || busy()" (click)="saveStage()">
-        Enregistrer
+        {{ 'wordDetail.save' | transloco }}
       </button>
     </div>
   </app-bottom-sheet>
@@ -217,15 +228,19 @@
       (valueChange)="typeLabel($event)"
     />
     <div sheetActions class="mt-1 grid grid-cols-2 gap-2.5">
-      <button app-button type="button" variant="outline" (click)="sheet.set(null)">Annuler</button>
-      <button app-button type="button" [disabled]="busy()" (click)="rename()">Enregistrer</button>
+      <button app-button type="button" variant="outline" (click)="sheet.set(null)">
+        {{ 'wordDetail.cancel' | transloco }}
+      </button>
+      <button app-button type="button" [disabled]="busy()" (click)="rename()">
+        {{ 'wordDetail.save' | transloco }}
+      </button>
     </div>
   </app-bottom-sheet>
 
   <!-- Removal of a stage. -->
   <app-confirm-sheet
-    cancelLabel="Garder"
-    confirmLabel="Oui, retirer"
+    [cancelLabel]="'wordDetail.keep' | transloco"
+    [confirmLabel]="'wordDetail.confirmRemove' | transloco"
     [heading]="removeStageHeading()"
     [message]="removeStageMessage()"
     [busy]="busy()"
@@ -236,10 +251,10 @@
 
   <!-- The only stage cannot go: the word itself has to. -->
   <app-confirm-sheet
-    heading="C'est sa seule prononciation"
-    cancelLabel="Garder"
+    [heading]="'wordDetail.lastStageHeading' | transloco"
+    [cancelLabel]="'wordDetail.keep' | transloco"
     [message]="copy().lastStageMessage"
-    [confirmLabel]="'Supprimer ' + copy().theNoun"
+    [confirmLabel]="copy().deleteAction"
     [open]="sheet() === 'last-stage'"
     (openChange)="onSheetToggle('last-stage', $event)"
     (confirmed)="open('delete')"
@@ -262,7 +277,7 @@
           <span class="word-detail__action-icon" aria-hidden="true">
             <svg app-icon name="arrow-up-down" [size]="20" [strokeWidth]="2.2"></svg>
           </span>
-          Ranger avec une autre prononciation
+          {{ 'wordDetail.moveSoundAction' | transloco }}
         </button>
       }
       <button
@@ -273,19 +288,19 @@
         <span class="word-detail__action-icon" aria-hidden="true">
           <svg app-icon name="trash-2" [size]="20" [strokeWidth]="2.2"></svg>
         </span>
-        Supprimer le son
+        {{ 'wordDetail.removeSoundAction' | transloco }}
       </button>
     </div>
   </app-bottom-sheet>
 
   <!-- Which stage a sound moves to. -->
   <app-bottom-sheet
-    heading="Ranger le son"
+    [heading]="'wordDetail.moveSoundHeading' | transloco"
     [open]="sheet() === 'move-sound'"
     [error]="sheetError()"
     (openChange)="onSheetToggle('move-sound', $event)"
   >
-    <p class="word-detail__sheet-text">Avec quelle prononciation le ranger&nbsp;?</p>
+    <p class="word-detail__sheet-text">{{ 'wordDetail.moveSoundQuestion' | transloco }}</p>
     <ul class="flex flex-col gap-2.5">
       @for (stage of moveTargets(); track stage.pronunciation.id) {
         <li>
@@ -293,7 +308,7 @@
             class="word-detail__row press flex w-full items-center gap-3"
             type="button"
             [disabled]="busy()"
-            [attr.aria-label]="'Ranger avec ' + stage.pronunciation.spoken + ', ' + stage.title"
+            [attr.aria-label]="moveLabel(stage)"
             (click)="moveSound(stage.pronunciation)"
           >
             <app-status-dot [status]="stage.pronunciation.status" />
@@ -312,9 +327,9 @@
 
   <!-- Deletion of one sound. -->
   <app-confirm-sheet
-    heading="Supprimer le son&nbsp;?"
-    cancelLabel="Garder"
-    confirmLabel="Oui, supprimer"
+    [heading]="'wordDetail.removeSoundHeading' | transloco"
+    [cancelLabel]="'wordDetail.keep' | transloco"
+    [confirmLabel]="'wordDetail.confirmDelete' | transloco"
     [message]="removeSoundMessage()"
     [busy]="busy()"
     [open]="sheet() === 'remove-sound'"
@@ -324,10 +339,10 @@
 
   <!-- Deletion of the word. -->
   <app-confirm-sheet
-    cancelLabel="Garder"
-    confirmLabel="Oui, supprimer"
-    message="Tout son historique de prononciation et ses sons seront effacés. On ne pourra pas revenir en arrière."
-    [heading]="'Supprimer ' + (word.label | quote) + ' de la liste de ' + childName() + '\u00A0?'"
+    [cancelLabel]="'wordDetail.keep' | transloco"
+    [confirmLabel]="'wordDetail.confirmDelete' | transloco"
+    [message]="'wordDetail.deleteMessage' | transloco"
+    [heading]="deleteHeading()"
     [busy]="busy()"
     [open]="sheet() === 'delete'"
     (openChange)="onSheetToggle('delete', $event)"
@@ -338,7 +353,7 @@
   <div class="word-detail__gone pop flex flex-1 flex-col items-center justify-center gap-4">
     <h1 class="word-detail__gone-title">{{ copy().notFound }}</h1>
     <a app-button variant="secondary" routerLink="/" [queryParams]="copy().listQuery">
-      Retour à la liste
+      {{ 'wordDetail.backToList' | transloco }}
     </a>
   </div>
 } @else if (failed()) {
@@ -347,8 +362,10 @@
     class="word-detail__gone flex flex-1 flex-col items-center justify-center gap-4"
     role="alert"
   >
-    <p class="word-detail__failed">Le carnet n'a pas pu s'ouvrir.</p>
-    <button app-button type="button" variant="secondary" (click)="retry()">Réessayer</button>
+    <p class="word-detail__failed">{{ 'wordDetail.loadFailed' | transloco }}</p>
+    <button app-button type="button" variant="secondary" (click)="retry()">
+      {{ 'wordDetail.retry' | transloco }}
+    </button>
   </div>
 } @else {
   <!-- Notebook still loading. -->

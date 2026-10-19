@@ -20,7 +20,7 @@ Local database, once:
 sudo -u postgres psql -c "CREATE ROLE littlewords LOGIN PASSWORD 'littlewords';" -c "CREATE DATABASE littlewords OWNER littlewords;"
 ```
 
-Monitoring: `GET /actuator/health` (readiness includes the database), `/actuator/info` (build), `/actuator/prometheus`. Production targets: [Monitoring](#monitoring).
+Monitoring: `/readyz` and `/livez` on :8080, the actuator on :8081 (`/actuator/health`, `/info`, `/prometheus`). Details: [Monitoring](#monitoring).
 
 ## Family password
 
@@ -33,7 +33,7 @@ read -rs PASSPHRASE && printf '%s' "$PASSPHRASE" | argon2 "$(openssl rand -base6
 `-m 15` (32 MiB) is the maximum the backend accepts. The hash contains `$` signs:
 
 - `backend/.env` (dev): unquoted, `FAMILY_PASSWORD_HASH=$argon2id$v=19$...`
-- `.env` at the root (prod, Docker Compose): single quotes, `FAMILY_PASSWORD_HASH='$argon2id$v=19$...'`
+- A Docker Compose `.env` (prod): single quotes, `FAMILY_PASSWORD_HASH='$argon2id$v=19$...'`, so Compose leaves the `$` alone
 
 Changing the hash signs every family member out.
 
@@ -49,7 +49,7 @@ Root package `io.github.thomashtn.littlewords`. A feature package only uses `sha
 |---|---|
 | `shared` | Config, error handling (`GlobalExceptionHandler`), security chain, text and date helpers |
 | `auth` | Login with the family or reader password, logout, session check, lockout |
-| `dictionary` | Read-only IFDC dictionary, cached in memory |
+| `dictionary` | Read-only dictionaries (French IFDC, English CDI), cached in memory |
 | `word` | Words and sentences (entries of kind `sentence`) with their pronunciation stages |
 | `recording` | Word sounds, stored as `bytea` |
 
@@ -66,43 +66,57 @@ Each feature package splits into `controller`, `dto`, `entity`, `repository`, `s
 
 ## Deployment
 
-`docker-compose.prod.yml` (repository root) runs the `backend` and `frontend` images behind an existing Traefik: `/api/*` goes to the backend, the rest to the frontend. The backend reaches PostgreSQL through the external `database` network.
+The repository ships images, not a deployment (`compose.yaml` runs them on localhost only): the compose file, domain, TLS, secrets and backups belong to the server that runs them. Whatever runs it must provide the following.
 
-First deployment:
+**Images**: `backend/Dockerfile` (API on 8080, actuator on 8081, user 10001, heap at 60 % of the memory limit, 512 MB is plenty) and `frontend/Dockerfile` (nginx on 8080, non-root). Both declare a Docker `HEALTHCHECK`. Base images are pinned by version and digest; Dependabot bumps them. Every push to `main` whose tests pass publishes both on GHCR (`.github/workflows/deliver.yml`): `ghcr.io/thomashtn/littlewords-backend` and `-frontend`, tagged `sha-<commit>` and `main`. A server pulls `sha-<commit>`, so a failed commit has no image to deploy.
 
-1. Create the role and database: `CREATE ROLE littlewords LOGIN PASSWORD '...'; CREATE DATABASE littlewords OWNER littlewords;`. Flyway creates the tables at first start.
-2. Produce the passphrase hash, and the reader one if relatives should look ([Family password](#family-password)).
-3. At the root, `cp .env.example .env` and fill it (hash in single quotes, the child's first name in `CHILD_NAME`).
-4. `docker compose -f docker-compose.prod.yml up -d --build`.
-5. Open `https://<PUBLIC_HOST>` and check that a wrong passphrase is refused.
+**Routing**: one HTTPS origin. `/api/*` goes to the backend, everything else to the frontend; nginx answers a JSON `503` on `/api/*` if it ever receives it. Never route port 8081 (actuator); an external probe uses `/readyz` on 8080. Refuse request bodies above 2 MB at the proxy. The recording screen needs `Permissions-Policy: microphone=(self)`, so a shared header set with `microphone=()` breaks it.
 
-Back up the `littlewords` database: it holds the recordings.
+**Database**: PostgreSQL 16+, a dedicated role and database (`CREATE ROLE littlewords LOGIN PASSWORD '...'; CREATE DATABASE littlewords OWNER littlewords;`). Flyway creates the tables at first start. Keep it on a private network, never published.
+
+**Variables** (backend):
+
+| Variable | Production value |
+|---|---|
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | JDBC URL and credentials of that database |
+| `FAMILY_PASSWORD_HASH` | Required, see [Family password](#family-password) |
+| `READER_PASSWORD_HASH` | Optional, empty turns the read-only sign-in off |
+| `CHILD_NAME` | Required, shown after login only |
+| `APP_NAME`, `APP_NAME_ACCENT` | Name of the app and its accented end (`ABCome`, `ome` by default); public, served by `GET /api/branding` |
+| `API_DOCS_ENABLED` | `false` (the default) |
+| `FORWARD_HEADERS_STRATEGY` | `native` (the default); never `framework` behind a proxy |
+| `LOGIN_LOCKOUT_ENABLED` | `true` (the default) |
+
+Secrets live in the server's `.env` (mode 600), never in the repository. After the first start, open the site and check that a wrong passphrase is refused.
+
+**Backups**: dump the database nightly and test a restore now and then; it holds the recordings, there is no other copy.
 
 ## Monitoring
 
-Traefik routes only `/api` to the backend, so the actuator is reachable from the Docker networks only, by container name.
+The backend answers its probes on the main port and keeps the actuator on its own port, which the proxy never routes. `littlewords-backend` below stands for whatever name or alias your stack gives the backend.
 
 | Target | Use |
 |---|---|
-| `http://littlewords-backend:8080/actuator/health/readiness` | `200` when the API and its database answer, `503` otherwise |
-| `http://littlewords-backend:8080/actuator/health/liveness` | `200` while the JVM runs, even without the database |
-| `http://littlewords-backend:8080/actuator/info` | Version and build time of the running image |
-| `http://littlewords-backend:8080/actuator/prometheus` | Metrics (JVM, HTTP, Hikari pool), tagged `application="littlewords"` |
-| `https://<PUBLIC_HOST>/healthz` | Public path: Traefik, TLS and nginx |
+| `https://<your-domain>/readyz` | `200` when the API and its database answer, `503` otherwise; the public uptime probe |
+| `http://littlewords-backend:8080/livez` | `200` while the JVM serves requests, even without the database |
+| `http://littlewords-backend:8081/actuator/health` | Same status from the management port |
+| `http://littlewords-backend:8081/actuator/info` | Version and build time of the running image |
+| `http://littlewords-backend:8081/actuator/prometheus` | Metrics (JVM, HTTP, Hikari pool), tagged `application="littlewords"` |
+| `https://<your-domain>/healthz` | Frontend path: proxy, TLS and nginx |
 
-Both images carry a Docker `HEALTHCHECK` (backend on readiness, frontend on `/healthz`), shown by `docker ps` and by Uptime Kuma's "Docker Container" monitor. Container logs rotate at three files of 10 MB.
+Both images carry a Docker `HEALTHCHECK` (backend on `/readyz`, frontend on `/healthz`), shown by `docker ps`.
 
 On the server:
 
-- Uptime Kuma: an HTTP monitor on the public `/healthz`, and one on the readiness URL if Uptime Kuma shares the `traefik` network.
-- Prometheus: join the `traefik` network and add the job below.
+- Uptime monitor: HTTP checks on the public `/readyz` and `/healthz`, plus the management health from a container on the backend's network.
+- Prometheus: from a container on the backend's network, add the job below.
 
 ```yaml
 scrape_configs:
   - job_name: littlewords
     metrics_path: /actuator/prometheus
     static_configs:
-      - targets: ["littlewords-backend:8080"]
+      - targets: ["littlewords-backend:8081"]
 ```
 
 ## Pitfall

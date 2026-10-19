@@ -12,11 +12,17 @@ Where things live, which rules the code follows and which tools enforce them.
 ```bash
 sudo -u postgres psql -c "CREATE ROLE littlewords LOGIN PASSWORD 'littlewords';" -c "CREATE DATABASE littlewords OWNER littlewords;"   # once
 cd backend && cp .env.example .env     # set DB_PASSWORD, FAMILY_PASSWORD_HASH and CHILD_NAME (backend/README.md)
-./mvnw spring-boot:run                 # API on :8080
+./mvnw spring-boot:run                 # API on :8080, actuator on :8081
 cd ../frontend && npx npm@11 install && npm start   # app on :4200
 ```
 
-Requirements: Java 25, Node 22, PostgreSQL 16+. Docker only for the backend tests and the production images.
+Requirements: Java 25, Node 22, PostgreSQL 16+. Docker for the backend tests and the images.
+
+Whole app from its images, as deployed (http://localhost:8000, reads `backend/.env`):
+
+```bash
+docker compose up --build              # Ctrl+C to stop; `docker compose down -v` also drops its database
+```
 
 ## Repository
 
@@ -24,14 +30,14 @@ Requirements: Java 25, Node 22, PostgreSQL 16+. Docker only for the backend test
 |---|---|
 | `backend/` | Spring Boot REST API |
 | `frontend/` | Angular app served by nginx |
-| `docs/dictionary/` | Word dictionary and its build script |
+| `docs/dictionary/` | Word dictionaries (French, English) and their build scripts |
 | `docs/media/` | Tour video, poster, screenshots and icons shown in the README |
-| `docker-compose.prod.yml` | Production stack behind Traefik |
-| `.github/` | CI workflows and Dependabot |
+| `compose.yaml` | Whole app from its images on localhost, not a deployment |
+| `.github/` | CI workflows (`deliver.yml` tests then publishes the images on each push to `main`) and Dependabot |
 
 ## General rules
 
-- UI in French; code, comments, tests, logs and docs in English.
+- UI in French, translated into English (see [frontend/README.md](frontend/README.md#translations)); code, comments, tests, logs and docs in English.
 - Small functions, explicit names, no dead or commented-out code, no magic values.
 - Extract to `shared/` only when a second place needs it.
 - Images, icons and animations are files in `frontend/public/assets/`, never drawn in a template.

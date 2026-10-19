@@ -77,7 +77,7 @@ describe('WordPicker', () => {
   it('says how long a word can be instead of offering a longer one', () => {
     const { element } = render('x'.repeat(LABEL_MAX_LENGTHS.word + 1));
     expect(element.querySelector('.word-picker__offer')).toBeNull();
-    expect(element.querySelector('.word-picker__too-long')?.textContent).toBe(
+    expect(element.querySelector('.word-picker__too-long')?.textContent?.trim()).toBe(
       `Un mot fait ${LABEL_MAX_LENGTHS.word} caractères au plus.`,
     );
     expect(render('Lulu').element.querySelector('.word-picker__too-long')).toBeNull();

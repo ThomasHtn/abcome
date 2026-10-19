@@ -1,9 +1,12 @@
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
 
+import { translate } from '@jsverse/transloco';
+
 import { apiErrorCode, retryAfterSeconds } from '@core/http/api-error.utils';
+import { isSingular } from '@core/i18n/i18n.utils';
 import { MascotState } from '@shared/mascot/mascot.model';
 
-import { LOGIN_MESSAGES, SHORT_RETRY_SECONDS } from './login.constants';
+import { SHORT_RETRY_SECONDS } from './login.constants';
 import { LoginMascotContext } from './login.model';
 
 /**
@@ -16,9 +19,10 @@ export function loginErrorMessage(error: unknown): string {
   }
   const unauthorized =
     error instanceof HttpErrorResponse && error.status === HttpStatusCode.Unauthorized;
-  return code === 'INVALID_CREDENTIALS' || unauthorized
-    ? LOGIN_MESSAGES.invalid
-    : LOGIN_MESSAGES.unreachable;
+  // Wrong password: the server never says more, so neither do we.
+  return translate(
+    code === 'INVALID_CREDENTIALS' || unauthorized ? 'login.invalid' : 'login.unreachable',
+  );
 }
 
 /**
@@ -27,13 +31,13 @@ export function loginErrorMessage(error: unknown): string {
  */
 export function tooManyAttemptsMessage(seconds: number | null): string {
   if (seconds === null) {
-    return LOGIN_MESSAGES.tooManyAttempts;
+    return translate('login.tooManyAttempts');
   }
   if (seconds < SHORT_RETRY_SECONDS) {
-    return LOGIN_MESSAGES.busy;
+    return translate('login.busy');
   }
   const minutes = Math.max(1, Math.ceil(seconds / 60));
-  return `Trop d'essais\u00A0: le carnet est bloqué sur ce réseau, pour toute la maison. Réessaie dans ${minutes} minute${minutes > 1 ? 's' : ''}.`;
+  return translate(isSingular(minutes) ? 'login.lockedMinute' : 'login.lockedMinutes', { minutes });
 }
 
 /**

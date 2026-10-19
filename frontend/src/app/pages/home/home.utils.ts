@@ -1,22 +1,27 @@
 import { Resource } from '@angular/core';
 
+import { translate } from '@jsverse/transloco';
+
 import { dayAndMonth, formatLongDate, formatMonthYear } from '@core/date/date.utils';
+import { isSingular } from '@core/i18n/i18n.utils';
 import { quote } from '@core/text/text.utils';
-import { PRONUNCIATION_STATUSES, STATUS_LABELS } from '@core/words/word.constants';
-import { Word, WordChange } from '@core/words/word.model';
+import { PRONUNCIATION_STATUSES } from '@core/words/word.constants';
+import { Word, WordChange, WordKind } from '@core/words/word.model';
 import {
   countByStatus,
   currentPronunciation,
   entryPath,
   firstSaidDate,
   sortByFirstSaidDesc,
+  statusLabel,
   wordMatchesQuery,
 } from '@core/words/word.utils';
 
 import {
   CHANGE_LABELS,
-  NEWS_NOUN,
   SENTENCES_TAB_PARAM,
+  SUMMARY_EMPTY_HEADLINES,
+  SUMMARY_LATEST_LABELS,
   SUMMARY_STATUS_ORDER,
 } from './home.constants';
 import {
@@ -43,10 +48,34 @@ export function filterFromParam(param: string | null | undefined): StatusFilter 
 }
 
 /**
- * Count with its noun, agreed in number ("1 mot", "3 mots").
+ * Count of words or sentences with its noun, agreed in number ("1 mot", "3 phrases").
  */
-export function countWithNoun(count: number, noun: string): string {
-  return `${count} ${noun}${count > 1 ? 's' : ''}`;
+export function countWithNoun(count: number, kind: WordKind): string {
+  const singular = isSingular(count);
+  if (kind === 'word') {
+    return translate(singular ? 'home.countWordOne' : 'home.countWordOther', { count });
+  }
+  return translate(singular ? 'home.countSentenceOne' : 'home.countSentenceOther', { count });
+}
+
+/**
+ * Entries changed since this device last looked, in the mascot card ("3 nouveautés depuis ta visite").
+ */
+function newsText(count: number): string {
+  return translate(isSingular(count) ? 'home.summary.newsOne' : 'home.summary.newsOther', {
+    count,
+  });
+}
+
+/**
+ * The latest entry and how the child says it, the participle agreed with its noun ("renard, dit « enard »").
+ */
+function latestText(latest: Word): string {
+  const spoken = quote(currentPronunciation(latest).spoken);
+  return translate(
+    latest.kind === 'word' ? 'home.summary.latestWord' : 'home.summary.latestSentence',
+    { label: latest.label, spoken },
+  );
 }
 
 /**
@@ -68,7 +97,7 @@ export function toWordCard(word: Word, change: WordChange | null = null): WordCa
   const current = currentPronunciation(word);
   const first = firstSaidDate(word);
   const { day, month } = dayAndMonth(first);
-  const news = change ? `, ${CHANGE_LABELS[word.kind][change]}` : '';
+  const news = change ? `, ${translate(CHANGE_LABELS[word.kind][change])}` : '';
   return {
     id: word.id,
     path: entryPath(word),
@@ -78,17 +107,23 @@ export function toWordCard(word: Word, change: WordChange | null = null): WordCa
     day,
     month,
     change,
-    ariaLabel: `${current.spoken}, pour ${word.label}, ${STATUS_LABELS[current.status]}, depuis le ${formatLongDate(first)}${news}. Voir sa page`,
+    ariaLabel: translate('home.wordCard.ariaLabel', {
+      spoken: current.spoken,
+      label: word.label,
+      status: statusLabel(current.status),
+      date: formatLongDate(first),
+      news,
+    }),
   };
 }
 
 /**
  * The list cut into months of first-said date, in the order given (newest first), each titled and
- * counted with `noun` ("mot", "phrase"); `changeOf` tells what changed in each entry.
+ * counted with the noun of `kind` ("mot", "phrase"); `changeOf` tells what changed in each entry.
  */
 export function groupByMonth(
   words: readonly Word[],
-  noun: string,
+  kind: WordKind,
   changeOf: (word: Word) => WordChange | null = () => null,
 ): MonthGroup[] {
   const groups: MonthGroup[] = [];
@@ -102,38 +137,29 @@ export function groupByMonth(
     }
     group.cards.push(toWordCard(word, changeOf(word)));
   });
-  return groups.map((group) => ({ ...group, countText: countWithNoun(group.cards.length, noun) }));
+  return groups.map((group) => ({ ...group, countText: countWithNoun(group.cards.length, kind) }));
 }
 
 /**
  * Mascot card of a tab: total, latest entry, counts per status once there is one, and how many
  * entries changed since this device last looked.
  */
-function summaryOf(
-  entries: readonly Word[],
-  noun: string,
-  emptyHeadline: string,
-  latestLabel: string,
-  spokenVerb: string,
-  newsCount: number,
-): HomeSummary {
+function summaryOf(entries: readonly Word[], kind: WordKind, newsCount: number): HomeSummary {
   const [latest] = sortByFirstSaidDesc(entries);
   return {
     total: entries.length,
-    countText: countWithNoun(entries.length, noun),
-    emptyHeadline,
-    latestLabel,
-    latest: latest
-      ? `${latest.label}, ${spokenVerb} ${quote(currentPronunciation(latest).spoken)}`
-      : null,
+    countText: countWithNoun(entries.length, kind),
+    emptyHeadline: translate(SUMMARY_EMPTY_HEADLINES[kind]),
+    latestLabel: translate(SUMMARY_LATEST_LABELS[kind]),
+    latest: latest ? latestText(latest) : null,
     statusCounts:
       entries.length === 0
         ? null
         : SUMMARY_STATUS_ORDER.map((status) => {
             const count = countByStatus(entries, status);
-            return { status, count, label: `${count} ${STATUS_LABELS[status]}` };
+            return { status, count, label: `${count} ${statusLabel(status)}` };
           }),
-    newsText: newsCount > 0 ? `${countWithNoun(newsCount, NEWS_NOUN)} depuis ta visite` : null,
+    newsText: newsCount > 0 ? newsText(newsCount) : null,
   };
 }
 
@@ -141,21 +167,14 @@ function summaryOf(
  * Mascot card of the words tab, `newsCount` of them changed since this device last looked.
  */
 export function wordsSummary(words: readonly Word[], newsCount = 0): HomeSummary {
-  return summaryOf(words, 'mot', 'Le carnet attend son premier mot !', 'Dernier', 'dit', newsCount);
+  return summaryOf(words, 'word', newsCount);
 }
 
 /**
  * Mascot card of the sentences tab, `newsCount` of them changed since this device last looked.
  */
 export function sentencesSummary(sentences: readonly Word[], newsCount = 0): HomeSummary {
-  return summaryOf(
-    sentences,
-    'phrase',
-    'Le carnet attend sa première phrase !',
-    'Dernière',
-    'dite',
-    newsCount,
-  );
+  return summaryOf(sentences, 'sentence', newsCount);
 }
 
 /**
@@ -169,11 +188,12 @@ export function emptyWordsMessage(
 ): string {
   const search = query.trim();
   if (search !== '') {
-    return `${childName} n'a pas encore dit ${quote(search)}${filter === 'all' ? '.' : ' dans cette couleur.'}`;
+    return translate(filter === 'all' ? 'home.emptyWordsSearch' : 'home.emptyWordsSearchFiltered', {
+      childName,
+      query: quote(search),
+    });
   }
-  return total === 0
-    ? 'Pas encore de mot. Le premier arrive bientôt !'
-    : "Aucun mot dans cette couleur pour l'instant.";
+  return translate(total === 0 ? 'home.emptyWords' : 'home.emptyWordsFiltered');
 }
 
 /**
@@ -182,11 +202,12 @@ export function emptyWordsMessage(
 export function emptySentencesMessage(query: string, filter: StatusFilter, total: number): string {
   const search = query.trim();
   if (search !== '') {
-    return `Aucune phrase ne contient ${quote(search)}${filter === 'all' ? '.' : ' dans cette couleur.'}`;
+    return translate(
+      filter === 'all' ? 'home.emptySentencesSearch' : 'home.emptySentencesSearchFiltered',
+      { query: quote(search) },
+    );
   }
-  return total === 0
-    ? 'Pas encore de phrase. La première arrive bientôt !'
-    : "Aucune phrase dans cette couleur pour l'instant.";
+  return translate(total === 0 ? 'home.emptySentences' : 'home.emptySentencesFiltered');
 }
 
 /**

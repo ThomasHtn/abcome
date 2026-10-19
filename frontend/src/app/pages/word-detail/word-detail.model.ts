@@ -90,9 +90,9 @@ export interface GallerySound {
  */
 export interface KindCopy {
   /**
-   * "Supprimer le mot", "Supprimer la phrase": the noun with its article.
+   * Menu entry and confirm button of the deletion ("Supprimer le mot", "Supprimer la phrase").
    */
-  theNoun: string;
+  deleteAction: string;
 
   /**
    * Menu entry and title of the label sheet: a word is renamed, a sentence's meaning is edited.

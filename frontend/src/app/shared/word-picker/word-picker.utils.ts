@@ -1,3 +1,5 @@
+import { translate } from '@jsverse/transloco';
+
 import { DictionaryEntry } from '@core/dictionary/dictionary.model';
 import {
   findQueryRange,
@@ -5,9 +7,9 @@ import {
   normalizeText,
   rankByQuery,
 } from '@core/text/text.utils';
-import { CATEGORY_LABELS, LABEL_MAX_LENGTHS } from '@core/words/word.constants';
+import { LABEL_MAX_LENGTHS } from '@core/words/word.constants';
 import { Word } from '@core/words/word.model';
-import { entriesOfKind, wordMatchesQuery } from '@core/words/word.utils';
+import { categoryLabel, entriesOfKind, wordMatchesQuery } from '@core/words/word.utils';
 
 import { WORD_PICKER_MAX_SUGGESTIONS } from './word-picker.constants';
 import { WordChoice, WordSuggestion } from './word-picker.model';
@@ -102,9 +104,9 @@ export function newWordOffer(
  * Spoken name of a suggestion ("lapin, animaux, déjà dit"), since its pills read as one run of text.
  */
 export function suggestionName(choice: WordChoice): string {
-  const parts = [choice.label, CATEGORY_LABELS[choice.category]];
+  const parts = [choice.label, categoryLabel(choice.category)];
   if (choice.word) {
-    parts.push('déjà dit');
+    parts.push(translate('wordPicker.alreadySaid'));
   }
   return parts.join(', ');
 }

@@ -1,20 +1,27 @@
-<section class="home-summary flex flex-wrap items-center gap-3" aria-label="Résumé du carnet">
+<section
+  class="home-summary flex flex-wrap items-center gap-3"
+  [attr.aria-label]="'home.summary.label' | transloco"
+>
   <!-- Lapinou jumps when tapped, just for fun. -->
   <app-mascot class="home-summary__mascot" tappable priority [size]="104" />
 
   <!-- Speech bubble: how many, the latest, and the colors on the words tab. -->
   <div class="home-summary__bubble flex min-w-0 flex-col gap-1">
     @if (summary().total > 0) {
+      <!-- Each language places the count its own way around the salmon span. -->
       <p class="home-summary__headline">
-        {{ childName() }} a déjà dit
-        <span class="home-summary__count">{{ summary().countText }}</span> !
+        {{ 'home.summary.headlineBefore' | transloco: { childName: childName() }
+        }}<span class="home-summary__count">{{ summary().countText }}</span
+        >{{ 'home.summary.headlineAfter' | transloco: { childName: childName() } }}
       </p>
     } @else {
       <p class="home-summary__headline">{{ summary().emptyHeadline }}</p>
     }
 
     @if (summary().latest; as latest) {
-      <p class="home-summary__latest">{{ summary().latestLabel }}&nbsp;: {{ latest }}</p>
+      <p class="home-summary__latest">
+        {{ 'home.summary.latest' | transloco: { latestLabel: summary().latestLabel, latest } }}
+      </p>
     }
 
     <!-- How many entries of the tab changed since this device last looked. -->

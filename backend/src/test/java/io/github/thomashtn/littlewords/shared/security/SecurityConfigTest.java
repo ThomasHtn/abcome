@@ -1,9 +1,7 @@
 package io.github.thomashtn.littlewords.shared.security;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -13,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * Specifies the security rules on the running application: monitoring is open, the API needs a session.
+ * Specifies the security rules on the main port: probes are open, the actuator is absent, the API needs a session.
  *
  * <p>API docs are pinned off so a developer's {@code .env} cannot open them during the test.</p>
  */
@@ -21,35 +19,26 @@ import org.springframework.test.context.TestPropertySource;
 class SecurityConfigTest extends PostgreSqlIntegrationTest {
 
     @Test
-    @DisplayName("Starts on the migrated database and reports itself up on the public health endpoint")
-    void exposesHealth() throws Exception {
-        mockMvc().perform(get("/actuator/health"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("UP"));
-    }
-
-    @Test
-    @DisplayName("Reports itself ready only once the database answers, for an external uptime probe")
+    @DisplayName("Reports itself ready on the main port only once the database answers, for the public probe")
     void exposesReadinessWithDatabase() throws Exception {
-        mockMvc().perform(get("/actuator/health/readiness"))
+        mockMvc().perform(get("/readyz"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("UP"));
     }
 
     @Test
-    @DisplayName("Publishes the running build on the info endpoint, so a deployment can be checked")
-    void exposesBuildInfo() throws Exception {
-        mockMvc().perform(get("/actuator/info"))
+    @DisplayName("Reports itself alive on the main port, without a session")
+    void exposesLiveness() throws Exception {
+        mockMvc().perform(get("/livez"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.build.artifact").value("littlewords"));
+            .andExpect(jsonPath("$.status").value("UP"));
     }
 
     @Test
-    @DisplayName("Serves Prometheus metrics without a session, tagged with the application name")
-    void exposesPrometheusMetrics() throws Exception {
+    @DisplayName("Keeps the actuator off the main port, so a proxy routing mistake cannot publish it")
+    void keepsActuatorOffMainPort() throws Exception {
         mockMvc().perform(get("/actuator/prometheus"))
-            .andExpect(status().isOk())
-            .andExpect(content().string(containsString("hikaricp_connections_active{application=\"littlewords\"")));
+            .andExpect(status().isNotFound());
     }
 
     @Test

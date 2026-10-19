@@ -28,8 +28,29 @@ updates:
         patterns:
           - '*'
 
-  # The workflows pin actions by major tag (actions/checkout@v4), which silently stops receiving
-  # fixes once a v5 exists.
+  # Base images are pinned by version and digest: without these entries a JRE or nginx advisory
+  # would never surface, since a pinned image no longer moves on its own.
+  - package-ecosystem: docker
+    directories:
+      - /backend
+      - /frontend
+    schedule:
+      interval: weekly
+    groups:
+      docker-images:
+        patterns:
+          - '*'
+
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      compose-images:
+        patterns:
+          - '*'
+
+  # The workflows pin actions by commit SHA (version in a comment); these updates move both.
   - package-ecosystem: github-actions
     directory: /
     schedule:

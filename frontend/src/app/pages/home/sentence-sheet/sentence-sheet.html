@@ -1,5 +1,5 @@
 <app-bottom-sheet
-  heading="Nouvelle phrase"
+  [heading]="'home.sentenceSheet.heading' | transloco"
   [open]="true"
   [error]="error()"
   (openChange)="onOpenChange($event)"
@@ -12,18 +12,18 @@
     (submit)="$event.preventDefault(); save()"
   >
     <app-text-field
-      label="Ce qu'il voulait dire"
+      [label]="'home.sentenceSheet.meaningLabel' | transloco"
       required
-      placeholder="ex. Il n'y a plus de gâteau"
+      [placeholder]="'home.sentenceSheet.meaningPlaceholder' | transloco"
       multiline
       [maxLength]="labelMaxLength"
       [(value)]="label"
     />
     <app-pronunciation-form
       kind="sentence"
-      [spokenLabel]="'Ce que ' + childName() + ' a dit'"
-      spokenPlaceholder="ex. a pu ato"
-      dateLabel="Dite le"
+      [spokenLabel]="spokenLabel()"
+      [spokenPlaceholder]="'home.sentenceSheet.spokenPlaceholder' | transloco"
+      [dateLabel]="'home.sentenceSheet.dateLabel' | transloco"
       [(draft)]="draft"
     />
   </form>
@@ -31,10 +31,10 @@
   <!-- Cancel or save. -->
   <div sheetActions class="grid grid-cols-2 gap-2.5">
     <button app-button type="button" variant="outline" [disabled]="busy()" (click)="closed.emit()">
-      Annuler
+      {{ 'home.sentenceSheet.cancel' | transloco }}
     </button>
     <button app-button type="submit" form="sentence-sheet-form" [disabled]="!canSave()">
-      Enregistrer
+      {{ 'home.sentenceSheet.save' | transloco }}
     </button>
   </div>
 </app-bottom-sheet>

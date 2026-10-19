@@ -1,3 +1,7 @@
+import { translate } from '@jsverse/transloco';
+
+import { isSingular } from '@core/i18n/i18n.utils';
+
 import {
   RECORDING_MIME_TYPES,
   TRIMMED_MIME_TYPE,
@@ -112,5 +116,8 @@ function writeAscii(view: DataView, offset: number, text: string): void {
  */
 export function formatDurationInWords(durationMs: number): string {
   const seconds = Math.max(1, Math.round(durationMs / 1000));
-  return `${seconds} ${seconds < 2 ? 'seconde' : 'secondes'}`;
+  return translate(
+    isSingular(seconds) ? 'recordings.durationSecond' : 'recordings.durationSeconds',
+    { seconds },
+  );
 }

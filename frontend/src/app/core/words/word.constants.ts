@@ -10,41 +10,41 @@ export const PRONUNCIATION_STATUSES: readonly PronunciationStatus[] = [
 ];
 
 /**
- * French label of each status, the only place the UI wording lives.
+ * Translation key of each status label, the one place it is named; `statusLabel()` gives the text.
  */
 export const STATUS_LABELS: Readonly<Record<PronunciationStatus, string>> = {
-  learning: 'En route',
-  almost: 'Presque',
-  mastered: 'Bien dit',
+  learning: 'words.status.learning',
+  almost: 'words.status.almost',
+  mastered: 'words.status.mastered',
 };
 
 /**
- * French label of each category, as shown under a chosen word.
+ * Translation key of each category label, shown under a chosen word; `categoryLabel()` gives the text.
  */
 export const CATEGORY_LABELS: Readonly<Record<WordCategory, string>> = {
-  sounds: 'bruits et onomatopées',
-  games_routines: 'jeux et routines',
-  vehicles: 'véhicules',
-  animals: 'animaux',
-  toys: 'jouets',
-  clothing: 'vêtements',
-  outside: 'dehors',
-  places: 'lieux',
-  household: 'objets de la maison',
-  body_parts: 'corps',
-  food_drink: 'à manger et à boire',
-  furniture_rooms: 'meubles et pièces',
-  people: 'personnes',
-  descriptive_words: 'mots pour décrire',
-  action_words: 'actions',
-  time_words: 'le temps',
-  helping_verbs: 'petits verbes',
-  question_words: 'questions',
-  prepositions: 'petits mots de lieu',
-  quantifiers: 'quantités',
-  pronouns: 'pronoms',
-  connecting_words: 'mots de liaison',
-  custom: 'mot perso',
+  sounds: 'words.category.sounds',
+  games_routines: 'words.category.gamesRoutines',
+  vehicles: 'words.category.vehicles',
+  animals: 'words.category.animals',
+  toys: 'words.category.toys',
+  clothing: 'words.category.clothing',
+  outside: 'words.category.outside',
+  places: 'words.category.places',
+  household: 'words.category.household',
+  body_parts: 'words.category.bodyParts',
+  food_drink: 'words.category.foodDrink',
+  furniture_rooms: 'words.category.furnitureRooms',
+  people: 'words.category.people',
+  descriptive_words: 'words.category.descriptiveWords',
+  action_words: 'words.category.actionWords',
+  time_words: 'words.category.timeWords',
+  helping_verbs: 'words.category.helpingVerbs',
+  question_words: 'words.category.questionWords',
+  prepositions: 'words.category.prepositions',
+  quantifiers: 'words.category.quantifiers',
+  pronouns: 'words.category.pronouns',
+  connecting_words: 'words.category.connectingWords',
+  custom: 'words.category.custom',
 };
 
 /**

@@ -14,6 +14,8 @@ import {
   viewChild,
 } from '@angular/core';
 
+import { TranslocoPipe } from '@jsverse/transloco';
+
 import { Icon } from '@shared/icon/icon';
 import { IconButton } from '@shared/icon-button/icon-button';
 
@@ -29,7 +31,7 @@ import { FOCUSABLE_SELECTOR } from './bottom-sheet.constants';
 @Component({
   selector: 'app-bottom-sheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon, IconButton],
+  imports: [Icon, IconButton, TranslocoPipe],
   templateUrl: './bottom-sheet.html',
   styleUrl: './bottom-sheet.scss',
 })

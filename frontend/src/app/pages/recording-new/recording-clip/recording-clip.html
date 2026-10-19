@@ -1,6 +1,10 @@
 <!-- The recorded sound, always playable. -->
 <div class="recording-clip flex items-center gap-3">
-  <app-audio-button label="Écouter le son" [src]="src()" (playingChange)="playing.set($event)" />
+  <app-audio-button
+    [label]="'recordingNew.clip.listenLabel' | transloco"
+    [src]="src()"
+    (playingChange)="playing.set($event)"
+  />
   <app-level-bars
     class="min-w-0 flex-1"
     size="sm"

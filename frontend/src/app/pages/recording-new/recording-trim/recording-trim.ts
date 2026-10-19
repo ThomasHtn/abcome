@@ -10,6 +10,8 @@ import {
   viewChild,
 } from '@angular/core';
 
+import { TranslocoPipe } from '@jsverse/transloco';
+
 import { LevelBars } from '@shared/level-bars/level-bars';
 
 import { TRIM_STEPS_MS } from '../recording-new.constants';
@@ -23,7 +25,7 @@ import { moveTrimEdge, spokenSeconds } from '../recording-new.utils';
 @Component({
   selector: 'app-recording-trim',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LevelBars],
+  imports: [LevelBars, TranslocoPipe],
   templateUrl: './recording-trim.html',
   styleUrl: './recording-trim.scss',
 })

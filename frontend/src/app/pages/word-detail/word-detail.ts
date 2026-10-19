@@ -11,6 +11,8 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
+import { translate, TranslocoPipe } from '@jsverse/transloco';
+
 import { AuthSession } from '@core/auth/auth-session';
 import { formatShortDateWithYear } from '@core/date/date.utils';
 import { Today } from '@core/date/today';
@@ -57,6 +59,7 @@ import { CONFIRM_SHEETS, KIND_COPY, PARENT_SHEETS } from './word-detail.constant
 import { MissingTarget, WordSheet } from './word-detail.model';
 import {
   gallerySounds,
+  moveTargetLabel,
   progressLabel,
   removeSoundText,
   removeStageText,
@@ -64,6 +67,7 @@ import {
   stageDateLabel,
   timelineStages,
   titleLength,
+  translatedCopy,
   turnedMastered,
 } from './word-detail.utils';
 
@@ -89,6 +93,7 @@ import {
     StatusBadge,
     StatusDot,
     TextField,
+    TranslocoPipe,
   ],
   templateUrl: './word-detail.html',
   styleUrl: './word-detail.scss',
@@ -152,7 +157,7 @@ export class WordDetailPage {
   /**
    * Wording for a word or a sentence, known from the route even before the notebook loads.
    */
-  protected readonly copy = computed(() => KIND_COPY[this.kind()]);
+  protected readonly copy = computed(() => translatedCopy(KIND_COPY[this.kind()]));
 
   /**
    * Whether the notebook has loaded, to tell "loading" from "not found".
@@ -252,6 +257,30 @@ export class WordDetailPage {
   });
 
   /**
+   * Screen reader name of the "⋯" menu, naming the word.
+   */
+  protected readonly actionsLabel = computed(() =>
+    translate('wordDetail.actionsLabel', { label: quote(this.word()?.label ?? '') }),
+  );
+
+  /**
+   * Screen reader name of the microphone link, naming the word.
+   */
+  protected readonly recordLabel = computed(() =>
+    translate('wordDetail.recordLabel', { label: quote(this.word()?.label ?? '') }),
+  );
+
+  /**
+   * Question of the word deletion sheet, naming the word and whose list it leaves.
+   */
+  protected readonly deleteHeading = computed(() =>
+    translate('wordDetail.deleteHeading', {
+      label: quote(this.word()?.label ?? ''),
+      childName: this.childName(),
+    }),
+  );
+
+  /**
    * Latest stage.
    */
   protected readonly current = computed(() => {
@@ -292,14 +321,18 @@ export class WordDetailPage {
    * Title of the stage form.
    */
   protected readonly stageHeading = computed(() =>
-    this.editing() ? 'Modifier la prononciation' : 'Nouvelle prononciation',
+    this.editing()
+      ? translate('wordDetail.stageHeadingEdit')
+      : translate('wordDetail.stageHeadingNew'),
   );
 
   /**
    * Example in the new stage's spoken field: what the child said before.
    */
   protected readonly spokenPlaceholder = computed(() =>
-    this.editing() ? '' : `avant\u00A0: ${this.current()?.spoken ?? ''}`,
+    this.editing()
+      ? ''
+      : translate('wordDetail.spokenBefore', { spoken: this.current()?.spoken ?? '' }),
   );
 
   /**
@@ -314,8 +347,8 @@ export class WordDetailPage {
   /**
    * Question of the stage removal sheet.
    */
-  protected readonly removeStageHeading = computed(
-    () => `Retirer ${quote(this.editing()?.spoken ?? '')} de ses progrès\u00A0?`,
+  protected readonly removeStageHeading = computed(() =>
+    translate('wordDetail.removeStageHeading', { spoken: quote(this.editing()?.spoken ?? '') }),
   );
 
   /**
@@ -362,6 +395,11 @@ export class WordDetailPage {
    * Short date of a stage, for the stage list.
    */
   protected readonly shortDate = formatShortDateWithYear;
+
+  /**
+   * Screen reader name of a stage in the move sheet.
+   */
+  protected readonly moveLabel = moveTargetLabel;
 
   /**
    * Stops the jump timer when the page goes away, moves an entry opened under the other kind's path
@@ -464,10 +502,12 @@ export class WordDetailPage {
         if (turnedMastered(before, after)) {
           this.celebrate(word.label);
         } else {
-          this.toasts.show(editing ? 'Prononciation modifiée' : 'Nouvelle prononciation notée');
+          this.toasts.show(
+            editing ? translate('wordDetail.stageEdited') : translate('wordDetail.stageAdded'),
+          );
         }
       },
-      "La prononciation n'a pas pu être enregistrée, réessaie.",
+      translate('wordDetail.stageSaveFailed'),
       editing ? 'stage' : 'word',
     );
   }
@@ -493,7 +533,7 @@ export class WordDetailPage {
         try {
           await this.wordsApi.removePronunciation(editing.id);
           this.sheet.set(null);
-          this.toasts.show('Prononciation retirée');
+          this.toasts.show(translate('wordDetail.stageRemoved'));
         } catch (error) {
           if (apiErrorCode(error) !== 'LAST_PRONUNCIATION') {
             throw error;
@@ -501,7 +541,7 @@ export class WordDetailPage {
           this.open('last-stage');
         }
       },
-      "La prononciation n'a pas pu être retirée, réessaie.",
+      translate('wordDetail.stageRemoveFailed'),
       'stage',
     );
   }
@@ -548,7 +588,7 @@ export class WordDetailPage {
       this.toasts.show(this.copy().renamed);
     } catch (error) {
       if (apiErrorCode(error) === 'WORD_ALREADY_EXISTS') {
-        this.renameError.set(`${quote(label)} est déjà dans ses mots.`);
+        this.renameError.set(translate('wordDetail.alreadyInWords', { label: quote(label) }));
       } else if (isNotFound(error)) {
         this.handleMissing('word');
       } else {
@@ -616,9 +656,9 @@ export class WordDetailPage {
         }
         this.movingSound.set(null);
         this.sheet.set(null);
-        this.toasts.show(`Son rangé avec ${quote(target.spoken)}`);
+        this.toasts.show(translate('wordDetail.soundMoved', { spoken: quote(target.spoken) }));
       },
-      "Le son n'a pas pu être rangé, réessaie.",
+      translate('wordDetail.soundMoveFailed'),
       'sound',
     );
   }
@@ -644,9 +684,9 @@ export class WordDetailPage {
         await this.wordsApi.removeRecording(removing.id);
         this.removingSound.set(null);
         this.sheet.set(null);
-        this.toasts.show('Son supprimé');
+        this.toasts.show(translate('wordDetail.soundRemoved'));
       },
-      "Le son n'a pas pu être supprimé, réessaie.",
+      translate('wordDetail.soundRemoveFailed'),
       'sound',
     );
   }
@@ -656,7 +696,9 @@ export class WordDetailPage {
    */
   private celebrate(label: string): void {
     this.celebration.play();
-    this.toasts.show(`Bravo ${this.childName()}\u00A0! ${quote(label)} passe au vert`);
+    this.toasts.show(
+      translate('wordDetail.turnedMastered', { childName: this.childName(), label: quote(label) }),
+    );
     clearTimeout(this.jumpTimer);
     this.mascotState.set('jump');
     this.jumpTimer = setTimeout(() => this.mascotState.set('idle'), MASCOT_JUMP_MS);
@@ -713,9 +755,9 @@ export class WordDetailPage {
     if (missing === 'word' && label !== undefined) {
       this.deletedLabel.set(label);
     } else if (missing === 'stage') {
-      this.toasts.show('Cette prononciation avait été retirée entre-temps.');
+      this.toasts.show(translate('wordDetail.stageGoneMeanwhile'));
     } else if (missing === 'sound') {
-      this.toasts.show('Ce son avait déjà été supprimé.');
+      this.toasts.show(translate('wordDetail.soundGoneMeanwhile'));
     }
   }
 

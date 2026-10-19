@@ -9,6 +9,8 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
+import { translate, TranslocoPipe } from '@jsverse/transloco';
+
 import { AuthSession } from '@core/auth/auth-session';
 import { Today } from '@core/date/today';
 import { DictionaryEntry } from '@core/dictionary/dictionary.model';
@@ -58,6 +60,7 @@ import { saveBlocker, wordNewQuestion } from './word-new.utils';
     ActionBar,
     Button,
     Icon,
+    TranslocoPipe,
   ],
   templateUrl: './word-new.html',
   styleUrl: './word-new.scss',
@@ -168,7 +171,7 @@ export class WordNewPage {
   );
 
   /**
-   * French category names.
+   * Translation keys of the category names.
    */
   protected readonly categoryLabels = CATEGORY_LABELS;
 
@@ -209,7 +212,7 @@ export class WordNewPage {
       if (currentStatus(word) === 'mastered') {
         this.celebration.play();
       }
-      this.toasts.show(`${quote(word.label)} rejoint ses mots`);
+      this.toasts.show(translate('wordNew.added', { word: quote(word.label) }));
       await this.router.navigate(['/words', word.id]);
     } catch (error) {
       this.reportFailure(error, choice.label);
@@ -224,9 +227,9 @@ export class WordNewPage {
   private reportFailure(error: unknown, label: string): void {
     if (apiErrorCode(error) === 'WORD_ALREADY_EXISTS') {
       this.wordsApi.words.reload();
-      this.toasts.show(`${quote(label)} est déjà dans ses mots`, 'error');
+      this.toasts.show(translate('wordNew.duplicate', { word: quote(label) }), 'error');
     } else {
-      this.toasts.show("Le mot n'a pas pu être enregistré, réessaie.", 'error');
+      this.toasts.show(translate('wordNew.saveFailed'), 'error');
     }
   }
 }

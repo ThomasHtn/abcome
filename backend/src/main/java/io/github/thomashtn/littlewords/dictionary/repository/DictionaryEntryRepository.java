@@ -7,12 +7,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * Read access to the seeded dictionary.
  */
-public interface DictionaryEntryRepository extends JpaRepository<DictionaryEntry, String> {
+public interface DictionaryEntryRepository extends JpaRepository<DictionaryEntry, DictionaryEntry.Key> {
 
     /**
-     * Lists every entry, earliest acquired words first.
+     * Lists every entry of every language, earliest acquired words first.
      *
-     * @return whole dictionary
+     * @return every dictionary
      */
     List<DictionaryEntry> findAllByOrderByAcquisitionRankAsc();
 }

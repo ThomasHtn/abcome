@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 
+import { TranslocoPipe } from '@jsverse/transloco';
+
 import { formatRecordingClock } from '@core/recordings/recording.utils';
 import { AudioButton } from '@shared/audio-button/audio-button';
 import { LevelBars } from '@shared/level-bars/level-bars';
@@ -10,7 +12,7 @@ import { LevelBars } from '@shared/level-bars/level-bars';
 @Component({
   selector: 'app-recording-clip',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AudioButton, LevelBars],
+  imports: [AudioButton, LevelBars, TranslocoPipe],
   templateUrl: './recording-clip.html',
   styleUrl: './recording-clip.scss',
 })

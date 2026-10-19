@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, model } from '@angular/core';
 
+import { translate } from '@jsverse/transloco';
+
 import { AuthSession } from '@core/auth/auth-session';
 import { todayIso } from '@core/date/date.utils';
 import { SPOKEN_MAX_LENGTHS } from '@core/words/word.constants';
@@ -33,14 +35,14 @@ export class PronunciationForm {
   public readonly spokenLabel = input<string>();
 
   /**
-   * Example shown in the empty spoken field ("ex. apin", "avant : apin").
+   * Example shown in the empty spoken field ("avant : apin"); "ex. apin" when not given.
    */
-  public readonly spokenPlaceholder = input('ex. apin');
+  public readonly spokenPlaceholder = input<string>();
 
   /**
-   * Label of the day ("Dit pour la première fois le", "Entendu le").
+   * Label of the day ("Entendu le"); "Dit pour la première fois le" when not given.
    */
-  public readonly dateLabel = input('Dit pour la première fois le');
+  public readonly dateLabel = input<string>();
 
   /**
    * Word or sentence, whose spoken forms run longer.
@@ -66,7 +68,23 @@ export class PronunciationForm {
    * Label shown on the spoken field.
    */
   protected readonly shownSpokenLabel = computed(
-    () => this.spokenLabel() ?? `Comment ${this.childName()} le dit`,
+    () =>
+      this.spokenLabel() ??
+      translate('pronunciationForm.spokenLabel', { childName: this.childName() }),
+  );
+
+  /**
+   * Example shown in the empty spoken field.
+   */
+  protected readonly shownSpokenPlaceholder = computed(
+    () => this.spokenPlaceholder() ?? translate('pronunciationForm.spokenPlaceholder'),
+  );
+
+  /**
+   * Label shown on the day.
+   */
+  protected readonly shownDateLabel = computed(
+    () => this.dateLabel() ?? translate('pronunciationForm.dateLabel'),
   );
 
   /**

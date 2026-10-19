@@ -2,9 +2,12 @@ package io.github.thomashtn.littlewords.dictionary.service;
 
 import io.github.thomashtn.littlewords.dictionary.dto.DictionaryEntryResponse;
 import io.github.thomashtn.littlewords.dictionary.entity.DictionaryEntry;
+import io.github.thomashtn.littlewords.dictionary.entity.DictionaryLanguage;
 import io.github.thomashtn.littlewords.dictionary.entity.WordCategory;
 import io.github.thomashtn.littlewords.dictionary.repository.DictionaryEntryRepository;
 import io.github.thomashtn.littlewords.shared.text.Labels;
+import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,13 +39,14 @@ public class DefaultDictionaryService implements DictionaryService {
     }
 
     /**
-     * Returns the cached entries.
+     * Returns the cached entries of one language.
      *
-     * @return every entry
+     * @param language language of the interface asking
+     * @return every entry of that language
      */
     @Override
-    public List<DictionaryEntryResponse> findAll() {
-        return snapshot().entries();
+    public List<DictionaryEntryResponse> findAll(DictionaryLanguage language) {
+        return snapshot().entriesByLanguage().getOrDefault(language, List.of());
     }
 
     /**
@@ -64,13 +68,22 @@ public class DefaultDictionaryService implements DictionaryService {
     private synchronized Snapshot snapshot() {
         if (snapshot == null) {
             List<DictionaryEntry> rows = repository.findAllByOrderByAcquisitionRankAsc();
-            List<DictionaryEntryResponse> entries = rows.stream()
-                .map(entry -> new DictionaryEntryResponse(entry.getLabel(), entry.getCategory(), entry.isFrequent()))
-                .toList();
-            // "la" and "là" share a key: the earlier acquired one, read first, keeps it.
-            Map<String, WordCategory> categories = rows.stream().collect(Collectors.toUnmodifiableMap(
-                entry -> Labels.normalize(entry.getLabel()), DictionaryEntry::getCategory, (first, second) -> first
-            ));
+            Map<DictionaryLanguage, List<DictionaryEntryResponse>> entries = rows.stream()
+                .collect(Collectors.groupingBy(
+                    DictionaryEntry::getLanguage,
+                    () -> new EnumMap<>(DictionaryLanguage.class),
+                    Collectors.mapping(
+                        entry -> new DictionaryEntryResponse(entry.getLabel(), entry.getCategory(), entry.isFrequent()),
+                        Collectors.toUnmodifiableList()
+                    )
+                ));
+            // "la" and "là" share a key: the earlier acquired one, read first, keeps it. French is read before
+            // English, so a word of both dictionaries keeps its French category.
+            Map<String, WordCategory> categories = rows.stream()
+                .sorted(Comparator.comparing(DictionaryEntry::getLanguage))
+                .collect(Collectors.toUnmodifiableMap(
+                    entry -> Labels.normalize(entry.getLabel()), DictionaryEntry::getCategory, (first, second) -> first
+                ));
             snapshot = new Snapshot(entries, categories);
         }
         return snapshot;
@@ -79,11 +92,12 @@ public class DefaultDictionaryService implements DictionaryService {
     /**
      * Loaded dictionary, in the two shapes the service serves.
      *
-     * @param entries                     entries, earliest acquired words first
-     * @param categoriesByNormalizedLabel categories keyed by normalized label
+     * @param entriesByLanguage           entries of each language, earliest acquired words first
+     * @param categoriesByNormalizedLabel categories keyed by normalized label, all languages together
      */
     private record Snapshot(
-        List<DictionaryEntryResponse> entries, Map<String, WordCategory> categoriesByNormalizedLabel
+        Map<DictionaryLanguage, List<DictionaryEntryResponse>> entriesByLanguage,
+        Map<String, WordCategory> categoriesByNormalizedLabel
     ) {
     }
 }

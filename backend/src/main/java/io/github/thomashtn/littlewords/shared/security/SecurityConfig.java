@@ -27,7 +27,7 @@ import tools.jackson.databind.ObjectMapper;
 /**
  * HTTP security rules: a session opened by the family or the reader password, CSRF on every write, deny by default.
  *
- * <p>Login, logout and the session check are open; every other {@code /api/**} read needs a session,
+ * <p>Login, logout, the session check and the app name are open; every other {@code /api/**} read needs a session,
  * every write a family one; anything else is refused. The OpenAPI document stays off by default: it maps every route,
  * payload and error code.</p>
  */
@@ -108,12 +108,13 @@ public class SecurityConfig {
                 ))
             )
             .authorizeHttpRequests(authorize -> {
-                // Open to probes: Traefik never routes /actuator, so only the Docker networks reach it.
+                // Open to probes: /livez and /readyz only tell up or down; the actuator lives on the management port.
                 authorize
                     .requestMatchers(
+                        "/livez", "/readyz",
                         "/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/prometheus"
                     ).permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/auth/session").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/auth/session", "/api/branding").permitAll()
                     .requestMatchers(HttpMethod.POST, AUTH_ROUTES).permitAll();
 
                 // Same flag as springdoc, so the exception disappears with the routes it opens.

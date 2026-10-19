@@ -3,7 +3,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { quote } from '@core/text/text.utils';
 
 /**
- * Quotes a word in a template the French way, guillemets held by no-break spaces: `{{ label | quote }}`.
+ * Quotes a word in a template with the marks of the app's language (« lapin », “bunny”): `{{ label | quote }}`.
  */
 @Pipe({ name: 'quote' })
 export class QuotePipe implements PipeTransform {

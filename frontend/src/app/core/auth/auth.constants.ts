@@ -14,6 +14,7 @@ export const HOME_ROUTE = '/';
 export const RETURN_URL_PARAM = 'returnUrl';
 
 /**
- * Name shown until the server has given the child's one, when the app starts offline.
+ * Translation key of the name shown until the server has given the child's one, when the app starts
+ * offline.
  */
-export const CHILD_NAME_FALLBACK = 'Bébé';
+export const CHILD_NAME_FALLBACK = 'auth.childNameFallback';

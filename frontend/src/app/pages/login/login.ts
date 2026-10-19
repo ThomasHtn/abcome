@@ -9,13 +9,16 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { translate, TranslocoPipe } from '@jsverse/transloco';
+
 import { returnUrlFrom } from '@core/auth/auth.utils';
 import { AuthSession } from '@core/auth/auth-session';
+import { BrandingApi } from '@core/branding/branding-api';
 import { Button } from '@shared/button/button';
 import { Icon } from '@shared/icon/icon';
 import { Mascot } from '@shared/mascot/mascot';
 
-import { LOGIN_MESSAGES, LOGIN_SUCCESS_DELAY_MS } from './login.constants';
+import { LOGIN_SUCCESS_DELAY_MS } from './login.constants';
 import { loginErrorMessage, loginMascotState } from './login.utils';
 
 /**
@@ -24,7 +27,7 @@ import { loginErrorMessage, loginMascotState } from './login.utils';
 @Component({
   selector: 'app-login-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button, Icon, Mascot],
+  imports: [Button, Icon, Mascot, TranslocoPipe],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -40,6 +43,11 @@ export class LoginPage {
   private readonly router = inject(Router);
 
   /**
+   * Name of the app, set per deployment.
+   */
+  private readonly branding = inject(BrandingApi);
+
+  /**
    * Pending navigation after a success, cleared if the screen goes away first.
    */
   private successTimer: ReturnType<typeof setTimeout> | undefined;
@@ -48,6 +56,18 @@ export class LoginPage {
    * `?returnUrl=` from the URL: the page the session expired on, reopened after signing in.
    */
   public readonly returnUrl = input<string>();
+
+  /**
+   * Accent of the app name, drawn in its own colour after the rest of the name.
+   */
+  protected readonly nameAccent = this.branding.nameAccent;
+
+  /**
+   * App name without its accent; the server guarantees the accent ends the name.
+   */
+  protected readonly nameStart = computed(() =>
+    this.branding.name().slice(0, this.branding.name().length - this.nameAccent().length),
+  );
 
   /**
    * Password as typed.
@@ -100,7 +120,14 @@ export class LoginPage {
    * Line under the field: the error, the success, or who to ask for the password.
    */
   protected readonly helpText = computed(
-    () => this.error() ?? (this.succeeded() ? LOGIN_MESSAGES.success : LOGIN_MESSAGES.hint),
+    () => this.error() ?? translate(this.succeeded() ? 'login.success' : 'login.hint'),
+  );
+
+  /**
+   * Spoken name of the show/hide button, saying what a press will do.
+   */
+  protected readonly toggleLabel = computed(() =>
+    translate(this.passwordVisible() ? 'login.hidePassword' : 'login.showPassword'),
   );
 
   /**

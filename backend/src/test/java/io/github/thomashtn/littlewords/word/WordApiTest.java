@@ -40,6 +40,14 @@ class WordApiTest extends NotebookApiTest {
     }
 
     @Test
+    @DisplayName("Files a word of the English dictionary under its category")
+    void createsEnglishWord() throws Exception {
+        postWord(wordJson("Teddy Bear", "teddy", "learning", "2026-09-16"))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.category").value("animals"));
+    }
+
+    @Test
     @DisplayName("Files a word the dictionary does not know as custom")
     void createsCustomWord() throws Exception {
         postWord(wordJson("tracto-pelle", "tato", "learning", "2026-09-16"))

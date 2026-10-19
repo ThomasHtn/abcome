@@ -9,52 +9,53 @@ export const FIRST_NOTEBOOK_DAY = '2020-01-01';
 export const FAMILY_TIME_ZONE = 'Europe/Paris';
 
 /**
- * Short French month names, written out rather than taken from `Intl` so every browser prints the same.
+ * Translation keys of the short month names, written out rather than taken from `Intl` so every browser
+ * prints the same.
  */
 export const SHORT_MONTHS: readonly string[] = [
-  'janv.',
-  'févr.',
-  'mars',
-  'avr.',
-  'mai',
-  'juin',
-  'juil.',
-  'août',
-  'sept.',
-  'oct.',
-  'nov.',
-  'déc.',
+  'date.shortJanuary',
+  'date.shortFebruary',
+  'date.shortMarch',
+  'date.shortApril',
+  'date.shortMay',
+  'date.shortJune',
+  'date.shortJuly',
+  'date.shortAugust',
+  'date.shortSeptember',
+  'date.shortOctober',
+  'date.shortNovember',
+  'date.shortDecember',
 ];
 
 /**
- * Full French month names.
+ * Translation keys of the full month names.
  */
 export const LONG_MONTHS: readonly string[] = [
-  'janvier',
-  'février',
-  'mars',
-  'avril',
-  'mai',
-  'juin',
-  'juillet',
-  'août',
-  'septembre',
-  'octobre',
-  'novembre',
-  'décembre',
+  'date.january',
+  'date.february',
+  'date.march',
+  'date.april',
+  'date.may',
+  'date.june',
+  'date.july',
+  'date.august',
+  'date.september',
+  'date.october',
+  'date.november',
+  'date.december',
 ];
 
 /**
- * French weekday names, Sunday first like `Date.getUTCDay()`.
+ * Translation keys of the weekday names, Sunday first like `Date.getUTCDay()`.
  */
 export const WEEKDAYS: readonly string[] = [
-  'dimanche',
-  'lundi',
-  'mardi',
-  'mercredi',
-  'jeudi',
-  'vendredi',
-  'samedi',
+  'date.sunday',
+  'date.monday',
+  'date.tuesday',
+  'date.wednesday',
+  'date.thursday',
+  'date.friday',
+  'date.saturday',
 ];
 
 /**

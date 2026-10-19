@@ -1,13 +1,31 @@
+import { translate } from '@jsverse/transloco';
+
 import { matchesQuery, normalizeText } from '@core/text/text.utils';
 
+import { CATEGORY_LABELS, STATUS_LABELS } from './word.constants';
 import {
   Pronunciation,
   PronunciationStatus,
   Recording,
   Word,
+  WordCategory,
   WordChange,
   WordKind,
 } from './word.model';
+
+/**
+ * Label of a status in the active language ("Bien dit").
+ */
+export function statusLabel(status: PronunciationStatus): string {
+  return translate(STATUS_LABELS[status]);
+}
+
+/**
+ * Label of a dictionary category in the active language ("animaux").
+ */
+export function categoryLabel(category: WordCategory): string {
+  return translate(CATEGORY_LABELS[category]);
+}
 
 /**
  * Stages oldest first, by date then id, the order the API also guarantees.

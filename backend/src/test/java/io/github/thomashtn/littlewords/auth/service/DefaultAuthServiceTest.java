@@ -88,6 +88,7 @@ class DefaultAuthServiceTest {
     private final ApplicationProperties properties = new ApplicationProperties(
         false,
         "Alix",
+        new ApplicationProperties.Branding("ABCome", "ome"),
         ZoneId.of("Europe/Paris"),
         new ApplicationProperties.Auth(HASH, "", 100, Duration.ofMinutes(1), Duration.ofMinutes(15), SLOTS, true),
         new ApplicationProperties.Recording(1, 1, 1)
