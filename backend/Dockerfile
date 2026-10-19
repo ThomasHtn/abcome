@@ -23,8 +23,8 @@ FROM eclipse-temurin:25-jre AS runtime
 WORKDIR /app
 
 # Runs as an unprivileged user rather than the image's default root.
-RUN groupadd --system abcome && useradd --system --gid abcome abcome
-USER abcome
+RUN groupadd --system littlewords && useradd --system --gid littlewords littlewords
+USER littlewords
 
 COPY --from=build /workspace/target/*.jar app.jar
 

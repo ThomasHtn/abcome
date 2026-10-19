@@ -1,4 +1,4 @@
-# ABCome backend
+# Little Words backend
 
 Spring Boot 4 REST API on Java 25 and PostgreSQL. Conventions are in [CONTRIBUTING.md](../CONTRIBUTING.md); the API is documented by Swagger UI.
 
@@ -17,7 +17,7 @@ Requirements: Java 25, PostgreSQL 16+ to run, Docker for the tests (PostgreSQL 1
 Local database, once:
 
 ```bash
-sudo -u postgres psql -c "CREATE ROLE abcome LOGIN PASSWORD 'abcome';" -c "CREATE DATABASE abcome OWNER abcome;"
+sudo -u postgres psql -c "CREATE ROLE littlewords LOGIN PASSWORD 'littlewords';" -c "CREATE DATABASE littlewords OWNER littlewords;"
 ```
 
 Monitoring: `GET /actuator/health` (readiness includes the database), `/actuator/info` (build), `/actuator/prometheus`. Production targets: [README](../README.md#monitoring).
@@ -43,7 +43,7 @@ Changing the hash signs every family member out.
 
 ## Packages
 
-Root package `io.github.thomashtn.abcome`. A feature package only uses `shared` and the packages above it.
+Root package `io.github.thomashtn.littlewords`. A feature package only uses `shared` and the packages above it.
 
 | Package | Role |
 |---|---|

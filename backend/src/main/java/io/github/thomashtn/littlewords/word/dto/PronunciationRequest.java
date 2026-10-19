@@ -1,0 +1,31 @@
+package io.github.thomashtn.littlewords.word.dto;
+
+import io.github.thomashtn.littlewords.shared.text.Labels;
+import io.github.thomashtn.littlewords.word.entity.PronunciationStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
+
+/**
+ * Stage to add or rewrite; the size bound is a sentence's, the service checks a word's shorter one.
+ *
+ * @param spoken what the child said, cleaned of extra spaces before it is validated
+ * @param status how well he said it
+ * @param date   day he said it, not in the future
+ */
+@Schema(description = "How the child says a word or sentence on a given day.")
+public record PronunciationRequest(
+    @Schema(example = "apin") @NotBlank @Size(max = 200) String spoken,
+    @Schema(example = "almost") @NotNull PronunciationStatus status,
+    @Schema(example = "2026-10-12") @NotNull LocalDate date
+) {
+
+    /**
+     * Cleans the spoken form first, so its length is checked as it will be stored.
+     */
+    public PronunciationRequest {
+        spoken = spoken == null ? null : Labels.clean(spoken);
+    }
+}

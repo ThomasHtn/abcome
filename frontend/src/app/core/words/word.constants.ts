@@ -60,7 +60,7 @@ export const SPOKEN_MAX_LENGTHS: Readonly<Record<WordKind, number>> = { word: 60
 /**
  * Browser storage key of what this device has seen (entry ids and instants only).
  */
-export const SEEN_STORAGE_KEY = 'abcome.seen';
+export const SEEN_STORAGE_KEY = 'littlewords.seen';
 
 /**
  * How long an unseen change stays marked: 14 days, so a device seldom opened is not covered in tags.

@@ -1,4 +1,4 @@
-# ABCome frontend
+# Little Words frontend
 
 Angular 22 web app, installable as a home-screen shortcut (manifest, no service worker): standalone, zoneless, signals, Tailwind 4 for layout and SCSS for visuals. Conventions are in [CONTRIBUTING.md](../CONTRIBUTING.md).
 

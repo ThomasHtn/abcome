@@ -1,4 +1,4 @@
-"""Builds the ABCome dictionary seed from the IFDC (French CDI) item list published by Wordbank."""
+"""Builds the Little Words dictionary seed from the IFDC (French CDI) item list published by Wordbank."""
 import collections
 import csv
 import sys

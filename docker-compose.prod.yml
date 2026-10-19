@@ -5,9 +5,9 @@
 services:
   backend:
     build: ./backend
-    image: abcome-backend:latest
+    image: littlewords-backend:latest
     # Fixed name: other apps on the shared networks also have a "backend" service, so probes target this one.
-    container_name: abcome-backend
+    container_name: littlewords-backend
     restart: unless-stopped
     # Docker keeps container logs forever by default; three 10 MB files bound them on the VPS disk.
     logging:
@@ -27,22 +27,22 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=${TRAEFIK_NETWORK:-traefik}
-      - traefik.http.routers.abcome-api.rule=Host(`${PUBLIC_HOST:-abcome.thomashtn.dev}`) && PathPrefix(`/api`)
-      - traefik.http.routers.abcome-api.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
-      - traefik.http.routers.abcome-api.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
-      - traefik.http.routers.abcome-api.middlewares=abcome-ratelimit,abcome-body-limit,abcome-noindex
-      - traefik.http.services.abcome-api.loadbalancer.server.port=8080
+      - traefik.http.routers.littlewords-api.rule=Host(`${PUBLIC_HOST:-abcome.thomashtn.dev}`) && PathPrefix(`/api`)
+      - traefik.http.routers.littlewords-api.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
+      - traefik.http.routers.littlewords-api.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      - traefik.http.routers.littlewords-api.middlewares=littlewords-ratelimit,littlewords-body-limit,littlewords-noindex
+      - traefik.http.services.littlewords-api.loadbalancer.server.port=8080
       # Stops floods and password guessing bursts; the backend adds its own per-address lockout on login.
-      - traefik.http.middlewares.abcome-ratelimit.ratelimit.average=20
-      - traefik.http.middlewares.abcome-ratelimit.ratelimit.burst=50
+      - traefik.http.middlewares.littlewords-ratelimit.ratelimit.average=20
+      - traefik.http.middlewares.littlewords-ratelimit.ratelimit.burst=50
       # A 15-second recording stays well under 2 MB; anything larger is refused before the backend.
-      - traefik.http.middlewares.abcome-body-limit.buffering.maxRequestBodyBytes=2097152
-      - traefik.http.middlewares.abcome-noindex.headers.customresponseheaders.X-Robots-Tag=noindex, nofollow
+      - traefik.http.middlewares.littlewords-body-limit.buffering.maxRequestBodyBytes=2097152
+      - traefik.http.middlewares.littlewords-noindex.headers.customresponseheaders.X-Robots-Tag=noindex, nofollow
 
   frontend:
     build: ./frontend
-    image: abcome-frontend:latest
-    container_name: abcome-frontend
+    image: littlewords-frontend:latest
+    container_name: littlewords-frontend
     restart: unless-stopped
     logging:
       driver: json-file
@@ -56,11 +56,11 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=${TRAEFIK_NETWORK:-traefik}
-      - traefik.http.routers.abcome-web.rule=Host(`${PUBLIC_HOST:-abcome.thomashtn.dev}`)
-      - traefik.http.routers.abcome-web.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
-      - traefik.http.routers.abcome-web.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      - traefik.http.routers.littlewords-web.rule=Host(`${PUBLIC_HOST:-abcome.thomashtn.dev}`)
+      - traefik.http.routers.littlewords-web.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
+      - traefik.http.routers.littlewords-web.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
       # The unprivileged nginx image listens on 8080.
-      - traefik.http.services.abcome-web.loadbalancer.server.port=8080
+      - traefik.http.services.littlewords-web.loadbalancer.server.port=8080
 
 networks:
   traefik:

@@ -10,7 +10,7 @@ Where things live, which rules the code follows and which tools enforce them.
 ## Setup
 
 ```bash
-sudo -u postgres psql -c "CREATE ROLE abcome LOGIN PASSWORD 'abcome';" -c "CREATE DATABASE abcome OWNER abcome;"   # once
+sudo -u postgres psql -c "CREATE ROLE littlewords LOGIN PASSWORD 'littlewords';" -c "CREATE DATABASE littlewords OWNER littlewords;"   # once
 cd backend && cp .env.example .env     # set DB_PASSWORD, FAMILY_PASSWORD_HASH and CHILD_NAME (backend/README.md)
 ./mvnw spring-boot:run                 # API on :8080
 cd ../frontend && npx npm@11 install && npm start   # app on :4200

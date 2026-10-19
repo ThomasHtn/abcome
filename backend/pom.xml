@@ -13,11 +13,11 @@
   </parent>
 
   <groupId>io.github.thomashtn</groupId>
-  <artifactId>abcome</artifactId>
+  <artifactId>littlewords</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>ABCome</name>
-  <description>Backend of ABCome: REST API for a toddler's first words, pronunciation stages and recordings.</description>
+  <name>Little Words</name>
+  <description>Backend of Little Words: REST API for a toddler's first words, pronunciation stages and recordings.</description>
 
   <properties>
     <java.version>25</java.version>

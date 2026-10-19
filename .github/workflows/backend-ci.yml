@@ -80,7 +80,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: abcome-backend
+          name: littlewords-backend
           path: |
             backend/target/*.jar
             !backend/target/*-sources.jar
