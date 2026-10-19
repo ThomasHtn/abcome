@@ -28,16 +28,6 @@ describe('SentenceSheet', () => {
    */
   let create: ReturnType<typeof vi.fn>;
 
-  beforeAll(() => {
-    // jsdom has no modal dialogs: stand in with the `open` attribute.
-    HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
-      this.setAttribute('open', '');
-    };
-    HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
-      this.removeAttribute('open');
-    };
-  });
-
   beforeEach(() => {
     create = vi.fn().mockResolvedValue(aWord({ id: 4, kind: 'sentence' }));
     TestBed.configureTestingModule({ providers: [{ provide: WordsApi, useValue: { create } }] });

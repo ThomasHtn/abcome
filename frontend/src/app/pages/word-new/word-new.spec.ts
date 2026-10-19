@@ -20,9 +20,6 @@ describe('WordNewPage', () => {
   let created: CreateWordRequest[];
 
   beforeEach(() => {
-    HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
-      this.setAttribute('open', '');
-    };
     created = [];
     const words = signal<Word[]>([lapin]);
     TestBed.configureTestingModule({

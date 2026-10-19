@@ -34,16 +34,6 @@ class Host {
 }
 
 describe('ConfirmSheet', () => {
-  beforeAll(() => {
-    // jsdom has no modal dialogs: stand in with the `open` attribute.
-    HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
-      this.setAttribute('open', '');
-    };
-    HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
-      this.removeAttribute('open');
-    };
-  });
-
   it('emits on confirm and closes on cancel', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();

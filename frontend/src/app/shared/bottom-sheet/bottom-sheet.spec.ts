@@ -49,17 +49,6 @@ class RemovingHost {
 }
 
 describe('BottomSheet', () => {
-  beforeAll(() => {
-    // jsdom has no modal dialogs: stand in with the `open` attribute and the close event.
-    HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
-      this.setAttribute('open', '');
-    };
-    HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
-      this.removeAttribute('open');
-      this.dispatchEvent(new Event('close'));
-    };
-  });
-
   /**
    * Renders the host sheet, closed.
    */

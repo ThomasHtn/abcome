@@ -23,17 +23,6 @@ describe('WordDetailPage', () => {
   let addStageError: unknown;
   let reloads: number;
 
-  beforeAll(() => {
-    // jsdom has no modal dialogs: stand in with the `open` attribute and the close event.
-    HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
-      this.setAttribute('open', '');
-    };
-    HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
-      this.removeAttribute('open');
-      this.dispatchEvent(new Event('close'));
-    };
-  });
-
   beforeEach(() => {
     words = signal<Word[]>([
       aWord({

@@ -13,6 +13,12 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # Major versions are migrations (Spring Boot, Angular and its TypeScript, Java, Node, Postgres),
+    # done on purpose, not merged from a weekly bump.
+    ignore:
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
     groups:
       backend-dependencies:
         patterns:
@@ -23,6 +29,12 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # Major versions are migrations (Spring Boot, Angular and its TypeScript, Java, Node, Postgres),
+    # done on purpose, not merged from a weekly bump.
+    ignore:
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
     groups:
       frontend-dependencies:
         patterns:
@@ -36,6 +48,12 @@ updates:
       - /frontend
     schedule:
       interval: weekly
+    # Major versions are migrations (Spring Boot, Angular and its TypeScript, Java, Node, Postgres),
+    # done on purpose, not merged from a weekly bump.
+    ignore:
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
     groups:
       docker-images:
         patterns:
@@ -45,6 +63,12 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    # Major versions are migrations (Spring Boot, Angular and its TypeScript, Java, Node, Postgres),
+    # done on purpose, not merged from a weekly bump.
+    ignore:
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
     groups:
       compose-images:
         patterns:
