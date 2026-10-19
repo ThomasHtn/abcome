@@ -725,13 +725,13 @@ acquisition_rank,label,category,frequent,source
 724,au sommet de,prepositions,false,ifdc
 725,venteux,descriptive_words,false,ifdc
 726,au sujet de,prepositions,false,ifdc
-727,doudou,toys,false,abcome
-728,tétine,household,false,abcome
-729,dodo,games_routines,false,abcome
-730,bisou,games_routines,false,abcome
-731,câlin,games_routines,false,abcome
-732,papi,people,false,abcome
-733,mamie,people,false,abcome
-734,tata,people,false,abcome
-735,tonton,people,false,abcome
-736,larme,body_parts,false,abcome
+727,doudou,toys,false,custom
+728,tétine,household,false,custom
+729,dodo,games_routines,false,custom
+730,bisou,games_routines,false,custom
+731,câlin,games_routines,false,custom
+732,papi,people,false,custom
+733,mamie,people,false,custom
+734,tata,people,false,custom
+735,tonton,people,false,custom
+736,larme,body_parts,false,custom

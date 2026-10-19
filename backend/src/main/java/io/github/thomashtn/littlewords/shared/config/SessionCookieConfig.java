@@ -21,7 +21,7 @@ public class SessionCookieConfig {
      * Name of the session cookie; {@code __Host-} makes the browser refuse it unless it is Secure,
      * on path {@code /} and without {@code Domain}.
      */
-    public static final String SESSION_COOKIE = "__Host-ABCOME_SESSION";
+    public static final String SESSION_COOKIE = "__Host-LITTLEWORDS_SESSION";
 
     /**
      * Writes the session cookie: unreadable by scripts, HTTPS only, never sent by another site.

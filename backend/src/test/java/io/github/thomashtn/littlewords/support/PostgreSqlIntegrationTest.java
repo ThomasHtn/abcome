@@ -52,7 +52,7 @@ public abstract class PostgreSqlIntegrationTest {
     /**
      * Name of the session cookie, as configured in {@code application.properties}.
      */
-    protected static final String SESSION_COOKIE = "__Host-ABCOME_SESSION";
+    protected static final String SESSION_COOKIE = "__Host-LITTLEWORDS_SESSION";
 
     /**
      * CSRF token the test client sends, in the cookie and the header, as Angular does.

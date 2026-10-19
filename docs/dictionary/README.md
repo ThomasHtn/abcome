@@ -9,7 +9,7 @@ Based on the IFDC (French CDI by Sophie Kern, Words and Sentences form), data fr
 - Slash items split (`beau/belle` gives `beau` and `belle`).
 - Proper name placeholders removed, spelling fixed.
 - A word listed twice keeps one category.
-- 10 everyday words added, with `source` = `abcome` (`doudou`, `tétine`, `dodo`...).
+- 10 everyday words added, with `source` = `custom` (`doudou`, `tétine`, `dodo`...).
 
 ## Columns
 
@@ -19,7 +19,7 @@ Based on the IFDC (French CDI by Sophie Kern, Words and Sentences form), data fr
 | `label` | The word as shown |
 | `category` | IFDC category code |
 | `frequent` | `true` for the 24 earliest words, offered as shortcuts |
-| `source` | `ifdc` or `abcome` |
+| `source` | `ifdc` or `custom` |
 
 ## Regenerating
 

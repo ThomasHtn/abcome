@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   ElementRef,
   inject,
   Injector,
@@ -295,6 +296,16 @@ export class HomePage {
    * Logout request on its way.
    */
   protected readonly loggingOut = signal(false);
+
+  /**
+   * Marks the open tab's entries as seen once shown, again when a reload brings more: their tags
+   * stay for this visit and are gone at the next one; the other tab keeps its own until opened.
+   */
+  constructor() {
+    effect(() => {
+      this.seenWords.markListed(this.activeTab() === 'words' ? this.words() : this.sentences());
+    });
+  }
 
   /**
    * Opens a tab through the URL, so the back button and a reload keep it; the search restarts.

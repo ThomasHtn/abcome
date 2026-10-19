@@ -87,7 +87,7 @@ with open(OUT, 'w', encoding='utf-8', newline='') as out:
     writer = csv.writer(out)
     writer.writerow(['acquisition_rank', 'label', 'category', 'frequent', 'source'])
     for rank, entry in enumerate(ranked, start=1):
-        source = 'ifdc' if 'score' in entry else 'abcome'
+        source = 'ifdc' if 'score' in entry else 'custom'
         writer.writerow([rank, entry['label'], entry['category'], str(rank <= FREQUENT_COUNT).lower(), source])
 
 print(len(young), 'children <= 20 months,', len(children), 'in all,', len(ranked), 'entries')

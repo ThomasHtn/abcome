@@ -93,6 +93,49 @@ describe('SeenWords', () => {
     expect(seen.changeOf(LAPIN)).toBeNull();
   });
 
+  it('keeps the tags of a listed entry for this visit, and drops them at the next one', () => {
+    const seen = onDevice();
+    seen.markListed([LAPIN, RENARD]);
+
+    expect(seen.changeOf(RENARD)).toBe('entry');
+    TestBed.resetTestingModule();
+    const nextVisit = TestBed.inject(SeenWords);
+    expect(nextVisit.changeOf(RENARD)).toBeNull();
+    expect(nextVisit.changeOf(LAPIN)).toBeNull();
+  });
+
+  it('starts a new visit when the app comes back to the screen', () => {
+    const seen = onDevice();
+    seen.markListed([RENARD]);
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    expect(seen.changeOf(RENARD)).toBeNull();
+    expect(seen.changeOf(LAPIN)).toBe('recording');
+  });
+
+  it('clears an opened entry at once without clearing the listed ones', () => {
+    const seen = onDevice();
+    seen.markListed([LAPIN, RENARD]);
+    seen.markSeen(LAPIN);
+
+    expect(seen.changeOf(LAPIN)).toBeNull();
+    expect(seen.changeOf(RENARD)).toBe('entry');
+  });
+
+  it('stores nothing for entries older than the first visit', () => {
+    const seen = onDevice();
+    const old = '2026-09-01T08:00:00Z';
+    seen.markListed([
+      aWord({
+        id: 3,
+        createdAt: old,
+        pronunciations: [aPronunciation({ id: 30, wordId: 3, createdAt: old })],
+      }),
+    ]);
+
+    expect(JSON.parse(localStorage.getItem(SEEN_STORAGE_KEY)!).entries).toEqual({});
+  });
+
   it('stops tagging a change older than 14 days, and forgets marks that old', () => {
     const seen = onDevice({ 9: Date.now() - CHANGE_RETENTION_MS - 1 });
     vi.setSystemTime(Date.parse('2026-10-17T09:30:00Z') + CHANGE_RETENTION_MS + 1);
