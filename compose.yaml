@@ -38,7 +38,7 @@ services:
 
   # Plays the production reverse proxy: /api to the backend, the rest to the frontend, one origin.
   proxy:
-    image: nginxinc/nginx-unprivileged:1.29.8-alpine3.23@sha256:0c79d56aee561a1d81c63f00eee5fb5fe29279560cdc55e91425133104c7fbe6
+    image: nginxinc/nginx-unprivileged:1.31.2-alpine3.23@sha256:6320020c7da8714feab524e02c08c5a1958675c4e68700e93a2fd8970b065786
     ports:
       - "127.0.0.1:8000:8080"
     configs:
