@@ -177,6 +177,19 @@ describe('WordDetailPage', () => {
     expect(element.textContent).toContain('Il le dit mieux\u00A0!');
   });
 
+  it('shows a reader the stages and sounds without any control that writes', () => {
+    TestBed.inject(AuthSession).readOnly.set(true);
+    const element = render().nativeElement as HTMLElement;
+
+    expect(element.querySelectorAll('.word-detail__stage .word-detail__spoken')).toHaveLength(2);
+    expect(element.querySelectorAll('app-voice-note')).toHaveLength(2);
+    expect(element.querySelector('button.word-detail__card')).toBeNull();
+    expect(element.querySelector('.stage-sounds__more')).toBeNull();
+    expect(element.querySelector('[aria-label="Actions sur «\u00A0lapin\u00A0»"]')).toBeNull();
+    expect(element.querySelector('app-action-bar')).toBeNull();
+    expect(element.querySelector('.word-detail--read-only')).not.toBeNull();
+  });
+
   it('tells assistive technologies that the word and sound menus open a dialog', () => {
     const element = render().nativeElement as HTMLElement;
     const menus = [

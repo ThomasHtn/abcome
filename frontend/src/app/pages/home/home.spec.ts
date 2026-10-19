@@ -127,7 +127,9 @@ describe('HomePage', () => {
     const fixture = await render();
     const element = fixture.nativeElement as HTMLElement;
 
-    expect(text(fixture)).toContain('Les mots de Alix');
+    expect(element.querySelector('h1')?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Les mots de Alix',
+    );
     expect(text(fixture)).toContain('Alix a déjà dit 2 mots !');
     expect(element.querySelectorAll('app-word-card')).toHaveLength(2);
   });
@@ -318,6 +320,18 @@ describe('HomePage', () => {
     expect(TestBed.inject(AuthSession).signedIn()).toBe(true);
     expect(navigate).not.toHaveBeenCalled();
     expect(TestBed.inject(ToastQueue).current()?.tone).toBe('error');
+  });
+
+  it('shows a reader the notebook without any way to add to it', async () => {
+    TestBed.inject(AuthSession).readOnly.set(true);
+    const fixture = await render(undefined, 'girafe');
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(text(fixture)).toContain("Alix n'a pas encore dit");
+    expect(element.querySelector('app-action-bar')).toBeNull();
+    expect(element.querySelector('a[href^="/words/new"]')).toBeNull();
+    expect(element.querySelector('.home--read-only')).not.toBeNull();
+    expect(element.querySelector('button[aria-label="Se déconnecter"]')).not.toBeNull();
   });
 
   it('logs out after confirmation and returns to the login screen', async () => {

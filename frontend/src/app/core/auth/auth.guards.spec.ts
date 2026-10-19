@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   ActivatedRouteSnapshot,
@@ -7,7 +8,7 @@ import {
   UrlTree,
 } from '@angular/router';
 
-import { authGuard, guestGuard } from './auth.guards';
+import { authGuard, editorGuard, guestGuard } from './auth.guards';
 import { AuthSession } from './auth-session';
 
 /**
@@ -47,6 +48,30 @@ describe('authGuard', () => {
   it('remembers the page a signed-out visitor wanted', async () => {
     withSession(false);
     expect(String(await run(authGuard, '/words/3'))).toBe('/login?returnUrl=%2Fwords%2F3');
+  });
+});
+
+describe('editorGuard', () => {
+  /**
+   * Configures the test injector with a session whose visitor `readOnly` or not.
+   */
+  function withReader(readOnly: boolean): void {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        { provide: AuthSession, useValue: { readOnly: signal(readOnly) } },
+      ],
+    });
+  }
+
+  it('lets a family member reach a screen that writes', async () => {
+    withReader(false);
+    expect(await run(editorGuard, '/words/new')).toBe(true);
+  });
+
+  it('sends a reader home', async () => {
+    withReader(true);
+    expect(String(await run(editorGuard, '/words/new'))).toBe('/');
   });
 });
 

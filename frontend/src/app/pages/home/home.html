@@ -1,8 +1,8 @@
-<div class="home flex flex-col">
+<div class="home flex flex-col" [class.home--read-only]="readOnly()">
   <!-- Title of the open tab and the log out button. -->
   <header class="home__header enter flex items-center justify-between gap-3">
     <h1 class="home__title">
-      Les {{ activeTab() === 'words' ? 'words' : 'phrases' }} de
+      Les {{ activeTab() === 'words' ? 'mots' : 'phrases' }} de
       <span class="home__child">{{ childName() }}</span>
     </h1>
     <button
@@ -168,10 +168,10 @@
               }
             </div>
           } @else {
-            <!-- Nothing to show: why, and a shortcut to add the searched word. -->
+            <!-- Nothing to show: why, and a shortcut to add the searched word, except for a reader. -->
             <div class="home__message flex flex-col items-center gap-3">
               <p class="home__message-text">{{ emptyWords() }}</p>
-              @if (trimmedQuery()) {
+              @if (trimmedQuery() && !readOnly()) {
                 <a
                   app-button
                   variant="soft"
@@ -211,36 +211,38 @@
   </div>
 </div>
 
-<!-- Main actions of the open tab. -->
-<app-action-bar>
-  @if (activeTab() === 'words') {
-    <a app-button class="min-w-0 flex-1" size="lg" routerLink="/words/new">
-      <span class="home__plus" aria-hidden="true">
-        <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
-      </span>
-      Ajouter un mot
-    </a>
-    <a class="home__record" routerLink="/recordings/new" aria-label="Enregistrer un son">
-      <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
-    </a>
-  } @else {
-    <button
-      app-button
-      class="min-w-0 flex-1"
-      type="button"
-      size="lg"
-      (click)="sentenceSheetOpen.set(true)"
-    >
-      <span class="home__plus" aria-hidden="true">
-        <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
-      </span>
-      Ajouter une phrase
-    </button>
-    <a class="home__record" routerLink="/recordings/new" aria-label="Enregistrer un son">
-      <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
-    </a>
-  }
-</app-action-bar>
+<!-- Main actions of the open tab, none for a reader. -->
+@if (!readOnly()) {
+  <app-action-bar>
+    @if (activeTab() === 'words') {
+      <a app-button class="min-w-0 flex-1" size="lg" routerLink="/words/new">
+        <span class="home__plus" aria-hidden="true">
+          <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
+        </span>
+        Ajouter un mot
+      </a>
+      <a class="home__record" routerLink="/recordings/new" aria-label="Enregistrer un son">
+        <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
+      </a>
+    } @else {
+      <button
+        app-button
+        class="min-w-0 flex-1"
+        type="button"
+        size="lg"
+        (click)="sentenceSheetOpen.set(true)"
+      >
+        <span class="home__plus" aria-hidden="true">
+          <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
+        </span>
+        Ajouter une phrase
+      </button>
+      <a class="home__record" routerLink="/recordings/new" aria-label="Enregistrer un son">
+        <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
+      </a>
+    }
+  </app-action-bar>
+}
 
 <!-- New sentence sheet, created fresh for every opening. -->
 @if (sentenceSheetOpen()) {

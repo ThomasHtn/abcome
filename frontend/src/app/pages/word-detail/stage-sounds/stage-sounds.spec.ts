@@ -36,4 +36,16 @@ describe('StageSounds', () => {
       .click();
     expect(asked).toEqual([oldest]);
   });
+
+  it('offers no actions to a reader, who can still listen', () => {
+    const fixture = TestBed.createComponent(StageSounds);
+    fixture.componentRef.setInput('sounds', gallerySounds([aRecording({ id: 1 })], '2026-10-18'));
+    fixture.componentRef.setInput('label', 'Sons de « apin »');
+    fixture.componentRef.setInput('readOnly', true);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelectorAll('app-voice-note')).toHaveLength(1);
+    expect(element.querySelector('.stage-sounds__more')).toBeNull();
+  });
 });

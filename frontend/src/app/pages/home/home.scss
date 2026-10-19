@@ -20,6 +20,11 @@
   color: var(--color-ink);
 }
 
+/* A reader has no action bar to clear: the list ends at the usual gutter. */
+.home--read-only {
+  padding-block-end: calc(var(--layout-gutter) + var(--layout-safe-bottom));
+}
+
 /* Short phones (iPhone SE): tighter top and gaps, so the first words show above the action bar. */
 @media (450px < height <= 700px) {
   .home {

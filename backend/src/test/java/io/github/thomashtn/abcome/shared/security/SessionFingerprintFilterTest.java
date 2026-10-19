@@ -2,6 +2,7 @@ package io.github.thomashtn.abcome.shared.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockFilterChain;
@@ -10,7 +11,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
 
 /**
- * Specifies that a session opened with another password is ended.
+ * Specifies that a session opened with a password no longer configured is ended.
  */
 class SessionFingerprintFilterTest {
 
@@ -20,9 +21,14 @@ class SessionFingerprintFilterTest {
     private final PasswordFingerprint current = PasswordFingerprint.of("$argon2id$current");
 
     /**
+     * Fingerprint of the reader password currently configured.
+     */
+    private final PasswordFingerprint reader = PasswordFingerprint.of("$argon2id$reader");
+
+    /**
      * Filter under test.
      */
-    private final SessionFingerprintFilter filter = new SessionFingerprintFilter(current);
+    private final SessionFingerprintFilter filter = new SessionFingerprintFilter(List.of(current, reader));
 
     @Test
     @DisplayName("Keeps a session opened with the current password")
@@ -32,6 +38,26 @@ class SessionFingerprintFilterTest {
         filter.doFilter(requestWith(session), new MockHttpServletResponse(), new MockFilterChain());
 
         assertThat(session.isInvalid()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Keeps a session opened with the current reader password")
+    void keepsReaderSession() throws Exception {
+        MockHttpSession session = sessionWith(reader.value());
+
+        filter.doFilter(requestWith(session), new MockHttpServletResponse(), new MockFilterChain());
+
+        assertThat(session.isInvalid()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Ends a session without fingerprint, which no login could have opened")
+    void endsSessionWithoutFingerprint() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+
+        filter.doFilter(requestWith(session), new MockHttpServletResponse(), new MockFilterChain());
+
+        assertThat(session.isInvalid()).isTrue();
     }
 
     @Test

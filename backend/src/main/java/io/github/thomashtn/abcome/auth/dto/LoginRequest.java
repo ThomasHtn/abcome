@@ -5,13 +5,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * Family password typed on the login screen.
+ * Family or reader password typed on the login screen.
  *
  * @param password plain password, checked then dropped; capped so a huge body cannot slow Argon2
  */
-@Schema(description = "Login with the family password.")
+@Schema(description = "Login with the family or the reader password.")
 public record LoginRequest(
-    @Schema(description = "Family password.", example = "a long family passphrase")
+    @Schema(description = "Family or reader password.", example = "a long family passphrase")
     @NotBlank @Size(max = 200) String password
 ) {
 

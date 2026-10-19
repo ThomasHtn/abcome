@@ -11,4 +11,9 @@ export interface SessionInfo {
    * First name of the child, kept out of the repository and the login screen.
    */
   readonly childName: string;
+
+  /**
+   * Whether the visitor signed in with the reader password, and may only look.
+   */
+  readonly readOnly: boolean;
 }

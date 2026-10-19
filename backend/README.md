@@ -37,6 +37,8 @@ read -rs PASSPHRASE && printf '%s' "$PASSPHRASE" | argon2 "$(openssl rand -base6
 
 Changing the hash signs every family member out.
 
+**Read-only password**: `READER_PASSWORD_HASH`, produced the same way from another passphrase, opens a session that reads everything (words, stages, sounds) and changes nothing: every write answers `403 FORBIDDEN` and the app hides its controls. Empty turns it off. Changing it signs out readers only; changing the family hash signs out family members only. With both set, a wrong password costs two Argon2 checks.
+
 **Lockout**: five wrong passwords lock the address for 1 minute, doubling up to 15 minutes (`LOGIN_MAX_FAILURES`, `LOGIN_INITIAL_LOCKOUT`, `LOGIN_MAX_LOCKOUT`). `LOGIN_LOCKOUT_ENABLED=false` disables it in dev only, never in production.
 
 ## Packages
@@ -46,7 +48,7 @@ Root package `io.github.thomashtn.abcome`. A feature package only uses `shared` 
 | Package | Role |
 |---|---|
 | `shared` | Config, error handling (`GlobalExceptionHandler`), security chain, text and date helpers |
-| `auth` | Login, logout, session check, lockout |
+| `auth` | Login with the family or reader password, logout, session check, lockout |
 | `dictionary` | Read-only IFDC dictionary, cached in memory |
 | `word` | Words and sentences (entries of kind `sentence`) with their pronunciation stages |
 | `recording` | Word sounds, stored as `bytea` |

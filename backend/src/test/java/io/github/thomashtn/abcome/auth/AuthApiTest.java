@@ -53,6 +53,7 @@ class AuthApiTest extends PostgreSqlIntegrationTest {
         String setCookie = login(FAMILY_PASSWORD, "203.0.113.10")
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.childName").value(CHILD_NAME))
+            .andExpect(jsonPath("$.readOnly").value(false))
             .andReturn().getResponse().getHeader(HttpHeaders.SET_COOKIE);
 
         assertThat(setCookie)
@@ -66,7 +67,22 @@ class AuthApiTest extends PostgreSqlIntegrationTest {
     void checksSessionOfFamilyMember() throws Exception {
         mockMvc().perform(get("/api/auth/session").cookie(signIn()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.childName").value(CHILD_NAME));
+            .andExpect(jsonPath("$.childName").value(CHILD_NAME))
+            .andExpect(jsonPath("$.readOnly").value(false));
+    }
+
+    @Test
+    @DisplayName("Opens a read-only session with the reader password, and says so at login and at each check")
+    void signsInAsReader() throws Exception {
+        Cookie session = login(READER_PASSWORD, "203.0.113.13")
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.childName").value(CHILD_NAME))
+            .andExpect(jsonPath("$.readOnly").value(true))
+            .andReturn().getResponse().getCookie(SESSION_COOKIE);
+
+        mockMvc().perform(get("/api/auth/session").cookie(session))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.readOnly").value(true));
     }
 
     @Test

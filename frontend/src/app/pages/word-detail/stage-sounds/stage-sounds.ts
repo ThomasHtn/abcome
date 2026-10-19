@@ -8,7 +8,7 @@ import { GallerySound } from '../word-detail.model';
 
 /**
  * Sounds filed under one stage of the word, newest first, inside its card: each a voice note with a
- * quiet "⋮" opening its actions.
+ * quiet "⋮" opening its actions, except for a reader.
  */
 @Component({
   selector: 'app-stage-sounds',
@@ -27,6 +27,11 @@ export class StageSounds {
    * Screen reader name of the list, naming the stage ("Sons de « apin »").
    */
   public readonly label = input.required<string>();
+
+  /**
+   * Hides the "⋮" for a reader, who can only listen.
+   */
+  public readonly readOnly = input(false);
 
   /**
    * Asks the page to offer a sound's actions (move, delete).

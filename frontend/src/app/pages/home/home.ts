@@ -89,6 +89,11 @@ export class HomePage {
   protected readonly childName = this.session.childName;
 
   /**
+   * Whether the visitor only looks: no action bar, no shortcut to add a word.
+   */
+  protected readonly readOnly = this.session.readOnly;
+
+  /**
    * Switches tab through the URL and leaves after logout.
    */
   private readonly router = inject(Router);

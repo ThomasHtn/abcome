@@ -1,11 +1,12 @@
 import { Routes } from '@angular/router';
 
-import { authGuard, guestGuard } from '@core/auth/auth.guards';
+import { authGuard, editorGuard, guestGuard } from '@core/auth/auth.guards';
 
 /**
  * App screens, each lazy so the first visit only loads what it shows.
  * Route and query parameters reach page inputs directly (`withComponentInputBinding`):
  * `id` on the word page, `tab`, `q` and `filter` on home, `word` on the add-word and record screens.
+ * Those two write-only screens are closed to a reader.
  */
 export const routes: Routes = [
   {
@@ -27,6 +28,7 @@ export const routes: Routes = [
       {
         path: 'words/new',
         title: 'Nouveau mot · ABCome',
+        canActivate: [editorGuard],
         loadComponent: () => import('@pages/word-new/word-new').then((page) => page.WordNewPage),
       },
       {
@@ -46,6 +48,7 @@ export const routes: Routes = [
       {
         path: 'recordings/new',
         title: 'Enregistrer un son · ABCome',
+        canActivate: [editorGuard],
         loadComponent: () =>
           import('@pages/recording-new/recording-new').then((page) => page.RecordingNewPage),
       },

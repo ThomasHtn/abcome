@@ -4,11 +4,15 @@ import io.github.thomashtn.abcome.shared.config.ApplicationProperties;
 import io.github.thomashtn.abcome.shared.exception.TooManyRequestsException;
 import io.github.thomashtn.abcome.shared.exception.UnauthorizedException;
 import io.github.thomashtn.abcome.shared.security.PasswordFingerprint;
+import io.github.thomashtn.abcome.shared.security.Role;
 import io.github.thomashtn.abcome.shared.security.SessionFingerprintFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.time.Duration;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Semaphore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +28,8 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
 
 /**
- * Family session backed by the Spring Security context stored in the HTTP session.
+ * Family session backed by the Spring Security context stored in the HTTP session, its role given by the
+ * password typed.
  */
 @Service
 public class DefaultAuthService implements AuthService {
@@ -40,16 +45,6 @@ public class DefaultAuthService implements AuthService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAuthService.class);
 
     /**
-     * Name of the single principal: the whole family shares one password.
-     */
-    private static final String FAMILY_PRINCIPAL = "family";
-
-    /**
-     * Role of a signed-in family member.
-     */
-    private static final String FAMILY_ROLE = "ROLE_FAMILY";
-
-    /**
      * Wait suggested when every password check slot is busy; a check takes well under a second.
      */
     private static final Duration BUSY_RETRY_AFTER = Duration.ofSeconds(1);
@@ -60,9 +55,9 @@ public class DefaultAuthService implements AuthService {
     private final AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
 
     /**
-     * Argon2id hash of the family password.
+     * Argon2id hash of each configured password by the role it opens, the family one checked first.
      */
-    private final String passwordHash;
+    private final Map<Role, String> passwordHashes;
 
     /**
      * Checks a password against the hash.
@@ -80,11 +75,6 @@ public class DefaultAuthService implements AuthService {
     private final SecurityContextRepository securityContextRepository;
 
     /**
-     * Fingerprint of the current password, written in the session.
-     */
-    private final PasswordFingerprint passwordFingerprint;
-
-    /**
      * Slots for concurrent password checks: each Argon2 check holds the hash's memory cost.
      */
     private final Semaphore checkSlots;
@@ -92,29 +82,26 @@ public class DefaultAuthService implements AuthService {
     /**
      * Creates the service.
      *
-     * @param properties                application settings holding the password hash
+     * @param properties                application settings holding the password hashes
      * @param passwordEncoder           Argon2id encoder
      * @param attemptLimiter            per-address lockout
      * @param securityContextRepository session-backed context storage
-     * @param passwordFingerprint       fingerprint of the current password
      */
     public DefaultAuthService(
         ApplicationProperties properties,
         PasswordEncoder passwordEncoder,
         LoginAttemptLimiter attemptLimiter,
-        SecurityContextRepository securityContextRepository,
-        PasswordFingerprint passwordFingerprint
+        SecurityContextRepository securityContextRepository
     ) {
-        this.passwordHash = properties.auth().passwordHash();
+        this.passwordHashes = properties.auth().passwordHashes();
         this.passwordEncoder = passwordEncoder;
         this.attemptLimiter = attemptLimiter;
         this.securityContextRepository = securityContextRepository;
-        this.passwordFingerprint = passwordFingerprint;
         this.checkSlots = new Semaphore(properties.auth().maxConcurrentChecks());
     }
 
     /**
-     * Takes a check slot, counts the attempt (refused if locked out), checks the hash, then opens the session.
+     * Takes a check slot, counts the attempt (refused if locked out), checks the hashes, then opens the session.
      *
      * @param password password typed by the family member
      * @param request  current request
@@ -123,6 +110,7 @@ public class DefaultAuthService implements AuthService {
     @Override
     public void login(String password, HttpServletRequest request, HttpServletResponse response) {
         String address = request.getRemoteAddr();
+        Optional<Role> role;
         if (!checkSlots.tryAcquire()) {
             throw new TooManyRequestsException(BUSY_RETRY_AFTER, "Too many sign-ins at once. Try again.");
         }
@@ -130,15 +118,16 @@ public class DefaultAuthService implements AuthService {
             attemptLimiter.reserveAttempt(address).ifPresent(wait -> {
                 throw new TooManyRequestsException(wait, "Too many wrong passwords. Try again later.");
             });
-            if (!passwordEncoder.matches(password, passwordHash)) {
-                LOGGER.warn("Wrong family password from {}", address);
+            role = matchingRole(password);
+            if (role.isEmpty()) {
+                LOGGER.warn("Wrong password from {}", address);
                 throw new UnauthorizedException(INVALID_CREDENTIALS, "Wrong password.");
             }
             attemptLimiter.recordSuccess(address);
         } finally {
             checkSlots.release();
         }
-        openSession(request, response);
+        openSession(role.get(), request, response);
     }
 
     /**
@@ -168,21 +157,50 @@ public class DefaultAuthService implements AuthService {
     }
 
     /**
-     * Stores the family in a session whose id is new, so an id planted before login is worthless.
+     * Looks for the family authority in the security context of the current request.
      *
+     * @return {@code true} unless the context holds the family role
+     */
+    @Override
+    public boolean isReadOnly() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication == null || authentication.getAuthorities().stream()
+            .noneMatch(authority -> Role.FAMILY.authority().equals(authority.getAuthority()));
+    }
+
+    /**
+     * Checks the password against each configured hash, the family one first.
+     *
+     * @param password password typed
+     * @return role of the matching hash, or empty for a wrong password
+     */
+    private Optional<Role> matchingRole(String password) {
+        return passwordHashes.entrySet().stream()
+            .filter(entry -> passwordEncoder.matches(password, entry.getValue()))
+            .map(Map.Entry::getKey)
+            .findFirst();
+    }
+
+    /**
+     * Stores the role in a session whose id is new, so an id planted before login is worthless.
+     *
+     * @param role     role opened by the password typed
      * @param request  current request
      * @param response current response
      */
-    private void openSession(HttpServletRequest request, HttpServletResponse response) {
+    private void openSession(Role role, HttpServletRequest request, HttpServletResponse response) {
         if (request.getSession(false) != null) {
             request.changeSessionId();
         }
         HttpSession session = request.getSession(true);
-        session.setAttribute(SessionFingerprintFilter.FINGERPRINT_ATTRIBUTE, passwordFingerprint.value());
+        // Fingerprint of the hash that matched, so changing one password ends only the sessions it opened.
+        session.setAttribute(
+            SessionFingerprintFilter.FINGERPRINT_ATTRIBUTE, PasswordFingerprint.of(passwordHashes.get(role)).value()
+        );
 
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
-            FAMILY_PRINCIPAL, null, AuthorityUtils.createAuthorityList(FAMILY_ROLE)
+            role.name().toLowerCase(Locale.ROOT), null, AuthorityUtils.createAuthorityList(role.authority())
         ));
         SecurityContextHolder.setContext(context);
         securityContextRepository.saveContext(context, request, response);

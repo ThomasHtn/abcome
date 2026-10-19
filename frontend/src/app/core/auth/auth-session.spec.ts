@@ -25,7 +25,7 @@ describe('AuthSession', () => {
     const first = session.ensureChecked();
     const second = session.ensureChecked();
 
-    http.expectOne(API_ENDPOINTS.session).flush({ childName: 'Alix' });
+    http.expectOne(API_ENDPOINTS.session).flush({ childName: 'Alix', readOnly: false });
 
     expect(await first).toBe(true);
     expect(await second).toBe(true);
@@ -61,11 +61,20 @@ describe('AuthSession', () => {
     expect(await check).toBe(true);
   });
 
+  it('learns from the server whether the session may only read', async () => {
+    const accepted = session.signIn('une phrase de lecteur');
+    http.expectOne(API_ENDPOINTS.login).flush({ childName: 'Alix', readOnly: true });
+    await accepted;
+
+    expect(session.signedIn()).toBe(true);
+    expect(session.readOnly()).toBe(true);
+  });
+
   it('opens the session and learns the child name only when the password is accepted', async () => {
     const accepted = session.signIn('une phrase de passe');
     const request = http.expectOne(API_ENDPOINTS.login);
     expect(request.request.body).toEqual({ password: 'une phrase de passe' });
-    request.flush({ childName: 'Alix' });
+    request.flush({ childName: 'Alix', readOnly: false });
     await accepted;
     expect(session.signedIn()).toBe(true);
     expect(session.childName()).toBe('Alix');

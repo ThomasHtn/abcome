@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public interface AuthService {
 
     /**
-     * Checks the family password and, when right, opens a session with a fresh id.
+     * Checks the family then the reader password and, when one is right, opens a session with a fresh id.
      *
      * @param password password typed by the family member, never logged
      * @param request  current request, giving the caller's address and the session
@@ -32,4 +32,11 @@ public interface AuthService {
      * @return {@code true} inside a valid session
      */
     boolean isSignedIn();
+
+    /**
+     * Tells whether the current visitor may only read the notebook, having typed the reader password.
+     *
+     * @return {@code true} for a reader, or outside a session
+     */
+    boolean isReadOnly();
 }

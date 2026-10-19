@@ -202,7 +202,7 @@ class LoginAttemptLimiterTest {
                 "Alix",
                 ZoneId.of("Europe/Paris"),
                 new ApplicationProperties.Auth(
-                    "$argon2id$unused", BUDGET, FIRST_LOCKOUT, MAX_LOCKOUT, 2, lockoutEnabled
+                    "$argon2id$unused", "", BUDGET, FIRST_LOCKOUT, MAX_LOCKOUT, 2, lockoutEnabled
                 ),
                 new ApplicationProperties.Recording(1, 1, 1)
             ),

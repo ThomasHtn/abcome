@@ -22,6 +22,11 @@
   padding: 0.5rem var(--layout-gutter) var(--layout-action-bar-space);
 }
 
+/* A reader has no action bar to clear: the body ends at the usual gutter. */
+.word-detail--read-only {
+  padding-block-end: calc(var(--layout-gutter) + var(--layout-safe-bottom));
+}
+
 /* Hero card, tinted by the current status: Lapinou, the word and its status badge, centred. */
 .word-detail__hero {
   position: relative;

@@ -23,7 +23,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  *
  * <p>Singleton container pattern: started once in a static initializer and reaped by Ryuk, so the
  * container outlives every test class instead of stopping after the first one. Tests run on the
- * production {@code application.properties}, Flyway included, with a known family password and child name.</p>
+ * production {@code application.properties}, Flyway included, with known family and reader passwords and child
+ * name.</p>
  *
  * <p>spring-dotenv also reads the developer's {@code backend/.env} during tests, so the production
  * login lockout is pinned here; a subclass may override it with its own {@link TestPropertySource}.</p>
@@ -37,6 +38,11 @@ public abstract class PostgreSqlIntegrationTest {
      * Family password every test signs in with.
      */
     protected static final String FAMILY_PASSWORD = "une phrase de passe pour les tests";
+
+    /**
+     * Read-only password, for the tests of a relative who only looks.
+     */
+    protected static final String READER_PASSWORD = "une autre phrase pour les lecteurs";
 
     /**
      * Made-up first name of the child, so no real one ever sits in the repository.
@@ -69,6 +75,12 @@ public abstract class PostgreSqlIntegrationTest {
     private static final String FAMILY_PASSWORD_HASH =
         Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8().encode(FAMILY_PASSWORD);
 
+    /**
+     * Argon2id hash of {@link #READER_PASSWORD}, computed once for the whole suite.
+     */
+    private static final String READER_PASSWORD_HASH =
+        Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8().encode(READER_PASSWORD);
+
     static {
         POSTGRESQL.start();
     }
@@ -86,7 +98,7 @@ public abstract class PostgreSqlIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     /**
-     * Points the datasource at the shared container and sets the family password hash and child name.
+     * Points the datasource at the shared container and sets both password hashes and the child name.
      *
      * @param registry Spring dynamic property registry
      */
@@ -96,6 +108,7 @@ public abstract class PostgreSqlIntegrationTest {
         registry.add("spring.datasource.username", POSTGRESQL::getUsername);
         registry.add("spring.datasource.password", POSTGRESQL::getPassword);
         registry.add("app.auth.password-hash", () -> FAMILY_PASSWORD_HASH);
+        registry.add("app.auth.reader-password-hash", () -> READER_PASSWORD_HASH);
         registry.add("app.child-name", () -> CHILD_NAME);
     }
 
@@ -122,11 +135,32 @@ public abstract class PostgreSqlIntegrationTest {
      * @throws Exception when the request fails
      */
     protected Cookie signIn() throws Exception {
+        return signIn(FAMILY_PASSWORD);
+    }
+
+    /**
+     * Signs in with the reader password and returns the read-only session cookie.
+     *
+     * @return session cookie to send with the next requests
+     * @throws Exception when the request fails
+     */
+    protected Cookie signInAsReader() throws Exception {
+        return signIn(READER_PASSWORD);
+    }
+
+    /**
+     * Signs in with a password and returns the session cookie.
+     *
+     * @param password family or reader password
+     * @return session cookie
+     * @throws Exception when the request fails
+     */
+    private Cookie signIn(String password) throws Exception {
         return mockMvc.perform(post("/api/auth/login")
                 .with(xsrf())
                 .with(remoteAddress(CLIENT_ADDRESS))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"password\":\"" + FAMILY_PASSWORD + "\"}"))
+                .content("{\"password\":\"" + password + "\"}"))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()

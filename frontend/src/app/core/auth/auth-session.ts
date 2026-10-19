@@ -39,6 +39,11 @@ export class AuthSession {
   public readonly childName = signal(CHILD_NAME_FALLBACK);
 
   /**
+   * Whether the visitor may only look, which hides every write; the API refuses a reader's writes anyway.
+   */
+  public readonly readOnly = signal(false);
+
+  /**
    * Asks the server once whether a session is open; later calls reuse the answer.
    * Only a 401 means signed out: offline or a server error keeps the visitor in the app, where each
    * screen shows its own retry state, and the next 401 still sends them to the login screen.
@@ -94,10 +99,11 @@ export class AuthSession {
   }
 
   /**
-   * Records an open session and what it tells about the child.
+   * Records an open session, what it tells about the child and whether it may write.
    */
   private open(session: SessionInfo): void {
     this.childName.set(session.childName);
+    this.readOnly.set(session.readOnly);
     this.status.set('signed-in');
   }
 }

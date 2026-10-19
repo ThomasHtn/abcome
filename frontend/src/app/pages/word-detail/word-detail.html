@@ -7,23 +7,25 @@
     </a>
   </div>
 } @else if (word(); as word) {
-  <!-- Back to the list, and the "⋯" menu of the word. -->
+  <!-- Back to the list, and the "⋯" menu of the word, which a reader does not get. -->
   <header class="word-detail__header enter flex items-center justify-between">
     <button app-icon-button type="button" aria-label="Retour à la liste" (click)="back()">
       <svg app-icon name="chevron-left" [size]="24" [strokeWidth]="2.4"></svg>
     </button>
-    <button
-      app-icon-button
-      type="button"
-      aria-haspopup="dialog"
-      [attr.aria-label]="'Actions sur ' + (word.label | quote)"
-      (click)="open('actions')"
-    >
-      <svg app-icon name="ellipsis" [size]="24" [strokeWidth]="2.4"></svg>
-    </button>
+    @if (!readOnly()) {
+      <button
+        app-icon-button
+        type="button"
+        aria-haspopup="dialog"
+        [attr.aria-label]="'Actions sur ' + (word.label | quote)"
+        (click)="open('actions')"
+      >
+        <svg app-icon name="ellipsis" [size]="24" [strokeWidth]="2.4"></svg>
+      </button>
+    }
   </header>
 
-  <div class="word-detail">
+  <div class="word-detail" [class.word-detail--read-only]="readOnly()">
     <!-- Hero: Lapinou, the word and its current status, on the color of that status. -->
     @if (current(); as now) {
       <section
@@ -55,36 +57,53 @@
       <ol class="word-detail__stages flex flex-col gap-3.5">
         @for (stage of stages(); track stage.pronunciation.id; let index = $index) {
           <li class="word-detail__stage" [style.--stage-index]="index">
-            <!-- The stage's header: a tap edits it. -->
-            <button
-              class="word-detail__card flex w-full min-w-0 items-center gap-2.5"
-              type="button"
-              [class.word-detail__card--latest]="stage.latest"
-              [attr.aria-label]="stage.ariaLabel"
-              (click)="openStage(stage.pronunciation)"
-            >
-              <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span class="word-detail__caption flex items-center gap-1.5">
-                  <app-status-dot [status]="stage.pronunciation.status" />
-                  {{ stage.caption }}
+            @if (readOnly()) {
+              <!-- The stage's header, only read by a reader. -->
+              <div
+                class="word-detail__card flex w-full min-w-0 items-center gap-2.5"
+                [class.word-detail__card--latest]="stage.latest"
+              >
+                <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span class="word-detail__caption flex items-center gap-1.5">
+                    <app-status-dot [status]="stage.pronunciation.status" />
+                    {{ stage.caption }}
+                  </span>
+                  <span class="word-detail__spoken">{{ stage.pronunciation.spoken | quote }}</span>
                 </span>
-                <span class="word-detail__spoken">{{ stage.pronunciation.spoken | quote }}</span>
-              </span>
-              <svg
-                class="word-detail__chevron"
-                app-icon
-                name="chevron-right"
-                aria-hidden="true"
-                [size]="20"
-                [strokeWidth]="2.4"
-              ></svg>
-            </button>
+              </div>
+            } @else {
+              <!-- The stage's header: a tap edits it. -->
+              <button
+                class="word-detail__card flex w-full min-w-0 items-center gap-2.5"
+                type="button"
+                [class.word-detail__card--latest]="stage.latest"
+                [attr.aria-label]="stage.ariaLabel"
+                (click)="openStage(stage.pronunciation)"
+              >
+                <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span class="word-detail__caption flex items-center gap-1.5">
+                    <app-status-dot [status]="stage.pronunciation.status" />
+                    {{ stage.caption }}
+                  </span>
+                  <span class="word-detail__spoken">{{ stage.pronunciation.spoken | quote }}</span>
+                </span>
+                <svg
+                  class="word-detail__chevron"
+                  app-icon
+                  name="chevron-right"
+                  aria-hidden="true"
+                  [size]="20"
+                  [strokeWidth]="2.4"
+                ></svg>
+              </button>
+            }
 
             @if (stage.sounds.length > 0) {
               <!-- The stage's sounds, in the same card. -->
               <app-stage-sounds
                 [sounds]="stage.sounds"
                 [label]="stage.soundsLabel"
+                [readOnly]="readOnly()"
                 (actions)="openSoundActions($event)"
               />
             }
@@ -93,32 +112,38 @@
       </ol>
 
       @if (sounds().length === 0) {
-        <!-- No sound yet: the microphone of the bar records the first one. -->
+        <!-- No sound yet: the microphone of the bar records the first one, a reader just waits. -->
         <p class="word-detail__no-sound">
-          Pas encore de son. Touche le micro pour enregistrer {{ childName() }} dire
-          {{ word.label | quote }}.
+          @if (readOnly()) {
+            Pas encore de son.
+          } @else {
+            Pas encore de son. Touche le micro pour enregistrer {{ childName() }} dire
+            {{ word.label | quote }}.
+          }
         </p>
       }
     </section>
   </div>
 
-  <!-- Main action, plus recording a sound for this word. -->
-  <app-action-bar>
-    <button app-button class="min-w-0 flex-1" type="button" size="lg" (click)="openNewStage()">
-      <span class="word-detail__plus" aria-hidden="true">
-        <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
-      </span>
-      {{ progressText() }}
-    </button>
-    <a
-      class="word-detail__record"
-      routerLink="/recordings/new"
-      [queryParams]="{ word: word.id }"
-      [attr.aria-label]="'Enregistrer un son de ' + (word.label | quote)"
-    >
-      <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
-    </a>
-  </app-action-bar>
+  <!-- Main action, plus recording a sound for this word; none for a reader. -->
+  @if (!readOnly()) {
+    <app-action-bar>
+      <button app-button class="min-w-0 flex-1" type="button" size="lg" (click)="openNewStage()">
+        <span class="word-detail__plus" aria-hidden="true">
+          <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
+        </span>
+        {{ progressText() }}
+      </button>
+      <a
+        class="word-detail__record"
+        routerLink="/recordings/new"
+        [queryParams]="{ word: word.id }"
+        [attr.aria-label]="'Enregistrer un son de ' + (word.label | quote)"
+      >
+        <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
+      </a>
+    </app-action-bar>
+  }
 
   <!-- "⋯" menu. -->
   <app-bottom-sheet

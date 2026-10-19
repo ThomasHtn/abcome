@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Clock;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,10 +25,10 @@ import org.springframework.security.web.savedrequest.NullRequestCache;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * HTTP security rules: a session opened by the family password, CSRF on every write, deny by default.
+ * HTTP security rules: a session opened by the family or the reader password, CSRF on every write, deny by default.
  *
- * <p>Login, logout and the session check are open; every other {@code /api/**} route needs a
- * session; anything else is refused. The OpenAPI document stays off by default: it maps every route,
+ * <p>Login, logout and the session check are open; every other {@code /api/**} read needs a session,
+ * every write a family one; anything else is refused. The OpenAPI document stays off by default: it maps every route,
  * payload and error code.</p>
  */
 @Configuration
@@ -62,23 +63,11 @@ public class SecurityConfig {
     }
 
     /**
-     * Fingerprint of the configured password, written in each session at login.
-     *
-     * @param properties application settings holding the hash
-     * @return password fingerprint
-     */
-    @Bean
-    PasswordFingerprint passwordFingerprint(ApplicationProperties properties) {
-        return PasswordFingerprint.of(properties.auth().passwordHash());
-    }
-
-    /**
      * Builds the application security filter chain.
      *
      * @param http                      Spring Security HTTP configuration
      * @param properties                application-level configuration properties
      * @param securityContextRepository where the signed-in context lives
-     * @param passwordFingerprint       fingerprint of the configured password
      * @param objectMapper              application JSON mapper, so refusals match the controllers' errors
      * @param clock                     application clock stamping refusals
      * @return the configured security filter chain
@@ -97,7 +86,6 @@ public class SecurityConfig {
         HttpSecurity http,
         ApplicationProperties properties,
         SecurityContextRepository securityContextRepository,
-        PasswordFingerprint passwordFingerprint,
         ObjectMapper objectMapper,
         Clock clock
     ) throws Exception {
@@ -135,13 +123,27 @@ public class SecurityConfig {
                     ).permitAll();
                 }
 
+                // A reader session reads the notebook; only a family one changes it.
                 authorize
-                    .requestMatchers("/api/**").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/**").authenticated()
+                    .requestMatchers("/api/**").hasRole(Role.FAMILY.name())
                     .anyRequest().denyAll();
             })
-            .addFilterAfter(new SessionFingerprintFilter(passwordFingerprint), SecurityContextHolderFilter.class);
+            .addFilterAfter(
+                new SessionFingerprintFilter(currentFingerprints(properties)), SecurityContextHolderFilter.class
+            );
 
         return http.build();
+    }
+
+    /**
+     * Fingerprints of the configured passwords: a session opened with any other one is ended.
+     *
+     * @param properties application settings holding the hashes
+     * @return one fingerprint per configured password
+     */
+    private static List<PasswordFingerprint> currentFingerprints(ApplicationProperties properties) {
+        return properties.auth().passwordHashes().values().stream().map(PasswordFingerprint::of).toList();
     }
 
     /**

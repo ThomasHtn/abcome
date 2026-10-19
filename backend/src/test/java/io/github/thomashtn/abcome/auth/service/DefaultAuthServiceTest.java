@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.github.thomashtn.abcome.shared.config.ApplicationProperties;
 import io.github.thomashtn.abcome.shared.exception.TooManyRequestsException;
 import io.github.thomashtn.abcome.shared.exception.UnauthorizedException;
-import io.github.thomashtn.abcome.shared.security.PasswordFingerprint;
 import io.github.thomashtn.abcome.support.MutableClock;
 import java.time.Duration;
 import java.time.Instant;
@@ -90,7 +89,7 @@ class DefaultAuthServiceTest {
         false,
         "Alix",
         ZoneId.of("Europe/Paris"),
-        new ApplicationProperties.Auth(HASH, 100, Duration.ofMinutes(1), Duration.ofMinutes(15), SLOTS, true),
+        new ApplicationProperties.Auth(HASH, "", 100, Duration.ofMinutes(1), Duration.ofMinutes(15), SLOTS, true),
         new ApplicationProperties.Recording(1, 1, 1)
     );
 
@@ -101,8 +100,7 @@ class DefaultAuthServiceTest {
         properties,
         slowEncoder,
         new LoginAttemptLimiter(properties, new MutableClock(Instant.parse("2026-10-17T10:00:00Z"))),
-        new HttpSessionSecurityContextRepository(),
-        PasswordFingerprint.of(HASH)
+        new HttpSessionSecurityContextRepository()
     );
 
     @Test

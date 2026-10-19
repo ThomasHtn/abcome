@@ -31,6 +31,6 @@ class PasswordHashCostTest {
      * @return auth settings
      */
     private static ApplicationProperties.Auth auth(String hash) {
-        return new ApplicationProperties.Auth(hash, 5, Duration.ofMinutes(1), Duration.ofMinutes(15), 2, true);
+        return new ApplicationProperties.Auth(hash, "", 5, Duration.ofMinutes(1), Duration.ofMinutes(15), 2, true);
     }
 }

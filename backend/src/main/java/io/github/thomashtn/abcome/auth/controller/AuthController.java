@@ -26,11 +26,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Family session: check, login with the shared password, logout.
+ * Family session: check, login with the family or the reader password, logout.
  */
 @RestController
 @RequestMapping("/api/auth")
-@Tag(name = "Auth", description = "Family session opened by the shared password.")
+@Tag(name = "Auth", description = "Family session opened by the family or the read-only password.")
 public class AuthController {
 
     /**
@@ -44,9 +44,9 @@ public class AuthController {
     private final CookieSerializer cookieSerializer;
 
     /**
-     * Answer of the session check and the login, naming the child only to a signed-in visitor.
+     * First name of the child, sent only to a signed-in visitor.
      */
-    private final SessionResponse sessionResponse;
+    private final String childName;
 
     /**
      * Creates the controller.
@@ -64,7 +64,7 @@ public class AuthController {
     ) {
         this.authService = authService;
         this.cookieSerializer = cookieSerializer;
-        this.sessionResponse = new SessionResponse(properties.childName());
+        this.childName = properties.childName();
     }
 
     /**
@@ -95,11 +95,11 @@ public class AuthController {
         if (session != null) {
             cookieSerializer.writeCookieValue(new CookieSerializer.CookieValue(request, response, session.getId()));
         }
-        return ResponseEntity.ok(sessionResponse);
+        return ResponseEntity.ok(sessionResponse());
     }
 
     /**
-     * Opens a session with the family password.
+     * Opens a session with the family password, or a read-only one with the reader password.
      *
      * @param loginRequest password typed by the family member
      * @param request      current request
@@ -107,7 +107,7 @@ public class AuthController {
      * @return 200 with the session and its cookie
      */
     @PostMapping("/login")
-    @Operation(summary = "Sign in with the family password")
+    @Operation(summary = "Sign in with the family or the reader password")
     @ApiResponse(responseCode = "200", description = "Signed in; the session cookie is set.")
     @ApiResponse(responseCode = "400", description = "INVALID_REQUEST: empty or oversized password.",
         content = @Content(schema = @Schema(implementation = ApiErrorResponse.class)))
@@ -119,7 +119,7 @@ public class AuthController {
         @Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response
     ) {
         authService.login(loginRequest.password(), request, response);
-        return ResponseEntity.ok(sessionResponse);
+        return ResponseEntity.ok(sessionResponse());
     }
 
     /**
@@ -134,5 +134,14 @@ public class AuthController {
     public ResponseEntity<Void> logout(HttpServletRequest request) {
         authService.logout(request);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Describes the open session, naming the child only to a signed-in visitor.
+     *
+     * @return session of the current request
+     */
+    private SessionResponse sessionResponse() {
+        return new SessionResponse(childName, authService.isReadOnly());
     }
 }

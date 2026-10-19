@@ -130,6 +130,11 @@ export class WordDetailPage {
   protected readonly childName = inject(AuthSession).childName;
 
   /**
+   * Whether the visitor only looks: the timeline and sounds stay, every control that writes goes.
+   */
+  protected readonly readOnly = inject(AuthSession).readOnly;
+
+  /**
    * Timer bringing Lapinou back to rest after a celebration jump.
    */
   private jumpTimer: ReturnType<typeof setTimeout> | undefined;

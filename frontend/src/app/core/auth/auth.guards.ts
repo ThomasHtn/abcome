@@ -16,6 +16,13 @@ export const authGuard: CanActivateFn = async (_route, state) => {
 };
 
 /**
+ * Sends a reader from a screen that only writes (add a word, record a sound) to the home screen.
+ * Runs under `authGuard`, so the session is already known.
+ */
+export const editorGuard: CanActivateFn = () =>
+  inject(AuthSession).readOnly() ? inject(Router).parseUrl(HOME_ROUTE) : true;
+
+/**
  * Sends a visitor who is already signed in from the login screen to the home screen.
  */
 export const guestGuard: CanActivateFn = async () => {

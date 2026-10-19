@@ -1,8 +1,10 @@
 package io.github.thomashtn.abcome.shared.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import io.github.thomashtn.abcome.shared.security.Role;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -16,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 
 /**
- * Specifies how {@code FAMILY_PASSWORD_HASH} is read and checked at startup.
+ * Specifies how {@code FAMILY_PASSWORD_HASH} and {@code READER_PASSWORD_HASH} are read and checked at startup.
  */
 class PasswordHashSettingsTest {
 
@@ -51,6 +53,49 @@ class PasswordHashSettingsTest {
             assertThat(properties.auth().passwordHash()).isEqualTo(HASH);
             assertThat(properties.toString()).doesNotContain(HASH);
         });
+    }
+
+    @Test
+    @DisplayName("Starts without a reader hash, with the family password as the only way in")
+    void acceptsMissingReaderHash() {
+        runner.withPropertyValues("app.auth.password-hash=" + HASH, "app.auth.reader-password-hash=").run(context -> {
+            assertThat(context).hasNotFailed();
+            ApplicationProperties properties = context.getBean(ApplicationProperties.class);
+            assertThat(properties.auth().passwordHashes()).containsOnlyKeys(Role.FAMILY);
+        });
+    }
+
+    @Test
+    @DisplayName("Opens the reader sign-in with an Argon2id reader hash, checked after the family one")
+    void acceptsReaderHash() {
+        String readerHash = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8().encode("other words");
+        runner.withPropertyValues("app.auth.password-hash=" + HASH, "app.auth.reader-password-hash=" + readerHash)
+            .run(context -> {
+                assertThat(context).hasNotFailed();
+                ApplicationProperties properties = context.getBean(ApplicationProperties.class);
+                assertThat(properties.auth().passwordHashes()).containsExactly(
+                    entry(Role.FAMILY, HASH), entry(Role.READER, readerHash)
+                );
+                assertThat(properties.toString()).doesNotContain(readerHash);
+            });
+    }
+
+    @Test
+    @DisplayName("Refuses a plain reader password pasted by mistake, or a costly reader hash, naming its variable")
+    void refusesInvalidReaderHash() {
+        runner.withPropertyValues("app.auth.password-hash=" + HASH, "app.auth.reader-password-hash=our reader secret")
+            .run(context -> {
+                assertThat(context).hasFailed();
+                assertThat(failureMessages(context.getStartupFailure()))
+                    .contains("READER_PASSWORD_HASH must be an Argon2id hash")
+                    .doesNotContain("our reader secret");
+            });
+        String costly = "$argon2id$v=19$m=65536,t=3,p=1$c2FsdHNhbHRzYWx0$aGFzaGhhc2hoYXNoaGFzaA";
+        runner.withPropertyValues("app.auth.password-hash=" + HASH, "app.auth.reader-password-hash=" + costly)
+            .run(context -> {
+                assertThat(context).hasFailed();
+                assertThat(failureMessages(context.getStartupFailure())).contains("READER_PASSWORD_HASH costs");
+            });
     }
 
     @Test
