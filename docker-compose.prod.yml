@@ -6,7 +6,15 @@ services:
   backend:
     build: ./backend
     image: abcome-backend:latest
+    # Fixed name: other apps on the shared networks also have a "backend" service, so probes target this one.
+    container_name: abcome-backend
     restart: unless-stopped
+    # Docker keeps container logs forever by default; three 10 MB files bound them on the VPS disk.
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     # The JVM sizes its heap from this limit (MaxRAMPercentage in the Dockerfile).
     mem_limit: 512m
     env_file: .env
@@ -34,7 +42,13 @@ services:
   frontend:
     build: ./frontend
     image: abcome-frontend:latest
+    container_name: abcome-frontend
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     depends_on:
       - backend
     networks:

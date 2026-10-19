@@ -30,8 +30,10 @@ COPY --from=build /workspace/target/*.jar app.jar
 
 EXPOSE 8080
 
-# Health: http://localhost:8080/actuator/health (see backend/README.md). No HTTP client is bundled
-# here for a HEALTHCHECK instruction — orchestrators typically probe this endpoint themselves
-# (Kubernetes liveness/readiness probes, Docker Compose `healthcheck` with an external prober, etc.).
+# Healthy once the database answers. No curl in this image, so bash speaks HTTP over /dev/tcp.
+# The start period covers JVM startup and Flyway migrations.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD ["bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health/readiness HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && read -r status <&3 && [[ $status == *' 200 '* ]]"]
+
 # Heap takes 60 % of the container limit (docker-compose.prod.yml); the rest is for metaspace, threads and buffers.
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=60", "-jar", "app.jar"]

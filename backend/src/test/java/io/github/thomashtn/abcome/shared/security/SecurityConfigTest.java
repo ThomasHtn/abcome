@@ -1,7 +1,9 @@
 package io.github.thomashtn.abcome.shared.security;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -11,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * Specifies the security rules on the running application: health is open, the API needs a session.
+ * Specifies the security rules on the running application: monitoring is open, the API needs a session.
  *
  * <p>API docs are pinned off so a developer's {@code .env} cannot open them during the test.</p>
  */
@@ -24,6 +26,30 @@ class SecurityConfigTest extends PostgreSqlIntegrationTest {
         mockMvc().perform(get("/actuator/health"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("UP"));
+    }
+
+    @Test
+    @DisplayName("Reports itself ready only once the database answers, for an external uptime probe")
+    void exposesReadinessWithDatabase() throws Exception {
+        mockMvc().perform(get("/actuator/health/readiness"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("UP"));
+    }
+
+    @Test
+    @DisplayName("Publishes the running build on the info endpoint, so a deployment can be checked")
+    void exposesBuildInfo() throws Exception {
+        mockMvc().perform(get("/actuator/info"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.build.artifact").value("abcome"));
+    }
+
+    @Test
+    @DisplayName("Serves Prometheus metrics without a session, tagged with the application name")
+    void exposesPrometheusMetrics() throws Exception {
+        mockMvc().perform(get("/actuator/prometheus"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString("hikaricp_connections_active{application=\"abcome\"")));
     }
 
     @Test

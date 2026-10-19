@@ -20,7 +20,7 @@ Local database, once:
 sudo -u postgres psql -c "CREATE ROLE abcome LOGIN PASSWORD 'abcome';" -c "CREATE DATABASE abcome OWNER abcome;"
 ```
 
-Health check: `GET /actuator/health`.
+Monitoring: `GET /actuator/health` (readiness includes the database), `/actuator/info` (build), `/actuator/prometheus`. Production targets: [README](../README.md#monitoring).
 
 ## Family password
 

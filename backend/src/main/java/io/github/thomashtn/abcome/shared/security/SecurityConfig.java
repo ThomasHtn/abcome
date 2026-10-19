@@ -108,8 +108,11 @@ public class SecurityConfig {
                 ))
             )
             .authorizeHttpRequests(authorize -> {
+                // Open to probes: Traefik never routes /actuator, so only the Docker networks reach it.
                 authorize
-                    .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
+                    .requestMatchers(
+                        "/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/prometheus"
+                    ).permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/auth/session").permitAll()
                     .requestMatchers(HttpMethod.POST, AUTH_ROUTES).permitAll();
 

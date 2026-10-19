@@ -28,3 +28,30 @@ First deployment:
 5. Open `https://abcome.thomashtn.dev` and check that a wrong passphrase is refused.
 
 Back up the `abcome` database: it holds the recordings.
+
+## Monitoring
+
+Traefik routes only `/api` to the backend, so the actuator is reachable from the Docker networks only, by container name.
+
+| Target | Use |
+|---|---|
+| `http://abcome-backend:8080/actuator/health/readiness` | `200` when the API and its database answer, `503` otherwise |
+| `http://abcome-backend:8080/actuator/health/liveness` | `200` while the JVM runs, even without the database |
+| `http://abcome-backend:8080/actuator/info` | Version and build time of the running image |
+| `http://abcome-backend:8080/actuator/prometheus` | Metrics (JVM, HTTP, Hikari pool), tagged `application="abcome"` |
+| `https://abcome.thomashtn.dev/healthz` | Public path: Traefik, TLS and nginx |
+
+Both images carry a Docker `HEALTHCHECK` (backend on readiness, frontend on `/healthz`), shown by `docker ps` and by Uptime Kuma's "Docker Container" monitor. Container logs rotate at three files of 10 MB.
+
+On the VPS:
+
+- Uptime Kuma: an HTTP monitor on the public `/healthz`, and one on the readiness URL if Uptime Kuma shares the `traefik` network.
+- Prometheus: join the `traefik` network and add the job below.
+
+```yaml
+scrape_configs:
+  - job_name: abcome
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["abcome-backend:8080"]
+```
