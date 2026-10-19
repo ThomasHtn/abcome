@@ -30,7 +30,7 @@ export function pickerCandidates(
 }
 
 /**
- * Bold head and muted tail of a label around the typed text, the mockup's highlight.
+ * Bold head and muted tail of a label around the typed text, to highlight the match.
  */
 export function splitOnMatch(label: string, query: string): Pick<WordSuggestion, 'head' | 'tail'> {
   const range = findQueryRange(label, query);

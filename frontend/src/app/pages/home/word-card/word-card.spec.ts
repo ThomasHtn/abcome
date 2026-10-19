@@ -11,7 +11,7 @@ import { WordCard } from './word-card';
  */
 const CARD: WordCardView = {
   id: 7,
-  path: '/mots/7',
+  path: '/words/7',
   label: 'lapin',
   spoken: 'apin',
   status: 'almost',
@@ -37,7 +37,7 @@ describe('WordCard', () => {
   it('links to the word page and reads as one sentence', () => {
     const link = render(CARD);
 
-    expect(link.getAttribute('href')).toBe('/mots/7');
+    expect(link.getAttribute('href')).toBe('/words/7');
     expect(link.getAttribute('aria-label')).toBe(CARD.ariaLabel);
     expect(link.textContent).toContain('«\u00A0apin\u00A0»');
   });

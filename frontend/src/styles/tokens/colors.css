@@ -1,4 +1,4 @@
-/* Palette of the mockup. `static`: Tailwind never sees component stylesheets, so it must emit every token. */
+/* App palette. `static`: Tailwind never sees component stylesheets, so it must emit every token. */
 
 @theme static {
   /* Salmon, the primary hue: grounds, the main button, the mascot. */

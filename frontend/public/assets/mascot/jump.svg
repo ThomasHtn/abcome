@@ -14,7 +14,7 @@
       }
     }
 
-    /* One jump with squash on landing and a small rebound, mockup "Rebond". */
+    /* One jump with squash on landing and a small rebound. */
     @keyframes jump {
       0%,
       100% {

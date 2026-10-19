@@ -1,12 +1,11 @@
 # Contributing
 
-Where things live, which rules the code follows and which tools enforce them. Behaviour and security rules are in [docs/spec.md](docs/spec.md).
+Where things live, which rules the code follows and which tools enforce them.
 
 ## Workflow
 
-1. Read the spec section for the task. A change of behaviour updates the spec first.
-2. Write a failing test, then the code.
-3. Run the fixers (`npm run fix`, `./mvnw spotless:apply`).
+1. Write a failing test, then the code.
+2. Run the fixers (`npm run fix`, `./mvnw spotless:apply`) before committing.
 
 ## Setup
 
@@ -25,8 +24,7 @@ Requirements: Java 25, Node 22, PostgreSQL 16+. Docker only for the backend test
 |---|---|
 | `backend/` | Spring Boot REST API |
 | `frontend/` | Angular app served by nginx |
-| `docs/` | Spec and word dictionary |
-| `scripts/` | Versioned git hooks |
+| `docs/dictionary/` | Word dictionary and its build script |
 | `docker-compose.prod.yml` | Production stack behind Traefik |
 | `.github/` | CI workflows and Dependabot |
 
@@ -36,7 +34,7 @@ Requirements: Java 25, Node 22, PostgreSQL 16+. Docker only for the backend test
 - Small functions, explicit names, no dead or commented-out code, no magic values.
 - Extract to `shared/` only when a second place needs it.
 - Images, icons and animations are files in `frontend/public/assets/`, never drawn in a template.
-- The [security rules](docs/spec.md#security-rules) are mandatory. Never log a password, a session id or an `/api/auth` body.
+- Never log a password, a session id or an `/api/auth` body. Session, CSRF and lockout settings are in [backend/README.md](backend/README.md).
 
 ## Comments
 
@@ -89,7 +87,7 @@ Backend test methods use `@DisplayName` instead. Checkstyle and ESLint fail on a
 | `./mvnw spotless:apply` | Backend formatting |
 | `./mvnw clean verify` | Spotless, Checkstyle, tests, SpotBugs, JaCoCo (90 % lines, 70 % branches) |
 
-Coverage floors only go up. The pre-commit hook (linked by `npm install`) runs the fixers on staged files and blocks the commit on an error. CI runs one workflow per side.
+Coverage floors only go up. CI runs one workflow per side.
 
 ## Recipes
 

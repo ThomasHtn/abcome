@@ -76,7 +76,7 @@ for item in items:
 
 ranked = sorted(entries.values(), key=lambda e: (-e['score'][0], -e['score'][1], e['label']))
 
-# Everyday family words missing from the IFDC, ranked after it: the mockup's own list plus two.
+# Everyday family words missing from the IFDC, ranked after it.
 SUPPLEMENT = [
     ('doudou', 'toys'), ('tétine', 'household'), ('dodo', 'games_routines'),
     ('bisou', 'games_routines'), ('câlin', 'games_routines'), ('papi', 'people'),

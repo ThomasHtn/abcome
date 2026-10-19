@@ -1,7 +1,7 @@
 import { RecorderErrorKind } from './recording-new.model';
 
 /**
- * Number of bars of the waveforms, like the mockup.
+ * Number of bars of the waveforms, fine enough to read as a voice.
  */
 export const LEVEL_BAR_COUNT = 28;
 

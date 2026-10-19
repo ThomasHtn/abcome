@@ -9,7 +9,7 @@ export type WordKind = 'word' | 'sentence';
 export type PronunciationStatus = 'learning' | 'almost' | 'mastered';
 
 /**
- * Dictionary category of a word (the IFDC ones, docs/spec.md); `custom` for a word outside the dictionary.
+ * Dictionary category of a word (the IFDC ones); `custom` for a word outside the dictionary.
  */
 export type WordCategory =
   | 'sounds'

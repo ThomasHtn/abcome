@@ -111,12 +111,12 @@ describe('RecordingNewPage', () => {
   });
 
   /**
-   * Renders the screen, optionally for the word of `?mot=`.
+   * Renders the screen, optionally for the word of `?word=`.
    */
-  function render(mot?: string): ComponentFixture<RecordingNewPage> {
+  function render(word?: string): ComponentFixture<RecordingNewPage> {
     const fixture = TestBed.createComponent(RecordingNewPage);
-    if (mot !== undefined) {
-      fixture.componentRef.setInput('mot', mot);
+    if (word !== undefined) {
+      fixture.componentRef.setInput('word', word);
     }
     fixture.detectChanges();
     return fixture;

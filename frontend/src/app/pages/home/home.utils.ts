@@ -15,7 +15,6 @@ import {
 
 import {
   CHANGE_LABELS,
-  FILTER_PARAM_VALUES,
   NEWS_NOUN,
   SENTENCES_TAB_PARAM,
   SUMMARY_STATUS_ORDER,
@@ -30,17 +29,17 @@ import {
 } from './home.model';
 
 /**
- * Tab named by `?onglet=`; anything but `phrases` means the words.
+ * Tab named by `?tab=`; anything but `sentences` means the words.
  */
 export function tabFromParam(param: string | null | undefined): HomeTab {
   return param === SENTENCES_TAB_PARAM ? 'sentences' : 'words';
 }
 
 /**
- * Status filter named by `?filtre=`; anything unknown means every status.
+ * Status filter named by `?filter=`; anything unknown means every status.
  */
 export function filterFromParam(param: string | null | undefined): StatusFilter {
-  return PRONUNCIATION_STATUSES.find((status) => FILTER_PARAM_VALUES[status] === param) ?? 'all';
+  return PRONUNCIATION_STATUSES.find((status) => status === param) ?? 'all';
 }
 
 /**

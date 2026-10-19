@@ -29,7 +29,7 @@ export function stageTitle(index: number, count: number, date: string, today: st
 }
 
 /**
- * The word's stages for the timeline, newest first, as the mockup shows its progress, each with its sounds.
+ * The word's stages for the timeline, newest first so the latest progress leads, each with its sounds.
  */
 export function timelineStages(word: Word, today: string): TimelineStage[] {
   const stages = sortPronunciations(word.pronunciations);
@@ -69,7 +69,7 @@ export function stageDateLabel(firstStage: boolean): string {
 }
 
 /**
- * Whether a change made the word "Bien dit", the moment the mockup celebrates.
+ * Whether a change made the word "Bien dit", the moment the app celebrates.
  */
 export function turnedMastered(before: PronunciationStatus, after: PronunciationStatus): boolean {
   return before !== 'mastered' && after === 'mastered';

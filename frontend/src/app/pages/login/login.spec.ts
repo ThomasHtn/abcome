@@ -23,12 +23,12 @@ describe('LoginPage', () => {
   afterEach(() => vi.useRealTimers());
 
   /**
-   * Renders the screen, with `?retour=` when given, and returns its root element.
+   * Renders the screen, with `?returnUrl=` when given, and returns its root element.
    */
-  function render(retour?: string): HTMLElement {
+  function render(returnUrl?: string): HTMLElement {
     const fixture = TestBed.createComponent(LoginPage);
-    if (retour !== undefined) {
-      fixture.componentRef.setInput('retour', retour);
+    if (returnUrl !== undefined) {
+      fixture.componentRef.setInput('returnUrl', returnUrl);
     }
     fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
@@ -109,11 +109,11 @@ describe('LoginPage', () => {
     signIn.mockResolvedValue(undefined);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
 
-    const element = render('/mots/nouveau?mot=lapin');
+    const element = render('/words/new?word=lapin');
     type(element, 'secret');
     await submit(element);
     vi.advanceTimersByTime(LOGIN_SUCCESS_DELAY_MS);
-    expect(navigate).toHaveBeenLastCalledWith('/mots/nouveau?mot=lapin');
+    expect(navigate).toHaveBeenLastCalledWith('/words/new?word=lapin');
 
     const other = render('//example.com');
     type(other, 'secret');

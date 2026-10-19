@@ -2,7 +2,7 @@
   <!-- Title of the open tab and the log out button. -->
   <header class="home__header enter flex items-center justify-between gap-3">
     <h1 class="home__title">
-      Les {{ tab() === 'words' ? 'mots' : 'phrases' }} de
+      Les {{ activeTab() === 'words' ? 'words' : 'phrases' }} de
       <span class="home__child">{{ childName() }}</span>
     </h1>
     <button
@@ -59,16 +59,16 @@
             type="button"
             role="tab"
             aria-controls="home-panel"
-            [class.home__tab--selected]="tab() === 'words'"
-            [attr.aria-selected]="tab() === 'words'"
-            [attr.tabindex]="tab() === 'words' ? 0 : -1"
+            [class.home__tab--selected]="activeTab() === 'words'"
+            [attr.aria-selected]="activeTab() === 'words'"
+            [attr.tabindex]="activeTab() === 'words' ? 0 : -1"
             (click)="selectTab('words')"
             (keydown.arrowleft)="switchTabByKey()"
             (keydown.arrowright)="switchTabByKey()"
           >
             Mots
             <!-- Lavender dot while the other tab is open and some word changed elsewhere. -->
-            @if (tab() !== 'words' && wordNews() > 0) {
+            @if (activeTab() !== 'words' && wordNews() > 0) {
               <span class="home__tab-news" aria-hidden="true"></span>
               <span class="sr-only">, du nouveau</span>
             }
@@ -80,16 +80,16 @@
             type="button"
             role="tab"
             aria-controls="home-panel"
-            [class.home__tab--selected]="tab() === 'sentences'"
-            [attr.aria-selected]="tab() === 'sentences'"
-            [attr.tabindex]="tab() === 'sentences' ? 0 : -1"
+            [class.home__tab--selected]="activeTab() === 'sentences'"
+            [attr.aria-selected]="activeTab() === 'sentences'"
+            [attr.tabindex]="activeTab() === 'sentences' ? 0 : -1"
             (click)="selectTab('sentences')"
             (keydown.arrowleft)="switchTabByKey()"
             (keydown.arrowright)="switchTabByKey()"
           >
             Phrases
             <!-- Lavender dot while the other tab is open and some sentence changed elsewhere. -->
-            @if (tab() !== 'sentences' && sentenceNews() > 0) {
+            @if (activeTab() !== 'sentences' && sentenceNews() > 0) {
               <span class="home__tab-news" aria-hidden="true"></span>
               <span class="sr-only">, du nouveau</span>
             }
@@ -114,7 +114,7 @@
       label="Filtrer par couleur"
       fill
       [options]="filterOptions()"
-      [value]="filter()"
+      [value]="activeFilter()"
       (valueChange)="selectFilter($event)"
     />
   </div>
@@ -125,9 +125,9 @@
     class="home__panel home__panel--filtered flex flex-col"
     role="tabpanel"
     [attr.aria-labelledby]="
-      searchShown() ? null : tab() === 'words' ? 'home-tab-words' : 'home-tab-sentences'
+      searchShown() ? null : activeTab() === 'words' ? 'home-tab-words' : 'home-tab-sentences'
     "
-    [attr.aria-label]="searchShown() ? (tab() === 'words' ? 'Mots' : 'Phrases') : null"
+    [attr.aria-label]="searchShown() ? (activeTab() === 'words' ? 'Mots' : 'Phrases') : null"
   >
     @switch (openListState()) {
       @case ('loading') {
@@ -149,7 +149,7 @@
         </div>
       }
       @default {
-        @if (tab() === 'words') {
+        @if (activeTab() === 'words') {
           <!-- Words, newest first, under the month they were first said. -->
           @if (wordMonths().length > 0) {
             <div class="home__months">
@@ -176,8 +176,8 @@
                   app-button
                   variant="soft"
                   size="sm"
-                  routerLink="/mots/nouveau"
-                  [queryParams]="{ mot: trimmedQuery() }"
+                  routerLink="/words/new"
+                  [queryParams]="{ word: trimmedQuery() }"
                 >
                   Ajouter {{ trimmedQuery() | quote }} à ses mots
                 </a>
@@ -213,14 +213,14 @@
 
 <!-- Main actions of the open tab. -->
 <app-action-bar>
-  @if (tab() === 'words') {
-    <a app-button class="min-w-0 flex-1" size="lg" routerLink="/mots/nouveau">
+  @if (activeTab() === 'words') {
+    <a app-button class="min-w-0 flex-1" size="lg" routerLink="/words/new">
       <span class="home__plus" aria-hidden="true">
         <svg app-icon name="plus" [size]="18" [strokeWidth]="2.8"></svg>
       </span>
       Ajouter un mot
     </a>
-    <a class="home__record" routerLink="/sons/nouveau" aria-label="Enregistrer un son">
+    <a class="home__record" routerLink="/recordings/new" aria-label="Enregistrer un son">
       <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
     </a>
   } @else {
@@ -236,7 +236,7 @@
       </span>
       Ajouter une phrase
     </button>
-    <a class="home__record" routerLink="/sons/nouveau" aria-label="Enregistrer un son">
+    <a class="home__record" routerLink="/recordings/new" aria-label="Enregistrer un son">
       <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>
     </a>
   }

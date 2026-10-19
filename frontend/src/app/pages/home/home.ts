@@ -32,7 +32,6 @@ import { SearchField } from '@shared/search-field/search-field';
 
 import {
   FILTER_PARAM,
-  FILTER_PARAM_VALUES,
   SEARCH_PARAM,
   SENTENCE_STATUS_FILTER_OPTIONS,
   SENTENCES_TAB_PARAM,
@@ -127,9 +126,9 @@ export class HomePage {
   protected readonly wordsApi = inject(WordsApi);
 
   /**
-   * `?onglet=` from the URL: `phrases` opens the sentences.
+   * `?tab=` from the URL: `sentences` opens the sentences.
    */
-  public readonly onglet = input<string>();
+  public readonly tab = input<string>();
 
   /**
    * `?q=` from the URL: the search, kept there so the back button restores it.
@@ -137,14 +136,14 @@ export class HomePage {
   public readonly q = input<string>();
 
   /**
-   * `?filtre=` from the URL: the status filter, kept there so coming back from a word keeps it.
+   * `?filter=` from the URL: the status filter, kept there so coming back from a word keeps it.
    */
-  public readonly filtre = input<string>();
+  public readonly filter = input<string>();
 
   /**
    * Open tab.
    */
-  protected readonly tab = computed<HomeTab>(() => tabFromParam(this.onglet()));
+  protected readonly activeTab = computed<HomeTab>(() => tabFromParam(this.tab()));
 
   /**
    * Search typed in the field, following `?q=`; cleared when the tab changes.
@@ -165,19 +164,19 @@ export class HomePage {
    * What the search looks for on the open tab, as placeholder and accessible name.
    */
   protected readonly searchLabel = computed(() =>
-    this.tab() === 'words' ? `Chercher un mot de ${this.childName()}` : 'Chercher une phrase',
+    this.activeTab() === 'words' ? `Chercher un mot de ${this.childName()}` : 'Chercher une phrase',
   );
 
   /**
-   * Status filter, kept across tabs, following `?filtre=`.
+   * Status filter, kept across tabs, following `?filter=`.
    */
-  protected readonly filter = linkedSignal(() => filterFromParam(this.filtre()));
+  protected readonly activeFilter = linkedSignal(() => filterFromParam(this.filter()));
 
   /**
    * Status filter chips, "Tous" on the words and "Toutes" on the sentences.
    */
   protected readonly filterOptions = computed(() =>
-    this.tab() === 'words' ? STATUS_FILTER_OPTIONS : SENTENCE_STATUS_FILTER_OPTIONS,
+    this.activeTab() === 'words' ? STATUS_FILTER_OPTIONS : SENTENCE_STATUS_FILTER_OPTIONS,
   );
 
   /**
@@ -221,7 +220,7 @@ export class HomePage {
    */
   protected readonly summary = computed(() => {
     const summary =
-      this.tab() === 'words'
+      this.activeTab() === 'words'
         ? wordsSummary(this.words(), this.wordNews())
         : sentencesSummary(this.sentences(), this.sentenceNews());
     return this.openListState() === 'ready'
@@ -233,7 +232,7 @@ export class HomePage {
    * Word cards matching the search and filter, by month of first-said date.
    */
   protected readonly wordMonths = computed(() =>
-    groupByMonth(visibleWords(this.words(), this.query(), this.filter()), 'mot', (word) =>
+    groupByMonth(visibleWords(this.words(), this.query(), this.activeFilter()), 'mot', (word) =>
       this.changeOf(word),
     ),
   );
@@ -243,7 +242,7 @@ export class HomePage {
    */
   protected readonly sentenceMonths = computed(() =>
     groupByMonth(
-      visibleWords(this.sentences(), this.query(), this.filter()),
+      visibleWords(this.sentences(), this.query(), this.activeFilter()),
       'phrase',
       (sentence) => this.changeOf(sentence),
     ),
@@ -258,14 +257,14 @@ export class HomePage {
    * Why the words list is empty.
    */
   protected readonly emptyWords = computed(() =>
-    emptyWordsMessage(this.query(), this.filter(), this.words().length, this.childName()),
+    emptyWordsMessage(this.query(), this.activeFilter(), this.words().length, this.childName()),
   );
 
   /**
    * Why the sentences list is empty.
    */
   protected readonly emptySentences = computed(() =>
-    emptySentencesMessage(this.query(), this.filter(), this.sentences().length),
+    emptySentencesMessage(this.query(), this.activeFilter(), this.sentences().length),
   );
 
   /**
@@ -296,13 +295,13 @@ export class HomePage {
    * Opens a tab through the URL, so the back button and a reload keep it; the search restarts.
    */
   protected selectTab(tab: HomeTab): void {
-    if (tab === this.tab()) {
+    if (tab === this.activeTab()) {
       return;
     }
     this.query.set('');
     void this.router.navigate([], {
       queryParams: {
-        onglet: tab === 'sentences' ? SENTENCES_TAB_PARAM : null,
+        tab: tab === 'sentences' ? SENTENCES_TAB_PARAM : null,
         [FILTER_PARAM]: this.filterParam(),
       },
       replaceUrl: true,
@@ -313,7 +312,7 @@ export class HomePage {
    * Filters the list and mirrors the filter in the URL, without a history entry.
    */
   protected selectFilter(filter: StatusFilter): void {
-    this.filter.set(filter);
+    this.activeFilter.set(filter);
     void this.router.navigate([], {
       queryParams: { [FILTER_PARAM]: this.filterParam() },
       queryParamsHandling: 'merge',
@@ -347,7 +346,7 @@ export class HomePage {
    * Arrow keys move between the two tabs, as the ARIA tabs pattern expects.
    */
   protected switchTabByKey(): void {
-    const next: HomeTab = this.tab() === 'words' ? 'sentences' : 'words';
+    const next: HomeTab = this.activeTab() === 'words' ? 'sentences' : 'words';
     this.selectTab(next);
     (next === 'words' ? this.wordsTab() : this.sentencesTab())?.nativeElement.focus();
   }
@@ -373,11 +372,11 @@ export class HomePage {
   }
 
   /**
-   * Value of `?filtre=` for the current filter, `null` (no parameter) for every status.
+   * Value of `?filter=` for the current filter, `null` (no parameter) for every status.
    */
   private filterParam(): string | null {
-    const filter = this.filter();
-    return filter === 'all' ? null : FILTER_PARAM_VALUES[filter];
+    const filter = this.activeFilter();
+    return filter === 'all' ? null : filter;
   }
 
   /**

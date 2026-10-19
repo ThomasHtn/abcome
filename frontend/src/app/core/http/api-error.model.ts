@@ -1,5 +1,5 @@
 /**
- * Stable error codes of the API (docs/spec.md, REST API), the contract with `GlobalExceptionHandler`.
+ * Stable error codes of the API, the contract with `GlobalExceptionHandler`.
  */
 export type ApiErrorCode =
   | 'INVALID_REQUEST'

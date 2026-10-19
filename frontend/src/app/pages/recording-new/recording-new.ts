@@ -149,9 +149,9 @@ export class RecordingNewPage {
   protected readonly recorder = inject(AudioRecorder);
 
   /**
-   * `?mot=` query parameter: id of the word to give the sound to, skipping the word search.
+   * `?word=` query parameter: id of the word to give the sound to, skipping the word search.
    */
-  public readonly mot = input<string>();
+  public readonly word = input<string>();
 
   /**
    * Word of the last saved sound, preselected by "Enregistrer un autre son"; `null` otherwise.
@@ -296,10 +296,10 @@ export class RecordingNewPage {
   );
 
   /**
-   * Word given by "Enregistrer un autre son" or by `?mot=`, when it exists.
+   * Word given by "Enregistrer un autre son" or by `?word=`, when it exists.
    */
   protected readonly preselected = computed(() => {
-    const id = this.lastWordId() ?? Number(this.mot());
+    const id = this.lastWordId() ?? Number(this.word());
     return this.words().find((word) => word.id === id) ?? null;
   });
 

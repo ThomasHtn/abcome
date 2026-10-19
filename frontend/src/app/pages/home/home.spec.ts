@@ -68,10 +68,10 @@ describe('HomePage', () => {
   /**
    * Renders the home screen on a tab, with a search from the URL, and serves the notebook.
    */
-  async function render(onglet?: string, q?: string): Promise<ComponentFixture<HomePage>> {
+  async function render(tab?: string, q?: string): Promise<ComponentFixture<HomePage>> {
     const fixture = TestBed.createComponent(HomePage);
-    if (onglet) {
-      fixture.componentRef.setInput('onglet', onglet);
+    if (tab) {
+      fixture.componentRef.setInput('tab', tab);
     }
     if (q) {
       fixture.componentRef.setInput('q', q);
@@ -225,7 +225,7 @@ describe('HomePage', () => {
 
     search(fixture, 'chien');
     expect(text(fixture)).toContain("Alix n'a pas encore dit «\u00A0chien\u00A0».");
-    const add = element.querySelector<HTMLAnchorElement>('a[href^="/mots/nouveau?mot="]')!;
+    const add = element.querySelector<HTMLAnchorElement>('a[href^="/words/new?word="]')!;
     expect(add.textContent).toContain('Ajouter «\u00A0chien\u00A0» à ses mots');
   });
 
@@ -254,29 +254,29 @@ describe('HomePage', () => {
 
     expect(navigate).toHaveBeenCalledWith(
       [],
-      expect.objectContaining({ queryParams: { filtre: 'en-route' } }),
+      expect.objectContaining({ queryParams: { filter: 'learning' } }),
     );
 
-    fixture.componentRef.setInput('filtre', 'presque');
+    fixture.componentRef.setInput('filter', 'almost');
     fixture.detectChanges();
     expect(element.querySelectorAll('app-word-card')).toHaveLength(1);
     expect(text(fixture)).toContain('lapin');
   });
 
   it('agrees the "all" filter with the sentences', async () => {
-    const fixture = await render('phrases');
+    const fixture = await render('sentences');
 
     expect(text(fixture)).toContain('Toutes');
     expect(text(fixture)).not.toContain('Tous');
   });
 
   it('shows the sentences tab from the URL, linking to their pages, and opens the sheet to add one', async () => {
-    const fixture = await render('phrases');
+    const fixture = await render('sentences');
     const element = fixture.nativeElement as HTMLElement;
 
     expect(text(fixture)).toContain('Les phrases de Alix');
     expect(element.querySelectorAll('app-word-card')).toHaveLength(1);
-    expect(element.querySelector('app-word-card a')!.getAttribute('href')).toBe('/phrases/3');
+    expect(element.querySelector('app-word-card a')!.getAttribute('href')).toBe('/sentences/3');
     expect(text(fixture)).toContain("Il n'y a plus de gâteau");
     expect(element.querySelector('#home-tab-sentences')!.getAttribute('aria-selected')).toBe(
       'true',
@@ -298,7 +298,7 @@ describe('HomePage', () => {
 
     expect(navigate).toHaveBeenCalledWith(
       [],
-      expect.objectContaining({ queryParams: { onglet: 'phrases', filtre: null } }),
+      expect.objectContaining({ queryParams: { tab: 'sentences', filter: null } }),
     );
   });
 
@@ -335,6 +335,6 @@ describe('HomePage', () => {
     await new Promise((resolve) => setTimeout(resolve));
 
     expect(TestBed.inject(AuthSession).signedIn()).toBe(false);
-    expect(navigate).toHaveBeenCalledWith('/connexion');
+    expect(navigate).toHaveBeenCalledWith('/login');
   });
 });

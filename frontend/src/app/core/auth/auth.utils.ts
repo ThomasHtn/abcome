@@ -14,7 +14,7 @@ export function loginUrlTree(router: Router, returnUrl: string): UrlTree {
 }
 
 /**
- * Page to open after signing in: the `retour` parameter when it is an in-app path, else home.
+ * Page to open after signing in: the `returnUrl` parameter when it is an in-app path, else home.
  */
 export function returnUrlFrom(param: string | null | undefined): string {
   return param && isSafeReturnUrl(param) ? param : HOME_ROUTE;

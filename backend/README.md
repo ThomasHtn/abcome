@@ -1,6 +1,6 @@
 # ABCome backend
 
-Spring Boot 4 REST API on Java 25 and PostgreSQL. Conventions are in [CONTRIBUTING.md](../CONTRIBUTING.md), the API contract in [docs/spec.md](../docs/spec.md).
+Spring Boot 4 REST API on Java 25 and PostgreSQL. Conventions are in [CONTRIBUTING.md](../CONTRIBUTING.md); the API is documented by Swagger UI.
 
 ## Commands
 
@@ -55,10 +55,12 @@ Each feature package splits into `controller`, `dto`, `entity`, `repository`, `s
 
 ## Design notes
 
-- Sessions are stored in PostgreSQL (Spring Session JDBC): a restart signs nobody out.
+- Sessions are stored in PostgreSQL (Spring Session JDBC): a restart signs nobody out. Cookie `__Host-`, `HttpOnly`, `SameSite=Strict`, 30-day idle timeout.
 - CSRF: `XSRF-TOKEN` cookie echoed in `X-XSRF-TOKEN`, set by `GET /api/auth/session`.
 - `GET /api/words` runs three queries (words, stages, sound metadata), never the audio bytes.
 - Dates are checked against today in `Europe/Paris`, whatever the server zone.
+- Audio uploads: 2 MB, 15 s, `audio/webm`, `audio/mp4` or `audio/wav`.
+- `FORWARD_HEADERS_STRATEGY=framework` is mandatory behind Traefik, otherwise the lockout sees only the proxy address.
 
 ## Pitfall
 

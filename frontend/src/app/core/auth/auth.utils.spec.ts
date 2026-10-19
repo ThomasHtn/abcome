@@ -13,22 +13,22 @@ describe('loginUrlTree', () => {
   }
 
   it('remembers the page the visitor was on', () => {
-    expect(String(loginUrlTree(router(), '/mots/nouveau?mot=lap'))).toBe(
-      '/connexion?retour=%2Fmots%2Fnouveau%3Fmot%3Dlap',
+    expect(String(loginUrlTree(router(), '/words/new?word=lap'))).toBe(
+      '/login?returnUrl=%2Fwords%2Fnew%3Fword%3Dlap',
     );
   });
 
   it('does not bother remembering home or the login screen', () => {
     const tree = router();
-    expect(String(loginUrlTree(tree, '/'))).toBe('/connexion');
-    expect(String(loginUrlTree(tree, '/connexion?retour=%2F'))).toBe('/connexion');
+    expect(String(loginUrlTree(tree, '/'))).toBe('/login');
+    expect(String(loginUrlTree(tree, '/login?returnUrl=%2F'))).toBe('/login');
   });
 });
 
 describe('returnUrlFrom', () => {
   it('keeps an in-app path', () => {
-    expect(returnUrlFrom('/mots/3')).toBe('/mots/3');
-    expect(returnUrlFrom('/?onglet=phrases')).toBe('/?onglet=phrases');
+    expect(returnUrlFrom('/words/3')).toBe('/words/3');
+    expect(returnUrlFrom('/?tab=sentences')).toBe('/?tab=sentences');
   });
 
   it('falls back to home for anything else', () => {
@@ -40,7 +40,7 @@ describe('returnUrlFrom', () => {
       '//evil.example',
       '/\\evil.example',
       'https://evil.example',
-      '/connexion',
+      '/login',
     ]) {
       expect(returnUrlFrom(value)).toBe('/');
     }

@@ -113,7 +113,7 @@ describe('WordDetailPage', () => {
   });
 
   /**
-   * Renders the page of word `id`, reached under `/mots/` or `/phrases/` as `kind` says.
+   * Renders the page of word `id`, reached under `/words/` or `/sentences/` as `kind` says.
    */
   function render(id = '1', kind: WordKind = 'word'): ComponentFixture<WordDetailPage> {
     const fixture = TestBed.createComponent(WordDetailPage);

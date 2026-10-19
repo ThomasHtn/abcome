@@ -5,7 +5,7 @@ Angular 22 web app, installable as a home-screen shortcut (manifest, no service 
 ## Commands
 
 ```bash
-npx npm@11 install                   # npm 10.9 crashes on jsdom; also links the git pre-commit hook
+npx npm@11 install                   # npm 10.9 crashes on jsdom
 npm start                            # :4200, proxies /api to :8080
 npm test -- --watch=false            # vitest
 npm run lint                         # ESLint then Stylelint
@@ -25,7 +25,7 @@ npm run build                        # production bundle in dist/
 | `src/styles/scss/_tools.scss` | Sass helpers: `tint()`, breakpoints, `hover`, `motion`, `truncate`       |
 | `public/assets/`              | Mascot, status glyphs, confetti, icon sprite                             |
 | `public/fonts/`               | Self-hosted Fredoka and Nunito                                           |
-| `icons/`                      | App icon sources; `generate.sh` renders `public/icons/`                  |
+| `public/icons/`               | App icons (PNG) for the manifest and the home screen                     |
 
 Imports go `core` <- `shared` <- `pages`, a page never imports another page (ESLint enforces it). Aliases: `@core/*`, `@shared/*`, `@pages/*`.
 
@@ -41,16 +41,16 @@ Imports go `core` <- `shared` <- `pages`, a page never imports another page (ESL
 
 Lazy-loaded from `app.routes.ts`. URL parameters bind to page inputs (`withComponentInputBinding`).
 
-| Path            | Page               | URL inputs                   | Guard        |
-| --------------- | ------------------ | ---------------------------- | ------------ |
-| `/connexion`    | `LoginPage`        |                              | `guestGuard` |
-| `/`             | `HomePage`         | `onglet` (`phrases`)         | `authGuard`  |
-| `/mots/nouveau` | `WordNewPage`      | `mot` (prefills the search)  | `authGuard`  |
-| `/mots/:id`     | `WordDetailPage`   | `id`, `kind` (route data)    | `authGuard`  |
-| `/phrases/:id`  | `WordDetailPage`   | `id`, `kind` (route data)    | `authGuard`  |
-| `/sons/nouveau` | `RecordingNewPage` | `mot` (word id to preselect) | `authGuard`  |
+| Path              | Page               | URL inputs                                                            | Guard        |
+| ----------------- | ------------------ | --------------------------------------------------------------------- | ------------ |
+| `/login`          | `LoginPage`        | `returnUrl`                                                           | `guestGuard` |
+| `/`               | `HomePage`         | `tab` (`sentences`), `q`, `filter` (`mastered`, `almost`, `learning`) | `authGuard`  |
+| `/words/new`      | `WordNewPage`      | `word` (prefills the search)                                          | `authGuard`  |
+| `/words/:id`      | `WordDetailPage`   | `id`, `kind` (route data)                                             | `authGuard`  |
+| `/sentences/:id`  | `WordDetailPage`   | `id`, `kind` (route data)                                             | `authGuard`  |
+| `/recordings/new` | `RecordingNewPage` | `word` (word id to preselect)                                         | `authGuard`  |
 
-A 401 signs out and redirects to `/connexion`.
+A 401 signs out and redirects to `/login`.
 
 ## Core
 

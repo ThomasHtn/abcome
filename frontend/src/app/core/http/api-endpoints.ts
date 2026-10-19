@@ -1,5 +1,5 @@
 /**
- * Backend routes of docs/spec.md, declared once here; components never build URLs.
+ * Backend routes, declared once here; components never build URLs.
  */
 export const API_ENDPOINTS = {
   /**

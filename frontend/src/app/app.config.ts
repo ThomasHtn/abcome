@@ -24,7 +24,7 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(),
       withInMemoryScrolling({ scrollPositionRestoration: 'enabled' }),
     ),
-    // Same origin as the API: echoes Spring's `XSRF-TOKEN` cookie on every write (docs/spec.md).
+    // Same origin as the API: echoes Spring's `XSRF-TOKEN` cookie on every write.
     provideHttpClient(
       withFetch(),
       withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),

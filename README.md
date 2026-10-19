@@ -5,8 +5,8 @@ Mobile-first web app, installable as a home-screen shortcut, where family member
 ## Documentation
 
 - [CONTRIBUTING.md](CONTRIBUTING.md): setup, code map, conventions. Start here.
-- [docs/spec.md](docs/spec.md): behaviour, security rules, data model, API, design tokens.
-- [backend/README.md](backend/README.md), [frontend/README.md](frontend/README.md): commands and structure.
+- [backend/README.md](backend/README.md), [frontend/README.md](frontend/README.md): commands, structure, design notes.
+- API reference: Swagger UI at `/swagger-ui.html` when `API_DOCS_ENABLED=true` (dev only).
 
 ## Stack
 

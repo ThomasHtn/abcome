@@ -34,7 +34,7 @@ export const KIND_COPY: Readonly<Record<WordKind, KindCopy>> = {
     deleteFailed: "La phrase n'a pas pu être supprimée, réessaie.",
     lastStageMessage:
       "Une phrase garde toujours au moins une prononciation. Pour l'effacer, supprime la phrase.",
-    listQuery: { onglet: 'phrases' },
+    listQuery: { tab: 'sentences' },
   },
 };
 

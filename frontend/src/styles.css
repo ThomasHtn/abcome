@@ -2,7 +2,7 @@
 
 @import 'tailwindcss';
 
-/* Design tokens from docs/spec.md: palette, type, shapes, layout, motion. */
+/* Design tokens: palette, type, shapes, layout, motion. */
 @import './styles/tokens/colors.css';
 @import './styles/tokens/typography.css';
 @import './styles/tokens/shapes.css';

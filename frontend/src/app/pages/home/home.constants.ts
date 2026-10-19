@@ -6,9 +6,9 @@ import { IconName } from '@shared/icon/icon.model';
 import { StatusFilter } from './home.model';
 
 /**
- * Value of `?onglet=` that opens the sentences tab.
+ * Value of `?tab=` that opens the sentences tab.
  */
-export const SENTENCES_TAB_PARAM = 'phrases';
+export const SENTENCES_TAB_PARAM = 'sentences';
 
 /**
  * Query parameter holding the search, so going back to the list finds it as it was left.
@@ -22,7 +22,7 @@ export const SEARCH_PARAM = 'q';
 export const SUMMARY_PENDING_HEADLINE = 'Coucou\u00A0!';
 
 /**
- * Status filters, best first, as in the mockup.
+ * Status filters, best first.
  */
 export const STATUS_FILTER_OPTIONS: readonly FilterChipOption<StatusFilter>[] = [
   { value: 'all', label: 'Tous', tone: 'neutral' },
@@ -42,16 +42,7 @@ export const SENTENCE_STATUS_FILTER_OPTIONS: readonly FilterChipOption<StatusFil
 /**
  * Query parameter holding the status filter, so opening a word and coming back keeps it.
  */
-export const FILTER_PARAM = 'filtre';
-
-/**
- * Value of `?filtre=` for each status, readable in the address bar.
- */
-export const FILTER_PARAM_VALUES: Readonly<Record<PronunciationStatus, string>> = {
-  mastered: 'bien-dit',
-  almost: 'presque',
-  learning: 'en-route',
-};
+export const FILTER_PARAM = 'filter';
 
 /**
  * Order of the status counts in the mascot card, best first.

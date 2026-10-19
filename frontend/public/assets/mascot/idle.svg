@@ -24,7 +24,7 @@
       }
     }
 
-    /* Slow breathing sway, mockup "Flotte". */
+    /* Slow breathing sway. */
     @keyframes sway {
       0%,
       100% {

@@ -11,7 +11,7 @@ import { dateFieldError } from '@shared/date-field/date-field.utils';
 import { PronunciationDraft } from './pronunciation-form.model';
 
 /**
- * Blank draft dated today; `status` defaults to "Presque", the mockup's starting tile.
+ * Blank draft dated today; `status` defaults to "Presque", the middle choice.
  */
 export function emptyDraft(
   status: PronunciationStatus = 'almost',

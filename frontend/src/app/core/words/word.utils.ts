@@ -84,10 +84,10 @@ export function findWordByLabel(words: readonly Word[], label: string): Word | u
 }
 
 /**
- * Page of an entry: `/mots/7` for a word, `/phrases/7` for a sentence.
+ * Page of an entry: `/words/7` for a word, `/sentences/7` for a sentence.
  */
 export function entryPath(word: Pick<Word, 'id' | 'kind'>): string {
-  return `${word.kind === 'sentence' ? '/phrases' : '/mots'}/${word.id}`;
+  return `${word.kind === 'sentence' ? '/sentences' : '/words'}/${word.id}`;
 }
 
 /**

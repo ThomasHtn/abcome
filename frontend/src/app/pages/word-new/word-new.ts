@@ -99,14 +99,14 @@ export class WordNewPage {
   protected readonly childName = inject(AuthSession).childName;
 
   /**
-   * `?mot=` query parameter, prefilling the search (home's "Ajouter « x » à ses mots").
+   * `?word=` query parameter, prefilling the search (home's "Ajouter « x » à ses mots").
    */
-  public readonly mot = input<string>();
+  public readonly word = input<string>();
 
   /**
    * Typed search, prefilled from the URL.
    */
-  protected readonly query = linkedSignal(() => this.mot() ?? '');
+  protected readonly query = linkedSignal(() => this.word() ?? '');
 
   /**
    * The notebook's words, without its sentences: this page only adds words.
@@ -210,7 +210,7 @@ export class WordNewPage {
         this.celebration.play();
       }
       this.toasts.show(`${quote(word.label)} rejoint ses mots`);
-      await this.router.navigate(['/mots', word.id]);
+      await this.router.navigate(['/words', word.id]);
     } catch (error) {
       this.reportFailure(error, choice.label);
     } finally {

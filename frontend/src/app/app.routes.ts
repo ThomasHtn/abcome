@@ -3,13 +3,13 @@ import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from '@core/auth/auth.guards';
 
 /**
- * Screens of docs/spec.md, each lazy so the first visit only loads what it shows.
+ * App screens, each lazy so the first visit only loads what it shows.
  * Route and query parameters reach page inputs directly (`withComponentInputBinding`):
- * `id` on the word page, `onglet` on home, `mot` on the add-word and record screens.
+ * `id` on the word page, `tab`, `q` and `filter` on home, `word` on the add-word and record screens.
  */
 export const routes: Routes = [
   {
-    path: 'connexion',
+    path: 'login',
     title: 'Connexion · ABCome',
     canActivate: [guestGuard],
     loadComponent: () => import('@pages/login/login').then((page) => page.LoginPage),
@@ -25,26 +25,26 @@ export const routes: Routes = [
         loadComponent: () => import('@pages/home/home').then((page) => page.HomePage),
       },
       {
-        path: 'mots/nouveau',
+        path: 'words/new',
         title: 'Nouveau mot · ABCome',
         loadComponent: () => import('@pages/word-new/word-new').then((page) => page.WordNewPage),
       },
       {
-        path: 'mots/:id',
+        path: 'words/:id',
         title: 'Mot · ABCome',
         data: { kind: 'word' },
         loadComponent: () =>
           import('@pages/word-detail/word-detail').then((page) => page.WordDetailPage),
       },
       {
-        path: 'phrases/:id',
+        path: 'sentences/:id',
         title: 'Phrase · ABCome',
         data: { kind: 'sentence' },
         loadComponent: () =>
           import('@pages/word-detail/word-detail').then((page) => page.WordDetailPage),
       },
       {
-        path: 'sons/nouveau',
+        path: 'recordings/new',
         title: 'Enregistrer un son · ABCome',
         loadComponent: () =>
           import('@pages/recording-new/recording-new').then((page) => page.RecordingNewPage),

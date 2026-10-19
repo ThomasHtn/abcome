@@ -45,9 +45,9 @@ export class LoginPage {
   private successTimer: ReturnType<typeof setTimeout> | undefined;
 
   /**
-   * `?retour=` from the URL: the page the session expired on, reopened after signing in.
+   * `?returnUrl=` from the URL: the page the session expired on, reopened after signing in.
    */
-  public readonly retour = input<string>();
+  public readonly returnUrl = input<string>();
 
   /**
    * Password as typed.
@@ -145,7 +145,7 @@ export class LoginPage {
     try {
       await this.session.signIn(this.password());
       this.succeeded.set(true);
-      const destination = returnUrlFrom(this.retour());
+      const destination = returnUrlFrom(this.returnUrl());
       this.successTimer = setTimeout(
         () => void this.router.navigateByUrl(destination),
         LOGIN_SUCCESS_DELAY_MS,

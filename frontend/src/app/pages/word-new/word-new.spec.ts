@@ -54,12 +54,12 @@ describe('WordNewPage', () => {
   });
 
   /**
-   * Renders the page, optionally with a `?mot=` prefill.
+   * Renders the page, optionally with a `?word=` prefill.
    */
-  function render(mot?: string): ComponentFixture<WordNewPage> {
+  function render(word?: string): ComponentFixture<WordNewPage> {
     const fixture = TestBed.createComponent(WordNewPage);
-    if (mot !== undefined) {
-      fixture.componentRef.setInput('mot', mot);
+    if (word !== undefined) {
+      fixture.componentRef.setInput('word', word);
     }
     fixture.detectChanges();
     return fixture;
@@ -120,7 +120,7 @@ describe('WordNewPage', () => {
         pronunciation: { spoken: 'papa', status: 'almost', date: expect.any(String) },
       },
     ]);
-    expect(navigate).toHaveBeenCalledWith(['/mots', 2]);
+    expect(navigate).toHaveBeenCalledWith(['/words', 2]);
   });
 
   it('asks for the day once the spoken form is typed but the day is cleared', async () => {
@@ -152,7 +152,7 @@ describe('WordNewPage', () => {
     expect(element.querySelector('app-mascot-bubble')?.textContent).toContain(
       'Alix le dit déjà\u00A0!',
     );
-    expect(element.querySelector('a[href="/mots/1"]')?.textContent).toContain('Voir sa page');
+    expect(element.querySelector('a[href="/words/1"]')?.textContent).toContain('Voir sa page');
     expect(element.querySelector('app-action-bar')).toBeNull();
   });
 });

@@ -86,9 +86,9 @@ describe('word lists', () => {
     expect(findWordByLabel([{ ...gateau, kind: 'sentence' }], 'gateau')).toBeUndefined();
   });
 
-  it('links a word under /mots and a sentence under /phrases', () => {
-    expect(entryPath({ id: 7, kind: 'word' })).toBe('/mots/7');
-    expect(entryPath({ id: 8, kind: 'sentence' })).toBe('/phrases/8');
+  it('links a word under /words and a sentence under /sentences', () => {
+    expect(entryPath({ id: 7, kind: 'word' })).toBe('/words/7');
+    expect(entryPath({ id: 8, kind: 'sentence' })).toBe('/sentences/8');
   });
 
   it('keeps the entries of one kind', () => {

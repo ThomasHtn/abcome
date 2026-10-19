@@ -112,8 +112,8 @@
     </button>
     <a
       class="word-detail__record"
-      routerLink="/sons/nouveau"
-      [queryParams]="{ mot: word.id }"
+      routerLink="/recordings/new"
+      [queryParams]="{ word: word.id }"
       [attr.aria-label]="'Enregistrer un son de ' + (word.label | quote)"
     >
       <svg app-icon name="mic" [size]="26" [strokeWidth]="2.2"></svg>

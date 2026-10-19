@@ -10,8 +10,7 @@
     "lint:styles": "stylelint \"src/**/*.{css,scss}\"",
     "format": "prettier --write \"src/**/*.{ts,html,css,scss}\" eslint.config.js stylelint.config.mjs",
     "format:check": "prettier --check \"src/**/*.{ts,html,css,scss}\" eslint.config.js stylelint.config.mjs",
-    "fix": "ng lint --fix --force && stylelint --fix \"src/**/*.{css,scss}\" && npm run format",
-    "prepare": "test -x ../scripts/install-git-hooks.sh && ../scripts/install-git-hooks.sh || true"
+    "fix": "ng lint --fix --force && stylelint --fix \"src/**/*.{css,scss}\" && npm run format"
   },
   "private": true,
   "packageManager": "npm@11.21.1",
@@ -35,7 +34,6 @@
     "eslint-plugin-jsdoc": "^64.5.4",
     "eslint-plugin-simple-import-sort": "^14.0.0",
     "jsdom": "^28.0.0",
-    "lint-staged": "^17.5.1",
     "postcss": "^8.5.23",
     "prettier": "^3.8.1",
     "stylelint": "^17.16.0",

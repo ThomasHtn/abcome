@@ -2,7 +2,7 @@
 
 @use 'tools' as *;
 
-/* Room above for the notch, like the mockup's 28 px top padding. */
+/* Room above for the notch: the safe-area inset plus 28 px. */
 .page-header {
   padding: calc(1.75rem + var(--layout-safe-top)) var(--layout-gutter) 0.5rem;
 }

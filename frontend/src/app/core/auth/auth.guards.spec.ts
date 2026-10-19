@@ -41,12 +41,12 @@ describe('authGuard', () => {
     withSession(false);
     const result = await run(authGuard);
     expect(result).toBeInstanceOf(UrlTree);
-    expect(String(result)).toBe('/connexion');
+    expect(String(result)).toBe('/login');
   });
 
   it('remembers the page a signed-out visitor wanted', async () => {
     withSession(false);
-    expect(String(await run(authGuard, '/mots/3'))).toBe('/connexion?retour=%2Fmots%2F3');
+    expect(String(await run(authGuard, '/words/3'))).toBe('/login?returnUrl=%2Fwords%2F3');
   });
 });
 

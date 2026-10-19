@@ -23,7 +23,7 @@ describe('unauthorizedInterceptor', () => {
       ],
     });
     const router = TestBed.inject(Router);
-    vi.spyOn(router, 'url', 'get').mockReturnValue('/mots/nouveau');
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/words/new');
     navigateByUrl = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
     client = TestBed.inject(HttpClient);
     http = TestBed.inject(HttpTestingController);
@@ -40,7 +40,7 @@ describe('unauthorizedInterceptor', () => {
 
     expect(session.status()).toBe('signed-out');
     const target = navigateByUrl.mock.calls[0]?.[0] as UrlTree;
-    expect(String(target)).toBe('/connexion?retour=%2Fmots%2Fnouveau');
+    expect(String(target)).toBe('/login?returnUrl=%2Fwords%2Fnew');
   });
 
   it('leaves a wrong password to the login screen', () => {

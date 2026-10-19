@@ -8,7 +8,7 @@
   container: filter-chips / inline-size;
 }
 
-/* Sideways scroll without a visible bar, as on the mockup. */
+/* Sideways scroll without a visible bar. */
 .filter-chips {
   overflow-x: auto;
   scrollbar-width: none;

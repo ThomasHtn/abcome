@@ -56,7 +56,7 @@ describe('WordsApi', () => {
     await TestBed.inject(Router).navigateByUrl('/');
     await loadList();
 
-    await TestBed.inject(Router).navigateByUrl('/mots/1');
+    await TestBed.inject(Router).navigateByUrl('/words/1');
     TestBed.tick();
 
     expect(api.words.value()?.map((word) => word.label)).toEqual(['lapin']);
@@ -70,7 +70,7 @@ describe('WordsApi', () => {
     await TestBed.inject(Router).navigateByUrl('/');
     await loadList();
 
-    await TestBed.inject(Router).navigateByUrl('/?onglet=phrases&q=ch');
+    await TestBed.inject(Router).navigateByUrl('/?tab=sentences&q=ch');
     TestBed.tick();
 
     http.expectNone(API_ENDPOINTS.words);

@@ -25,7 +25,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
  * <p>Every caller mistake gets its own 4xx handler; anything else reaches the catch-all, is logged
  * and answered with a generic 500 that never echoes an internal message.</p>
  *
- * <p>The {@code code} values are a contract with the frontend, listed in {@code docs/spec.md}:
+ * <p>The {@code code} values are a contract with the frontend ({@code api-error.model.ts}):
  * change one on both sides or not at all.</p>
  */
 @RestControllerAdvice

@@ -1,5 +1,5 @@
 /**
- * Look of a button, from the mockup's design system.
+ * Look of a button, from the app's design system.
  * `primary` salmon main action, `secondary` lavender save, `outline` cancel, `dark` log out,
  * `danger` confirmed deletion, `soft` lavender tinted link ("Ajouter « x »"), `link` underlined text.
  */

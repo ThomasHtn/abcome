@@ -81,7 +81,7 @@ export interface WordCardView {
   id: number;
 
   /**
-   * Its page: `/mots/7` for a word, `/phrases/7` for a sentence.
+   * Its page: `/words/7` for a word, `/sentences/7` for a sentence.
    */
   path: string;
 

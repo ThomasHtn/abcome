@@ -140,7 +140,7 @@ export class WordDetailPage {
   public readonly id = input.required<string>();
 
   /**
-   * Route data: `word` under `/mots/`, `sentence` under `/phrases/`.
+   * Route data: `word` under `/words/`, `sentence` under `/sentences/`.
    */
   public readonly kind = input<WordKind>('word');
 
@@ -360,7 +360,7 @@ export class WordDetailPage {
 
   /**
    * Stops the jump timer when the page goes away, moves an entry opened under the other kind's path
-   * (`/mots/` for a sentence) to its own, so its wording and limits match, and marks what the page
+   * (`/words/` for a sentence) to its own, so its wording and limits match, and marks what the page
    * shows as seen, again when a reload brings a change made elsewhere.
    */
   constructor() {

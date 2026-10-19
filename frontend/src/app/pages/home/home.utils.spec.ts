@@ -82,10 +82,10 @@ const SENTENCES = [
 ];
 
 describe('tabFromParam', () => {
-  it('opens the sentences only for "phrases"', () => {
-    expect(tabFromParam('phrases')).toBe('sentences');
+  it('opens the sentences only for "sentences"', () => {
+    expect(tabFromParam('sentences')).toBe('sentences');
     expect(tabFromParam(undefined)).toBe('words');
-    expect(tabFromParam('mots')).toBe('words');
+    expect(tabFromParam('phrases')).toBe('words');
   });
 });
 
@@ -152,7 +152,7 @@ describe('sentences as cards', () => {
 
   it('links a sentence card to its page', () => {
     expect(toWordCard(SENTENCES[0])).toMatchObject({
-      path: '/phrases/5',
+      path: '/sentences/5',
       label: 'Papa est parti',
       spoken: 'papa pati',
     });
