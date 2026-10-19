@@ -5,16 +5,16 @@ Spring Boot 4 REST API on Java 25 and PostgreSQL. Conventions are in [CONTRIBUTI
 ## Commands
 
 ```bash
-cp .env.example .env                 # local settings; set FAMILY_PASSWORD_HASH and CHILD_NAME
+cp .env.example .env                 # local settings, demo passphrase littlewords-demo-passphrase
 ./mvnw spring-boot:run               # API on :8080, Swagger UI at /swagger-ui.html if API_DOCS_ENABLED=true
 ./mvnw spotless:apply                # format
 ./mvnw clean verify                  # full gate: Spotless, Checkstyle, tests, SpotBugs, JaCoCo
 ./mvnw test -Dtest=WordApiTest
 ```
 
-Requirements: Java 25, PostgreSQL 16+ to run, Docker for the tests (PostgreSQL 17 Testcontainer, no H2).
+Requirements: Java 25, Docker for the database (`make db`, PostgreSQL 17 on localhost:5433) and the tests (PostgreSQL 17 Testcontainer, no H2).
 
-Local database, once:
+A native PostgreSQL 16+ instead, once, then `DB_URL=jdbc:postgresql://localhost:5432/littlewords` in `.env`:
 
 ```bash
 sudo -u postgres psql -c "CREATE ROLE littlewords LOGIN PASSWORD 'littlewords';" -c "CREATE DATABASE littlewords OWNER littlewords;"
@@ -24,11 +24,13 @@ Monitoring: `/readyz` and `/livez` on :8080, the actuator on :8081 (`/actuator/h
 
 ## Family password
 
-The backend refuses to start without `FAMILY_PASSWORD_HASH`, the Argon2id hash of the passphrase (16 characters or more). Produce it without leaving the passphrase in the shell history:
+The backend refuses to start without `FAMILY_PASSWORD_HASH`, the Argon2id hash of the passphrase (16 characters or more). `make hash` asks for it without echo and prints the hash, through the `argon2` CLI or, without it, a pinned Alpine container. By hand, without leaving the passphrase in the shell history:
 
 ```bash
 read -rs PASSPHRASE && printf '%s' "$PASSPHRASE" | argon2 "$(openssl rand -base64 18)" -id -t 3 -m 15 -p 1 -e; unset PASSPHRASE
 ```
+
+The hash in `.env.example` is a demo one (passphrase `littlewords-demo-passphrase`), for local runs only.
 
 `-m 15` (32 MiB) is the maximum the backend accepts. The hash contains `$` signs:
 
@@ -60,17 +62,17 @@ Each feature package splits into `controller`, `dto`, `entity`, `repository`, `s
 - Sessions are stored in PostgreSQL (Spring Session JDBC): a restart signs nobody out. Cookie `__Host-`, `HttpOnly`, `SameSite=Strict`, 30-day idle timeout.
 - CSRF: `XSRF-TOKEN` cookie echoed in `X-XSRF-TOKEN`, set by `GET /api/auth/session`.
 - `GET /api/words` runs three queries (words, stages, sound metadata), never the audio bytes.
-- Dates are checked against today in `Europe/Paris`, whatever the server zone.
+- Dates are checked against today in `APP_TIME_ZONE` (`Europe/Paris` by default), whatever the server zone; `GET /api/branding` gives that zone to the app, so both judge "today" alike.
 - Audio uploads: 2 MB, 15 s, `audio/webm`, `audio/mp4` or `audio/wav`.
 - `FORWARD_HEADERS_STRATEGY=native` (the default) is mandatory behind a proxy: `none` makes the lockout see only the proxy address, `framework` lets a client pick its address with a `Forwarded` header.
 
 ## Deployment
 
-The repository ships images, not a deployment (`compose.yaml` runs them on localhost only): the compose file, domain, TLS, secrets and backups belong to the server that runs them. Whatever runs it must provide the following.
+The repository ships images and a template ([deploy/](../deploy/README.md): PostgreSQL, Caddy for HTTPS, backups), not a deployment: each server owns its copy, its domain, its secrets and its backups. Whatever runs the images must provide the following; the template already does.
 
-**Images**: `backend/Dockerfile` (API on 8080, actuator on 8081, user 10001, heap at 60 % of the memory limit, 512 MB is plenty) and `frontend/Dockerfile` (nginx on 8080, non-root). Both declare a Docker `HEALTHCHECK`. Base images are pinned by version and digest; Dependabot bumps them. Every push to `main` whose tests pass publishes both on GHCR (`.github/workflows/deliver.yml`): `ghcr.io/thomashtn/littlewords-backend` and `-frontend`, tagged `sha-<commit>` and `main`. A server pulls `sha-<commit>`, so a failed commit has no image to deploy.
+**Images**: `backend/Dockerfile` (API on 8080, actuator on 8081, user 10001, heap at 60 % of the memory limit, 512 MB is plenty, exits on OutOfMemoryError so the restart policy replaces it) and `frontend/Dockerfile` (nginx on 8080, non-root). Both declare a Docker `HEALTHCHECK` and run with a read-only root filesystem plus a `/tmp` tmpfs. Base images are pinned by version and digest; Dependabot bumps them. Every push to `main` whose tests, image scan and browser tests pass publishes both on GHCR (`.github/workflows/deliver.yml`) for amd64 and arm64, with an SBOM and provenance: `ghcr.io/thomashtn/littlewords-backend` and `-frontend`, tagged `sha-<commit>` and `main`, plus `x.y.z` and `x.y` for a release tag. A server pulls a release or `sha-<commit>`, so a failed commit has no image to deploy.
 
-**Routing**: one HTTPS origin. `/api/*` goes to the backend, everything else to the frontend; nginx answers a JSON `503` on `/api/*` if it ever receives it. Never route port 8081 (actuator); an external probe uses `/readyz` on 8080. Refuse request bodies above 2 MB at the proxy. The recording screen needs `Permissions-Policy: microphone=(self)`, so a shared header set with `microphone=()` breaks it.
+**Routing**: one HTTPS origin. `/api/*` and `/readyz` go to the backend, everything else to the frontend; nginx answers a JSON `503` on `/api/*` if it ever receives it. Never route port 8081 (actuator); an external probe uses `/readyz` on 8080. Refuse request bodies above 2 MB at the proxy. The recording screen needs `Permissions-Policy: microphone=(self)`, so a shared header set with `microphone=()` breaks it.
 
 **Database**: PostgreSQL 16+, a dedicated role and database (`CREATE ROLE littlewords LOGIN PASSWORD '...'; CREATE DATABASE littlewords OWNER littlewords;`). Flyway creates the tables at first start. Keep it on a private network, never published.
 
@@ -83,13 +85,15 @@ The repository ships images, not a deployment (`compose.yaml` runs them on local
 | `READER_PASSWORD_HASH` | Optional, empty turns the read-only sign-in off |
 | `CHILD_NAME` | Required, shown after login only |
 | `APP_NAME`, `APP_NAME_ACCENT` | Name of the app and its accented end (`ABCome`, `ome` by default); public, served by `GET /api/branding` |
+| `APP_TIME_ZONE` | IANA zone of the family (`Europe/Paris` by default), in which "today" is judged; public, served by `GET /api/branding` |
+| `LOGGING_STRUCTURED_FORMAT_CONSOLE` | Optional: `ecs`, `logstash` or `gelf` for JSON logs to a collector (`LOG_FORMAT` in the template) |
 | `API_DOCS_ENABLED` | `false` (the default) |
 | `FORWARD_HEADERS_STRATEGY` | `native` (the default); never `framework` behind a proxy |
 | `LOGIN_LOCKOUT_ENABLED` | `true` (the default) |
 
 Secrets live in the server's `.env` (mode 600), never in the repository. After the first start, open the site and check that a wrong passphrase is refused.
 
-**Backups**: dump the database nightly and test a restore now and then; it holds the recordings, there is no other copy.
+**Backups**: dump the database nightly and test a restore now and then; it holds the recordings, there is no other copy. The template's `backup.sh` and `restore.sh` do it with `pg_dump` and `pg_restore`.
 
 ## Monitoring
 

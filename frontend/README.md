@@ -12,7 +12,10 @@ npm run lint                         # ESLint then Stylelint
 npm run format:check                 # Prettier
 npm run fix                          # every auto-fix
 npm run build                        # production bundle in dist/
+npm run e2e                          # Playwright against http://localhost:8000 (`make up` first)
 ```
+
+Browser tests (`e2e/`, `*.e2e.ts`) drive the real app, French locale, mobile viewport, reduced motion and a fake microphone. A setup project signs in once (the backend checks two passwords at once) and every test writes its own word. `E2E_BASE_URL` and `E2E_PASSPHRASE` point them at another stack; the delivery runs them against `deploy/compose.yaml`.
 
 Production image: nginx serves the bundle and answers `/healthz` for the Docker `HEALTHCHECK` and uptime probes. Deployment and monitoring: [backend/README.md](../backend/README.md#deployment).
 
@@ -79,12 +82,12 @@ Lists are loaded whole, shared by every screen and patched locally after each wr
 | `core/words/seen-words.ts`          | Seen marks: `changeOf(word)`, `markSeen(word)`, `markListed(words)`    |
 | `core/words/word.constants.ts`      | Statuses and their labels                                              |
 | `core/text/text.utils.ts`           | Normalization and search ranking (twin of the backend)                 |
-| `core/date/date.utils.ts`           | `todayIso()` (Paris) and date formatting                               |
+| `core/date/date.utils.ts`           | `todayIso()` in the family's zone, `setFamilyTimeZone()`, formatting   |
 | `core/http/api-error.utils.ts`      | `apiErrorCode(error)`, `retryAfterSeconds(error)`, `isNotFound(error)` |
 | `core/http/resource.utils.ts`       | `resourceValue(resource, fallback)`, `keepValueOnError(resource)`      |
 | `core/http/stale-build.utils.ts`    | Reloads a screen whose lazy bundle went away with a deployment         |
 | `core/recordings/`                  | Duration and size limits, MIME type choice, decoded waveforms          |
-| `core/branding/`                    | `BrandingApi.name()`, `nameAccent()`; tab titles end with the app name |
+| `core/branding/`                    | `provideBranding()` loads name and zone before the first screen        |
 | `core/i18n/`                        | `provideI18n()`, `activeLocale()`, `isSingular(count)` for plurals     |
 
 Test factories `aWord()` and `aPronunciation()` are in `core/words/word.fixtures.ts`.

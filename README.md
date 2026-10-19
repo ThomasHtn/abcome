@@ -18,11 +18,13 @@
 </p>
 
 <p align="center">
-  <a href="docs/media/littlewords-tour-en.mp4">
+  <!-- The tour lives on GitHub's attachment storage, not in git: a new version is dropped into an issue
+       editor on github.com, and the URL it gives replaces this one. -->
+  <a href="https://github.com/user-attachments/assets/92dedca2-3f3f-4f5c-95ef-2b74892398e1">
     <img src="docs/media/poster.png" alt="Watch the Little Words tour" width="760">
   </a>
   <br>
-  <a href="docs/media/littlewords-tour-en.mp4"><b>&#9654; Watch the 46-second tour</b></a><br>
+  <a href="https://github.com/user-attachments/assets/92dedca2-3f3f-4f5c-95ef-2b74892398e1"><b>&#9654; Watch the 46-second tour</b></a><br>
   <sub>No sound, no ads, one bunny.</sub>
 </p>
 
@@ -107,11 +109,13 @@ Three months later the same child says "rabbit" perfectly, and nobody remembers 
 
 ## Get it
 
-You bring the toddler, Little Words brings the rest. It ships as two Docker images (API and web) and needs a PostgreSQL database and a reverse proxy that serves both on one origin.
+You bring the toddler, Little Words brings the rest. It ships as two Docker images (API and web, amd64 and arm64) and needs a PostgreSQL database and a reverse proxy that serves both on one origin.
 
-The repository holds no deployment of its own: your server owns its compose file, domain, TLS and secrets. What a deployment must provide (routing, variables, health checks, backups) is in [backend/README.md](backend/README.md#deployment).
+- **Try it**: `docker compose up --build` (or `make up`) runs the whole app on http://localhost:8000, nothing to configure; the passphrase is `littlewords-demo-passphrase`.
+- **Host it**: [deploy/](deploy/README.md) is a ready template for one machine (PostgreSQL, HTTPS by Caddy, backups), a domain and four settings away from running. Your server owns its copy, its secrets and its domain.
+- **Hack on it**: `make setup && make dev` ([CONTRIBUTING.md](CONTRIBUTING.md#setup)).
 
-Rather try it first? `docker compose up --build` runs the whole app on http://localhost:8000 ([CONTRIBUTING.md](CONTRIBUTING.md#setup)).
+What any deployment must provide (routing, variables, health checks, backups) is in [backend/README.md](backend/README.md#deployment).
 
 <br>
 
@@ -126,12 +130,14 @@ Everything is called `littlewords`: repository, Java package, Docker images, con
 | Database | PostgreSQL 17, recordings stored as `bytea` in their own table |
 | Auth | Shared family passphrase (Argon2id), optional read-only one, session cookie, CSRF, login lockout |
 | Deployment | Two images behind your reverse proxy: `/api/*` to the backend, the rest to the frontend |
-| Quality | Spotless, Checkstyle, SpotBugs, JaCoCo, Testcontainers; ESLint, Stylelint, Prettier, vitest; GitHub Actions |
+| Quality | Spotless, Checkstyle, SpotBugs, JaCoCo, Testcontainers; ESLint, Stylelint, Prettier, vitest; Playwright against the deployment template |
+| Supply chain | Images and actions pinned by digest, Dependabot, dependency review, CodeQL, Grype image scan, SBOM and provenance on every image |
 
-The interface speaks French or English, following the browser (French when it offers neither); so do the word suggestions (French IFDC or American English CDI). The app name is set per deployment (`APP_NAME`), so each family runs its own notebook.
+The interface speaks French or English, following the browser (French when it offers neither); so do the word suggestions (French IFDC or American English CDI). The app name and the family's time zone are set per deployment (`APP_NAME`, `APP_TIME_ZONE`), so each family runs its own notebook.
 
 - [CONTRIBUTING.md](CONTRIBUTING.md): setup, code map, conventions. Start here.
 - [backend/README.md](backend/README.md): commands, family password, packages, deployment, monitoring.
+- [deploy/README.md](deploy/README.md): production template, updates, backups.
 - [frontend/README.md](frontend/README.md): commands, folders, routes, styles, components.
 - [docs/dictionary/README.md](docs/dictionary/README.md): where the word lists come from (IFDC and CDI via Wordbank, CC BY 4.0).
 - API reference: Swagger UI at `/swagger-ui.html` when `API_DOCS_ENABLED=true` (dev only).

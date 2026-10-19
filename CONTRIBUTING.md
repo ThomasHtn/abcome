@@ -10,18 +10,26 @@ Where things live, which rules the code follows and which tools enforce them.
 ## Setup
 
 ```bash
-sudo -u postgres psql -c "CREATE ROLE littlewords LOGIN PASSWORD 'littlewords';" -c "CREATE DATABASE littlewords OWNER littlewords;"   # once
-cd backend && cp .env.example .env     # set DB_PASSWORD, FAMILY_PASSWORD_HASH and CHILD_NAME (backend/README.md)
-./mvnw spring-boot:run                 # API on :8080, actuator on :8081
-cd ../frontend && npx npm@11 install && npm start   # app on :4200
+make setup     # once: backend/.env from .env.example (demo passphrase littlewords-demo-passphrase), npm install
+make dev       # PostgreSQL in Docker on :5433, API on :8080 (actuator :8081), app on :4200
 ```
 
-Requirements: Java 25, Node 22, PostgreSQL 16+. Docker for the backend tests and the images.
-
-Whole app from its images, as deployed (http://localhost:8000, reads `backend/.env`):
+`make` alone lists every target; each one wraps a command of this file, so nothing requires it. Without make:
 
 ```bash
-docker compose up --build              # Ctrl+C to stop; `docker compose down -v` also drops its database
+cp backend/.env.example backend/.env
+docker compose up --detach --wait postgres            # development database on localhost:5433
+cd backend && ./mvnw spring-boot:run
+cd frontend && npx npm@11 install && npm start
+```
+
+Requirements: Java 25 and Node 22 (`.sdkmanrc`, `.nvmrc`: `sdk env install`, `nvm use`), Docker. A native PostgreSQL 16+ works too: point `DB_URL` at it in `backend/.env`.
+
+Whole app from its images, as deployed (http://localhost:8000, `backend/.env` when present, the demo settings otherwise):
+
+```bash
+make up        # docker compose up --build --detach --wait; `make down` stops, `make reset` drops the database
+make e2e       # browser tests against it (E2E_PASSPHRASE when backend/.env has another passphrase)
 ```
 
 ## Repository
@@ -32,8 +40,10 @@ docker compose up --build              # Ctrl+C to stop; `docker compose down -v
 | `frontend/` | Angular app served by nginx |
 | `docs/dictionary/` | Word dictionaries (French, English) and their build scripts |
 | `docs/media/` | Tour video, poster, screenshots and icons shown in the README |
-| `compose.yaml` | Whole app from its images on localhost, not a deployment |
-| `.github/` | CI workflows (`deliver.yml` tests then publishes the images on each push to `main`) and Dependabot |
+| `deploy/` | Production template for one machine, started by every delivery |
+| `compose.yaml` | Whole app from its images on localhost, and the development database |
+| `Makefile` | Shortcuts for the commands of this file |
+| `.github/` | CI workflows and Dependabot (below) |
 
 ## General rules
 
@@ -93,8 +103,25 @@ Backend test methods use `@DisplayName` instead. Checkstyle and ESLint fail on a
 | `npm run format:check` | Prettier check |
 | `./mvnw spotless:apply` | Backend formatting |
 | `./mvnw clean verify` | Spotless, Checkstyle, tests, SpotBugs, JaCoCo (90 % lines, 70 % branches) |
+| `make verify` | Every gate above, both sides |
+| `npm run e2e` | Playwright against a running stack (`E2E_BASE_URL`, default http://localhost:8000) |
 
-Coverage floors only go up. CI runs one workflow per side.
+Coverage floors only go up.
+
+| Workflow | When | Does |
+|---|---|---|
+| `backend-ci.yml`, `frontend-ci.yml` | Pull request touching that side | The gates of that side |
+| `deliver.yml` | Push to `main`, tag `v*.*.*`, pull request touching images or `deploy/` | Both gates, both images started from `deploy/compose.yaml`, Grype scan, Playwright, then push (amd64 and arm64, SBOM, provenance) and, for a tag, the GitHub release |
+| `codeql.yml` | Push, pull request, weekly | Static analysis of Java, TypeScript and the workflows |
+| `dependency-review.yml` | Pull request changing dependencies | Refuses a new dependency with a high or critical advisory |
+
+## Releases
+
+1. `make version VERSION=1.2.0` sets the version in `pom.xml` and `package.json`.
+2. Commit, then `git tag v1.2.0 && git push origin v1.2.0`.
+3. `deliver.yml` checks the tag matches both versions, publishes images `1.2.0` and `1.2`, and the GitHub release with generated notes.
+
+Commit messages follow Conventional Commits (`fix(build): ...`), which the release notes group.
 
 ## Recipes
 
@@ -108,3 +135,5 @@ Coverage floors only go up. CI runs one workflow per side.
 - The IDE may write broken classes into `backend/target/`: always `clean`.
 - `-Dtest=` does not select `@Nested` classes: run the whole suite.
 - npm 10.9 crashes on jsdom's optional `canvas`: use `npx npm@11 install`.
+- Playwright needs its browser once: `npx playwright install chromium` in `frontend/`.
+- An image scan failure in `deliver.yml` names the package: bump the base image or the Spring Boot managed version (`pom.xml` properties), never silence the scan.

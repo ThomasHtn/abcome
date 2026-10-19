@@ -5,7 +5,9 @@
 # ---- Build stage ------------------------------------------------------------
 # Builds the executable jar. Quality gates (Checkstyle, SpotBugs, tests, JaCoCo) already run in CI
 # via `./mvnw verify` before an image is ever built here, so this stage only packages the artifact.
-FROM eclipse-temurin:25.0.4.1_1-jdk-noble@sha256:ba0f0e1a33864105e1d454e88105c617ab40f71062db1f306bf58be32a3f8e5e AS build
+# Runs on the builder's own platform: the jar is the same for every architecture, so an arm64 image
+# never compiles under emulation.
+FROM --platform=$BUILDPLATFORM eclipse-temurin:25.0.4.1_1-jdk-noble@sha256:ba0f0e1a33864105e1d454e88105c617ab40f71062db1f306bf58be32a3f8e5e AS build
 WORKDIR /workspace
 
 # Copied and resolved before the source tree, so this layer is only invalidated when a dependency
@@ -45,4 +47,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD ["bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /readyz HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && read -r status <&3 && [[ $status == *' 200 '* ]]"]
 
 # Heap takes 60 % of the container memory limit; the rest is for metaspace, threads and buffers.
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=60", "-jar", "littlewords.jar"]
+# An OutOfMemoryError exits the JVM, so the restart policy brings back a clean one instead of a half-dead one.
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=60", "-XX:+ExitOnOutOfMemoryError", "-jar", "littlewords.jar"]

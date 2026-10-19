@@ -7,6 +7,7 @@ import { provideRouter, Router, TitleStrategy } from '@angular/router';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
 
 import { BrandedTitleStrategy } from './branded-title-strategy';
+import { BrandingApi } from './branding-api';
 
 /**
  * Empty screen for the test routes.
@@ -36,21 +37,17 @@ describe('BrandedTitleStrategy', () => {
 
   afterEach(() => http.verify());
 
-  /**
-   * Lets the branding resource settle on its macrotask.
-   */
-  async function settle(): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve));
-    TestBed.tick();
-  }
-
   it('follows the page title with the app name once the server gives it', async () => {
     await router.navigateByUrl('/words');
     TestBed.tick();
     expect(document.title).toBe('Mot');
 
-    http.expectOne(API_ENDPOINTS.branding).flush({ name: 'ABLéa', nameAccent: 'Léa' });
-    await settle();
+    const loaded = TestBed.inject(BrandingApi).load();
+    http
+      .expectOne(API_ENDPOINTS.branding)
+      .flush({ name: 'ABLéa', nameAccent: 'Léa', timeZone: 'Europe/Paris' });
+    await loaded;
+    TestBed.tick();
     expect(document.title).toBe('Mot · ABLéa');
 
     await router.navigateByUrl('/');

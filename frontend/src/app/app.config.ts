@@ -15,6 +15,7 @@ import {
 
 import { unauthorizedInterceptor } from '@core/auth/unauthorized.interceptor';
 import { BrandedTitleStrategy } from '@core/branding/branded-title-strategy';
+import { provideBranding } from '@core/branding/branding.providers';
 import { serverStatusInterceptor } from '@core/http/server-status.interceptor';
 import { reloadOnStaleBuild } from '@core/http/stale-build.utils';
 import { provideI18n } from '@core/i18n/i18n.providers';
@@ -29,6 +30,8 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     // Texts in the browser's language, loaded before the first screen.
     provideI18n(),
+    // App name and family zone, loaded before the first screen so every "today" uses that zone.
+    provideBranding(),
     // A new screen opens at its top; going back returns to where the list was left; a screen whose
     // bundle went away with a deployment is loaded afresh.
     provideRouter(

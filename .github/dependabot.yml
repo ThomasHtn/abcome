@@ -1,8 +1,8 @@
 version: 2
 
-# Neither CI workflow scans dependencies, and both subprojects pull a large transitive tree
-# (Spring Boot on one side, the Angular toolchain on the other). These updates are the project's
-# only signal that a dependency it does not name directly has a published advisory.
+# Both subprojects pull a large transitive tree (Spring Boot on one side, the Angular toolchain on the
+# other). The delivery scans the built images and dependency-review.yml the dependencies a pull request
+# adds; these updates are what clears an advisory on something already merged.
 #
 # Each ecosystem is grouped into a single pull request per run: seven separate bumps a week on a
 # personal project get ignored, one grouped bump gets reviewed. Security updates are deliberately
@@ -59,8 +59,11 @@ updates:
         patterns:
           - '*'
 
+  # compose.yaml for local runs, deploy/compose.yaml for servers (postgres, nginx, Caddy).
   - package-ecosystem: docker-compose
-    directory: /
+    directories:
+      - /
+      - /deploy
     schedule:
       interval: monthly
     # Major versions are migrations (Spring Boot, Angular and its TypeScript, Java, Node, Postgres),

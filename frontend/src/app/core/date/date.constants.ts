@@ -4,9 +4,9 @@
 export const FIRST_NOTEBOOK_DAY = '2020-01-01';
 
 /**
- * Time zone of the family, so "today" never flips at midnight UTC.
+ * Zone of the family until the server gives its own (`APP_TIME_ZONE`), so "today" never flips at midnight UTC.
  */
-export const FAMILY_TIME_ZONE = 'Europe/Paris';
+export const DEFAULT_TIME_ZONE = 'Europe/Paris';
 
 /**
  * Translation keys of the short month names, written out rather than taken from `Intl` so every browser

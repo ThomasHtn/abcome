@@ -2,15 +2,32 @@ import { translate } from '@jsverse/transloco';
 
 import { activeLocale } from '@core/i18n/i18n.utils';
 
-import { DAY_MS, FAMILY_TIME_ZONE, LONG_MONTHS, SHORT_MONTHS, WEEKDAYS } from './date.constants';
+import { DAY_MS, DEFAULT_TIME_ZONE, LONG_MONTHS, SHORT_MONTHS, WEEKDAYS } from './date.constants';
 import { DayAndMonth } from './date.model';
+
+/**
+ * Zone in which "today" is judged, set once at startup from the server.
+ */
+let familyTimeZone = DEFAULT_TIME_ZONE;
+
+/**
+ * Judges every "today" in `zone` from now on; a zone this browser does not know keeps the current one.
+ */
+export function setFamilyTimeZone(zone: string): void {
+  try {
+    new Intl.DateTimeFormat('en-CA', { timeZone: zone });
+    familyTimeZone = zone;
+  } catch {
+    // RangeError: an unknown zone, kept out so todayIso() never throws.
+  }
+}
 
 /**
  * Today as `yyyy-MM-dd` in the family's time zone; `now` is a parameter so tests pin the clock.
  */
 export function todayIso(now: Date = new Date()): string {
   // The Canadian locale prints ISO dates, so no manual padding is needed.
-  return new Intl.DateTimeFormat('en-CA', { timeZone: FAMILY_TIME_ZONE }).format(now);
+  return new Intl.DateTimeFormat('en-CA', { timeZone: familyTimeZone }).format(now);
 }
 
 /**

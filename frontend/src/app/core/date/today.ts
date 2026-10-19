@@ -4,7 +4,7 @@ import { inject, Service, signal } from '@angular/core';
 import { todayIso } from './date.utils';
 
 /**
- * Today in Paris, `yyyy-MM-dd`, read again whenever the app comes back to the screen: a home-screen
+ * Today in the family's zone, `yyyy-MM-dd`, read again whenever the app comes back to the screen: a home-screen
  * app can stay open overnight, and a screen kept since yesterday must still allow today.
  */
 @Service()

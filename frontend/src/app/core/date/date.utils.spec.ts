@@ -1,3 +1,4 @@
+import { DEFAULT_TIME_ZONE } from './date.constants';
 import {
   addDays,
   dayAndMonth,
@@ -6,14 +7,25 @@ import {
   formatShortDate,
   formatShortDateWithYear,
   formatWeekdayDate,
+  setFamilyTimeZone,
   todayIso,
 } from './date.utils';
 
 describe('todayIso', () => {
+  afterEach(() => setFamilyTimeZone(DEFAULT_TIME_ZONE));
+
   it('uses the Paris calendar day, not the UTC one', () => {
     // 23:30 UTC on 16 October is already 17 October in Paris (UTC+2).
     expect(todayIso(new Date('2026-10-16T23:30:00Z'))).toBe('2026-10-17');
     expect(todayIso(new Date('2026-10-16T12:00:00Z'))).toBe('2026-10-16');
+  });
+
+  it('follows the zone the server gives, and ignores one the browser does not know', () => {
+    // 03:00 UTC on 17 October is still 16 October in Montreal (UTC-4).
+    setFamilyTimeZone('America/Montreal');
+    expect(todayIso(new Date('2026-10-17T03:00:00Z'))).toBe('2026-10-16');
+    setFamilyTimeZone('Mars/Olympus_Mons');
+    expect(todayIso(new Date('2026-10-17T03:00:00Z'))).toBe('2026-10-16');
   });
 });
 
