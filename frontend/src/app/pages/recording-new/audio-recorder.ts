@@ -10,7 +10,7 @@ import { microphoneErrorKind, rmsLevel } from './recording-new.utils';
 
 /**
  * The microphone of the record screen: records one clip at a time with `MediaRecorder`, stops itself
- * at 15 s, and samples the loudness with an `AnalyserNode` for the live bars.
+ * at 30 s, and samples the loudness with an `AnalyserNode` for the live bars.
  * Provided by the screen, so leaving it releases the microphone.
  */
 @Service({ autoProvided: false })
@@ -76,7 +76,7 @@ export class AudioRecorder {
   }
 
   /**
-   * Asks for the microphone and records until `stop()` or the 15 s cap; resolves with the clip.
+   * Asks for the microphone and records until `stop()` or the 30 s cap; resolves with the clip.
    * Rejects with a `RecorderError` saying why when recording is impossible.
    */
   public async record(): Promise<RecordedClip> {

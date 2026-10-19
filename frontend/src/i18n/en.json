@@ -243,7 +243,7 @@
     "uploadFailedWord": "The word is saved, but the sound didn't go through. Try again.",
     "instruction": {
       "recording": "I'm listening… Tap the red square once it's over.",
-      "capped": "15 seconds is the maximum: the recording stopped on its own.",
+      "capped": "30 seconds is the maximum: the recording stopped on its own.",
       "review": "Listen to the sound. Didn't work? Try again as often as you like.",
       "ready": "Ready? Tap the mic when {{ childName }} starts talking."
     },

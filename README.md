@@ -18,13 +18,11 @@
 </p>
 
 <p align="center">
-  <!-- The tour lives on GitHub's attachment storage, not in git: a new version is dropped into an issue
-       editor on github.com, and the URL it gives replaces this one. -->
-  <a href="https://github.com/user-attachments/assets/92dedca2-3f3f-4f5c-95ef-2b74892398e1">
+  <a href="docs/media/littlewords-tour-en.mp4">
     <img src="docs/media/poster.png" alt="Watch the Little Words tour" width="760">
   </a>
   <br>
-  <a href="https://github.com/user-attachments/assets/92dedca2-3f3f-4f5c-95ef-2b74892398e1"><b>&#9654; Watch the 46-second tour</b></a><br>
+  <a href="docs/media/littlewords-tour-en.mp4"><b>&#9654; Watch the 46-second tour</b></a><br>
   <sub>No sound, no ads, one bunny.</sub>
 </p>
 
@@ -59,7 +57,7 @@ Three months later the same child says "rabbit" perfectly, and nobody remembers 
     <td align="center" width="25%" valign="top">
       <img src="docs/media/screen-recorder.png" alt="The recorder" width="190"><br><br>
       <b>The voice</b><br>
-      <sub>One tap, fifteen seconds, kept forever.</sub>
+      <sub>One tap, thirty seconds, kept forever.</sub>
     </td>
   </tr>
 </table>
@@ -83,7 +81,7 @@ Three months later the same child says "rabbit" perfectly, and nobody remembers 
     <td width="33%" valign="top">
       <img src="docs/media/icons/mic.svg" alt="" width="48"><br>
       <b>That little voice</b><br>
-      Record up to 15 seconds next to each word. Prime material for an 18th birthday speech.
+      Record up to 30 seconds next to each word. Prime material for an 18th birthday speech.
     </td>
   </tr>
   <tr>
@@ -131,7 +129,7 @@ Everything is called `littlewords`: repository, Java package, Docker images, con
 | Auth | Shared family passphrase (Argon2id), optional read-only one, session cookie, CSRF, login lockout |
 | Deployment | Two images behind your reverse proxy: `/api/*` to the backend, the rest to the frontend |
 | Quality | Spotless, Checkstyle, SpotBugs, JaCoCo, Testcontainers; ESLint, Stylelint, Prettier, vitest; Playwright against the deployment template |
-| Supply chain | Images and actions pinned by digest, Dependabot, dependency review, CodeQL, Grype image scan, SBOM and provenance on every image |
+| Supply chain | Images and actions pinned by digest, Dependabot, CodeQL, Grype image scan, SBOM and provenance on every image |
 
 The interface speaks French or English, following the browser (French when it offers neither); so do the word suggestions (French IFDC or American English CDI). The app name and the family's time zone are set per deployment (`APP_NAME`, `APP_TIME_ZONE`), so each family runs its own notebook.
 

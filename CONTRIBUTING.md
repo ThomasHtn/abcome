@@ -23,7 +23,7 @@ cd backend && ./mvnw spring-boot:run
 cd frontend && npx npm@11 install && npm start
 ```
 
-Requirements: Java 25 and Node 22 (`.sdkmanrc`, `.nvmrc`: `sdk env install`, `nvm use`), Docker. A native PostgreSQL 16+ works too: point `DB_URL` at it in `backend/.env`.
+Requirements: Java 25, Node 22 (`engines` in `package.json`), Docker. A native PostgreSQL 16+ works too: point `DB_URL` at it in `backend/.env`.
 
 Whole app from its images, as deployed (http://localhost:8000, `backend/.env` when present, the demo settings otherwise):
 
@@ -113,7 +113,6 @@ Coverage floors only go up.
 | `backend-ci.yml`, `frontend-ci.yml` | Pull request touching that side | The gates of that side |
 | `deliver.yml` | Push to `main`, tag `v*.*.*`, pull request touching images or `deploy/` | Both gates, both images started from `deploy/compose.yaml`, Grype scan, Playwright, then push (amd64 and arm64, SBOM, provenance) and, for a tag, the GitHub release |
 | `codeql.yml` | Push, pull request, weekly | Static analysis of Java, TypeScript and the workflows |
-| `dependency-review.yml` | Pull request changing dependencies | Refuses a new dependency with a high or critical advisory |
 
 ## Releases
 

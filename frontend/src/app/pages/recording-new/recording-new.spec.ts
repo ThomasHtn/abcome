@@ -170,14 +170,14 @@ describe('RecordingNewPage', () => {
     expect(element.textContent).not.toContain('Glisse les poignées');
   });
 
-  it('explains a recording stopped by the 15 seconds cap, until the next one', async () => {
-    record.mockResolvedValueOnce({ ...clip, durationMs: 15_000 });
+  it('explains a recording stopped by the 30 seconds cap, until the next one', async () => {
+    record.mockResolvedValueOnce({ ...clip, durationMs: 30_000 });
     const fixture = render();
     const element = fixture.nativeElement as HTMLElement;
 
     await press(fixture, "Commencer l'enregistrement");
     expect(element.textContent).toContain(
-      "15 secondes, c'est le maximum\u00A0: l'enregistrement s'est arrêté tout seul.",
+      "30 secondes, c'est le maximum\u00A0: l'enregistrement s'est arrêté tout seul.",
     );
 
     await press(fixture, "Recommencer l'enregistrement");

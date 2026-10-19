@@ -1,9 +1,15 @@
 # -----------------------------------------------------------------------------
-# Angular
+# Angular, vitest and Playwright
 # -----------------------------------------------------------------------------
 frontend/node_modules/
 frontend/dist/
 frontend/.angular/
+frontend/out-tsc/
+frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
+frontend/e2e/.auth/
+__screenshots__/
 
 # -----------------------------------------------------------------------------
 # Maven build output
@@ -59,8 +65,3 @@ Thumbs.db
 # Production template: local dumps from deploy/backup.sh
 # -----------------------------------------------------------------------------
 deploy/backups/
-
-# -----------------------------------------------------------------------------
-# Videos: hosted as GitHub attachments (README.md), never versioned
-# -----------------------------------------------------------------------------
-*.mp4

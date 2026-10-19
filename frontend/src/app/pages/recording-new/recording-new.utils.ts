@@ -80,7 +80,7 @@ export function microphoneErrorKind(error: unknown): RecorderErrorKind {
 }
 
 /**
- * Lapinou's instruction for each recording step; `capped` explains a recording stopped by the 15 s cap.
+ * Lapinou's instruction for each recording step; `capped` explains a recording stopped by the 30 s cap.
  */
 export function recordingInstruction(
   phase: RecordingPhase,

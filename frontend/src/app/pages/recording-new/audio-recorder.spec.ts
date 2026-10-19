@@ -117,15 +117,15 @@ describe('AudioRecorder', () => {
     expect(stopTrack).toHaveBeenCalled();
   });
 
-  it('stops by itself at 15 seconds', async () => {
+  it('stops by itself at 30 seconds', async () => {
     const recorder = TestBed.inject(AudioRecorder);
     const clip = recorder.record();
     await settle();
 
-    clock = 15_050;
+    clock = 30_050;
     await vi.advanceTimersByTimeAsync(100);
 
-    expect((await clip).durationMs).toBe(15_000);
+    expect((await clip).durationMs).toBe(30_000);
   });
 
   it('says the microphone was refused', async () => {

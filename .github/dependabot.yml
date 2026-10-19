@@ -1,8 +1,7 @@
 version: 2
 
 # Both subprojects pull a large transitive tree (Spring Boot on one side, the Angular toolchain on the
-# other). The delivery scans the built images and dependency-review.yml the dependencies a pull request
-# adds; these updates are what clears an advisory on something already merged.
+# other). The delivery scans the built images and blocks on an advisory; these updates are what clears it.
 #
 # Each ecosystem is grouped into a single pull request per run: seven separate bumps a week on a
 # personal project get ignored, one grouped bump gets reviewed. Security updates are deliberately

@@ -282,7 +282,7 @@ class RecordingApiTest extends NotebookApiTest {
     }
 
     @Test
-    @DisplayName("Refuses an empty body, a duration under 300 ms, over 15 s or missing with 400 INVALID_REQUEST")
+    @DisplayName("Refuses an empty body, a duration under 300 ms, over 30 s or missing with 400 INVALID_REQUEST")
     void refusesInvalidUpload() throws Exception {
         upload(stageId, "audio/webm", 1000, new byte[0])
             .andExpect(status().isBadRequest())
@@ -293,7 +293,9 @@ class RecordingApiTest extends NotebookApiTest {
             .andExpect(status().isBadRequest());
         upload(stageId, "audio/webm", 300, SOUND)
             .andExpect(status().isCreated());
-        upload(stageId, "audio/webm", 15_001, SOUND)
+        upload(stageId, "audio/webm", 30_000, SOUND)
+            .andExpect(status().isCreated());
+        upload(stageId, "audio/webm", 30_001, SOUND)
             .andExpect(status().isBadRequest());
         mockMvc().perform(post("/api/pronunciations/" + stageId + "/recordings").cookie(session()).with(xsrf())
                 .contentType("audio/webm").content(SOUND))

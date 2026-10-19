@@ -1,7 +1,7 @@
 /**
  * Longest recording the API accepts; the recorder stops itself there.
  */
-export const RECORDING_MAX_DURATION_MS = 15_000;
+export const RECORDING_MAX_DURATION_MS = 30_000;
 
 /**
  * Largest upload the API and the reverse proxy accept, 2 MB.
@@ -45,6 +45,6 @@ export const WAVEFORM_SAMPLE_RATE = 22_050;
 export const TRIMMED_MIME_TYPE = 'audio/wav';
 
 /**
- * Rate a recording is decoded and trimmed at: clear for a child's voice, 15 s of WAV stay under 700 KB.
+ * Rate a recording is decoded and trimmed at: clear for a child's voice, 30 s of WAV stay under 1.4 MB.
  */
 export const TRIM_SAMPLE_RATE = 22_050;

@@ -243,7 +243,7 @@
     "uploadFailedWord": "Le mot est noté, mais le son n'est pas parti. Réessaie.",
     "instruction": {
       "recording": "J'écoute… Touche le carré rouge quand il a fini.",
-      "capped": "15 secondes, c'est le maximum : l'enregistrement s'est arrêté tout seul.",
+      "capped": "30 secondes, c'est le maximum : l'enregistrement s'est arrêté tout seul.",
       "review": "Écoute le son. Pas réussi ? Recommence autant que tu veux.",
       "ready": "Prêt ? Touche le micro quand {{ childName }} commence à parler."
     },

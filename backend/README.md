@@ -63,7 +63,7 @@ Each feature package splits into `controller`, `dto`, `entity`, `repository`, `s
 - CSRF: `XSRF-TOKEN` cookie echoed in `X-XSRF-TOKEN`, set by `GET /api/auth/session`.
 - `GET /api/words` runs three queries (words, stages, sound metadata), never the audio bytes.
 - Dates are checked against today in `APP_TIME_ZONE` (`Europe/Paris` by default), whatever the server zone; `GET /api/branding` gives that zone to the app, so both judge "today" alike.
-- Audio uploads: 2 MB, 15 s, `audio/webm`, `audio/mp4` or `audio/wav`.
+- Audio uploads: 2 MB, 30 s, `audio/webm`, `audio/mp4` or `audio/wav`.
 - `FORWARD_HEADERS_STRATEGY=native` (the default) is mandatory behind a proxy: `none` makes the lockout see only the proxy address, `framework` lets a client pick its address with a `Forwarded` header.
 
 ## Deployment

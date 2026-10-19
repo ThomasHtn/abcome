@@ -1,2 +1,0 @@
-# Java of the backend and its images (eclipse-temurin 25.0.4.1 in backend/Dockerfile): `sdk env install`.
-java=25.0.4.1+1-tem

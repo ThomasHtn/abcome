@@ -28,7 +28,7 @@ class BrandingSettingsTest {
             "app.auth.max-concurrent-checks=2",
             "app.recording.max-bytes=2097152",
             "app.recording.min-duration-ms=300",
-            "app.recording.max-duration-ms=15000"
+            "app.recording.max-duration-ms=30000"
         );
 
     @Test

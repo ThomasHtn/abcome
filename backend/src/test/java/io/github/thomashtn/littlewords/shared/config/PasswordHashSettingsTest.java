@@ -42,7 +42,7 @@ class PasswordHashSettingsTest {
             "app.auth.max-concurrent-checks=2",
             "app.recording.max-bytes=2097152",
             "app.recording.min-duration-ms=300",
-            "app.recording.max-duration-ms=15000"
+            "app.recording.max-duration-ms=30000"
         );
 
     @Test
@@ -144,7 +144,7 @@ class PasswordHashSettingsTest {
     @Test
     @DisplayName("Refuses to start when the shortest recording is longer than the longest")
     void refusesInvalidDurationRange() {
-        runner.withPropertyValues("app.auth.password-hash=" + HASH, "app.recording.min-duration-ms=20000")
+        runner.withPropertyValues("app.auth.password-hash=" + HASH, "app.recording.min-duration-ms=40000")
             .run(context -> {
                 assertThat(context).hasFailed();
                 assertThat(failureMessages(context.getStartupFailure())).contains("app.recording.min-duration-ms");

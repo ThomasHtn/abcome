@@ -53,7 +53,7 @@ describe('recording-new utils', () => {
       'Recommence autant que tu veux',
     );
     expect(recordingInstruction('review', true, 'Alix')).toBe(
-      "15 secondes, c'est le maximum\u00A0: l'enregistrement s'est arrêté tout seul.",
+      "30 secondes, c'est le maximum\u00A0: l'enregistrement s'est arrêté tout seul.",
     );
     expect(recordingTitle('ready', true)).toBe('Enregistrer un son');
     expect(recordingTitle('pick', true)).toBe('Associer le son');

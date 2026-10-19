@@ -46,7 +46,7 @@
   line-height: 1.1;
 }
 
-/* Length it is counted against: the 15 s cap, or the whole sound once trimmed. */
+/* Length it is counted against: the 30 s cap, or the whole sound once trimmed. */
 .recording-new__clock-total {
   color: var(--color-text-muted);
   font-size: 1.0625rem;

@@ -86,7 +86,7 @@ import {
 import { RecordingTrim } from './recording-trim/recording-trim';
 
 /**
- * Record-a-sound screen: record up to 15 s, listen, trim and retry, pick the word, then file the sound
+ * Record-a-sound screen: record up to 30 s, listen, trim and retry, pick the word, then file the sound
  * under a stage. An existing word offers its stages or a new one; a new word first needs its first stage.
  */
 @Component({
@@ -220,7 +220,7 @@ export class RecordingNewPage {
   });
 
   /**
-   * Whether the recorder stopped itself at the 15 s cap: it only reaches the cap when it did.
+   * Whether the recorder stopped itself at the 30 s cap: it only reaches the cap when it did.
    */
   protected readonly capped = computed(
     () => (this.recorded()?.durationMs ?? 0) >= RECORDING_MAX_DURATION_MS,
@@ -353,7 +353,7 @@ export class RecordingNewPage {
   protected readonly clipBars = computed(() => summarizeLevels(this.clip()?.levels ?? []));
 
   /**
-   * Clock above the waveform: elapsed out of 15 s while recording, then the kept length to the tenth,
+   * Clock above the waveform: elapsed out of 30 s while recording, then the kept length to the tenth,
    * out of the whole recording once trimmed.
    */
   protected readonly clock = computed<ClockReading>(() => {
