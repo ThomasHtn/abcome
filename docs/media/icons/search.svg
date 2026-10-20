@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56" width="56" height="56">
-  <!-- README feature tile: lucide "lock" (ISC) from the app sprite, on a brand-coloured square. -->
+  <!-- README feature tile: lucide "search" (ISC) from the app sprite, on a brand-coloured square. -->
   <rect width="56" height="56" rx="16" fill="#e8e4fb" />
   <!-- Icon centred at 28 px, stroked like the app icons. -->
   <g transform="translate(14 14) scale(1.1667)" fill="none" stroke="#5246a8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    <path d="m21 21-4.34-4.34" />
+    <circle cx="11" cy="11" r="8" />
   </g>
 </svg>

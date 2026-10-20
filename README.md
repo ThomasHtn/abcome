@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>The first-words baby book. The one you actually fill in.</b><br>
-  Log a new word in ten seconds, follow it from "bit" to "rabbit", and keep the sound of that tiny voice for good.
+  Log a new word in ten seconds, follow it from "bit" to "rabbit", and keep that tiny voice for good.
 </p>
 
 <p align="center">
@@ -17,90 +17,94 @@
 </p>
 
 <p align="center">
-  <a href="docs/media/littlewords-tour-en.mp4">
-    <img src="docs/media/poster.png" alt="Watch the Little Words tour" width="760">
-  </a>
+  <img src="docs/media/tour.webp" alt="Tour of Little Words: the notebook, a new word saved in seconds, a ten-words medal, rabbit finally said right with confetti, and a voice recording" width="100%">
   <br>
-  <a href="docs/media/littlewords-tour-en.mp4"><b>&#9654; Watch the 46-second tour</b></a><br>
-  <sub>No sound, no ads, one bunny.</sub>
+  <sub>A 40-second tour. No sound, no ads, one bunny.</sub>
 </p>
-
-<br>
 
 ## Toddlers speak their own language
 
 "Bit" means rabbit. "Wawa" means water. "Tate" means cake, and also *I want cake right now*.
-Three months later the same child says "rabbit" perfectly, and nobody remembers the "bit" anymore.
+Three months later it's "rabbit", perfectly, and nobody remembers the "bit" anymore.
 
-**Little Words is the family notebook that remembers for you.**
+**Little Words remembers for you.**
 
-<br>
+## A peek inside
 
 <p align="center">
-  <img src="docs/media/screen-notebook.png" alt="The notebook" width="160">
-  <img src="docs/media/screen-progress.png" alt="A word's progress" width="160">
-  <img src="docs/media/screen-pronunciation.png" alt="A new pronunciation" width="160">
-  <img src="docs/media/screen-recorder.png" alt="The recorder" width="160">
+  <img src="docs/media/screen-notebook.png" alt="The notebook: every word, the day it showed up" width="19%">
+  <img src="docs/media/screen-new-word.png" alt="New word: pick it, type how it came out, done" width="19%">
+  <img src="docs/media/screen-journey.png" alt="The journey: wawa, wata, then water" width="19%">
+  <img src="docs/media/screen-milestone.png" alt="Medals: ten words, party time" width="19%">
+  <img src="docs/media/screen-recorder.png" alt="The voice: one tap, thirty seconds" width="19%">
+  <br>
+  <sub><b>The&nbsp;notebook</b> · <b>New&nbsp;word</b> · <b>The&nbsp;journey</b> · <b>Medals</b> · <b>The&nbsp;voice</b></sub>
 </p>
 
-- **The notebook**: every word, the day it showed up, how it sounds today.
-- **The journey**: from "bit" to "babbit" to "rabbit", each step with its sound.
-- **The big day**: they finally nailed it. Two taps, and cue the confetti.
-- **The voice**: one tap, thirty seconds, kept forever.
+## Why families love it
 
-<br>
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/media/icons/users.svg" alt="" width="40"><br>
+      <b>One notebook, the whole family</b><br>
+      Parents, grandparents, the nanny: everyone adds words from their own phone. One passphrase, zero accounts.
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/media/icons/footprints.svg" alt="" width="40"><br>
+      <b>Every step counts</b><br>
+      Each word keeps its story, from <i>On the way</i> to <i>Got it</i>. Watching the dots turn green is weirdly addictive.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/media/icons/mic.svg" alt="" width="40"><br>
+      <b>That little voice</b><br>
+      30 seconds per step, trimmed in two drags. Prime material for an 18th birthday speech.
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/media/icons/search.svg" alt="" width="40"><br>
+      <b>A dictionary that speaks toddler</b><br>
+      Nearly 700 first words, the usual ones for their age up front. Not in there? Type your own.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/media/icons/eye.svg" alt="" width="40"><br>
+      <b>Look, don't touch</b><br>
+      A read-only passphrase for relatives who follow along without "fixing" anything.
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/media/icons/party-popper.svg" alt="" width="40"><br>
+      <b>Medals and confetti</b><br>
+      10 words, 50, 100, the first <i>Got it</i>, the first sentence. Confetti is not up for debate.
+    </td>
+  </tr>
+</table>
 
-## What's inside
-
-<p>
-  <img src="docs/media/icons/users.svg" alt="" width="40"><br>
-  <b>One notebook, the whole family</b><br>
-  Parents, grandparents, the nanny: everyone adds words from their own phone. One shared passphrase, zero accounts, zero "forgot your password" emails.
-</p>
-
-<p>
-  <img src="docs/media/icons/footprints.svg" alt="" width="40"><br>
-  <b>Every step counts</b><br>
-  Each word keeps its whole history, marked <i>On the way</i>, <i>Almost</i> or <i>Nailed it</i>. Watching the dots turn green is weirdly addictive.
-</p>
-
-<p>
-  <img src="docs/media/icons/mic.svg" alt="" width="40"><br>
-  <b>That little voice</b><br>
-  Record up to 30 seconds next to each word. Prime material for an 18th birthday speech.
-</p>
-
-<p>
-  <img src="docs/media/icons/party-popper.svg" alt="" width="40"><br>
-  <b>Confetti</b><br>
-  A word reaches <i>Nailed it</i>? Confetti. This is not up for debate.
-</p>
-
-<p>
-  <img src="docs/media/icons/eye.svg" alt="" width="40"><br>
-  <b>Look, don't touch</b><br>
-  An optional read-only passphrase for relatives who want to follow along without "fixing" anything.
-</p>
-
-<p>
-  <img src="docs/media/icons/lock.svg" alt="" width="40"><br>
-  <b>Yours, really</b><br>
-  Self-hosted, no store, no ads, no tracking. Add it to the home screen and it feels like an app.
-</p>
-
-<br>
+Add it to the home screen and it feels like an app, in French or English, following the phone.
 
 ## Get it
 
-You bring the toddler, Little Words brings the rest. It ships as two Docker images (API and web, amd64) and needs a PostgreSQL database; the web image is the single entry point and relays the API itself.
+You bring the toddler, Little Words brings the rest.
 
-- **Try it**: `docker compose up --build` (or `make up`) runs the whole app on http://localhost:8000, nothing to configure; the passphrase is `littlewords-demo-passphrase`.
-- **Host it**: your server writes its own compose (or chart, or PaaS settings) from the contract in [docs/deployment.md](docs/deployment.md): one route, a few variables, one database per family. Several families on one machine are several stacks side by side.
-- **Hack on it**: `make setup && make dev` ([CONTRIBUTING.md](CONTRIBUTING.md#up-and-running)).
+**Try it** in one command, nothing to configure:
 
+```bash
+docker compose up --build    # or: make up
+```
+
+Then open http://localhost:8000 and sign in with `littlewords-demo-passphrase`.
+
+**Host it** for your family: two Docker images (web and API, amd64) and a PostgreSQL database. Your server writes its own compose, chart or PaaS settings from the contract in [docs/deployment.md](docs/deployment.md): one route, a few variables, one database per family. Several families on one machine? Several stacks side by side.
+
+**Hack on it**: `make setup && make dev`, then [CONTRIBUTING.md](CONTRIBUTING.md#up-and-running).
+
+## Under the hood
+
+<details>
+<summary>Stack, quality and supply chain</summary>
 <br>
-
-## Technical
 
 Everything is called `littlewords`: repository, Java package, Docker images, containers, database.
 
@@ -114,9 +118,12 @@ Everything is called `littlewords`: repository, Java package, Docker images, con
 
 The interface speaks French or English, following the browser (French when it offers neither); so do the word suggestions (French IFDC or American English CDI). The app name and the family's time zone are set per deployment (`APP_NAME`, `APP_TIME_ZONE`), so each family runs its own notebook.
 
+</details>
+
 - [CONTRIBUTING.md](CONTRIBUTING.md): setup, code map, conventions. Start here.
 - [backend/README.md](backend/README.md): daily commands, family password, packages.
-- [docs/deployment.md](docs/deployment.md): images, routing, variables, backups, monitoring.
 - [frontend/README.md](frontend/README.md): daily commands, folders, translations, styles.
+- [docs/deployment.md](docs/deployment.md): images, routing, variables, backups, monitoring.
 - [tools/dictionary/README.md](tools/dictionary/README.md): where the word lists come from (IFDC and CDI via Wordbank, CC BY 4.0).
-- API reference: Swagger UI at `/swagger-ui.html` when `API_DOCS_ENABLED=true` (dev only).
+
+API reference: Swagger UI at `/swagger-ui.html` when `API_DOCS_ENABLED=true` (dev only).

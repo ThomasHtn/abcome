@@ -21,7 +21,7 @@ export function provideI18n(): EnvironmentProviders[] {
         fallbackLang: SOURCE_LOCALE,
         reRenderOnLangChange: false,
         prodMode: !isDevMode(),
-        // Some halves of a split sentence are empty in one language ("Côme's words" has no prefix).
+        // Some halves of a split sentence are empty in one language ("Littlewords" has no prefix).
         missingHandler: { allowEmpty: true },
       },
       loader: TranslationLoader,

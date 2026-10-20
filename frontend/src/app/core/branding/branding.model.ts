@@ -3,7 +3,7 @@
  */
 export interface Branding {
   /**
-   * Name of the app, such as "ABCome".
+   * Name of the app, such as "Littlewords".
    */
   readonly name: string;
 
