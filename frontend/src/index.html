@@ -33,6 +33,20 @@
     />
   </head>
   <body>
+    <!-- Lapinou while the app starts; the app fades it out once its first screen shows. -->
+    <div class="app-splash" aria-hidden="true">
+      <div class="app-splash__halo">
+        <!-- eslint-disable @angular-eslint/template/prefer-ngsrc -- static page, drawn before Angular runs. -->
+        <img
+          class="app-splash__mascot"
+          src="assets/mascot/idle.svg"
+          alt=""
+          width="120"
+          height="150"
+        />
+        <!-- eslint-enable @angular-eslint/template/prefer-ngsrc -->
+      </div>
+    </div>
     <app-root></app-root>
   </body>
 </html>

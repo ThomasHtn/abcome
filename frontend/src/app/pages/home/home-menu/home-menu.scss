@@ -1,0 +1,55 @@
+/* Notebook menu: white card under the "⋯" button, rows with a lavender icon tile. */
+
+@use 'tools' as *;
+
+/* Placed by the component under its button, right edges aligned; the popover's centring is undone. */
+.home-menu {
+  inset: var(--home-menu-top, 0) var(--home-menu-right, 0) auto auto;
+  min-inline-size: 16rem;
+  margin: 0;
+  border: 0;
+  border-radius: var(--radius-block);
+  padding: 0.5rem;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  color: var(--color-ink);
+}
+
+/* One row, tall enough for a thumb. */
+.home-menu__item {
+  min-block-size: 3.25rem;
+  border: 0;
+  border-radius: var(--radius-card);
+  padding: 0 0.75rem;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+
+  /* A pointer over the row tints it. */
+  @include hover {
+    background-color: var(--color-lavender-50);
+  }
+}
+
+/* The row the arrows reached shows on the row itself, not only through the outline. */
+.home-menu__item:focus-visible {
+  background-color: var(--color-lavender-50);
+}
+
+/* Lavender tile holding the row's icon. */
+.home-menu__icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: var(--radius-chip);
+  background-color: var(--color-lavender-50);
+  color: var(--color-lavender-700);
+}

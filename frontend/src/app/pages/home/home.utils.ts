@@ -2,8 +2,18 @@ import { Resource } from '@angular/core';
 
 import { translate } from '@jsverse/transloco';
 
-import { dayAndMonth, formatLongDate, formatMonthYear } from '@core/date/date.utils';
+import {
+  ageInMonths,
+  dayAndMonth,
+  formatLongDate,
+  formatMonthYear,
+  formatShortDate,
+  monthsUnit,
+  todayIso,
+} from '@core/date/date.utils';
 import { isSingular } from '@core/i18n/i18n.utils';
+import { Milestone } from '@core/milestones/milestone.model';
+import { markerLabel } from '@core/milestones/milestone.utils';
 import { quote } from '@core/text/text.utils';
 import { PRONUNCIATION_STATUSES } from '@core/words/word.constants';
 import { Word, WordChange, WordKind } from '@core/words/word.model';
@@ -25,9 +35,12 @@ import {
   SUMMARY_STATUS_ORDER,
 } from './home.constants';
 import {
+  CardContext,
+  CardTile,
   HomeSummary,
   HomeTab,
   ListState,
+  MilestoneMarkerView,
   MonthGroup,
   StatusFilter,
   WordCardView,
@@ -90,13 +103,60 @@ export function visibleWords(words: readonly Word[], query: string, filter: Stat
 }
 
 /**
- * Card of a word or a sentence: first date, its label, its current spoken form and status, whether it
- * keeps sounds, and what changed since this device last looked.
+ * Cards without a birth date nor markers, judged today: the context of a list before the session says more.
  */
-export function toWordCard(word: Word, change: WordChange | null = null): WordCardView {
+export function plainCardContext(): CardContext {
+  return { birthDate: null, today: todayIso(), markers: new Map() };
+}
+
+/**
+ * Markers of the milestones, under the entry that reached each; one entry may hold several.
+ */
+export function markersByEntry(
+  milestones: readonly Milestone[],
+  birthDate: string | null,
+  today: string,
+): Map<number, MilestoneMarkerView[]> {
+  const currentYear = Number(today.slice(0, 4));
+  const markers = new Map<number, MilestoneMarkerView[]>();
+  // Newest first, like the list, so two markers above one card read top down.
+  for (const milestone of [...milestones].reverse()) {
+    const marker: MilestoneMarkerView = {
+      key: milestone.key,
+      kind: milestone.kind,
+      count: milestone.count,
+      label: markerLabel(milestone, birthDate, currentYear),
+    };
+    markers.set(milestone.entry.id, [...(markers.get(milestone.entry.id) ?? []), marker]);
+  }
+  return markers;
+}
+
+/**
+ * Tile of a card: the child's age on its first day when his birth date is known, else that day.
+ */
+function cardTile(first: string, birthDate: string | null): CardTile {
+  if (birthDate) {
+    const months = ageInMonths(birthDate, first);
+    return { value: String(months), unit: monthsUnit(months), age: true };
+  }
+  const { day, month } = dayAndMonth(first);
+  return { value: day, unit: month, age: false };
+}
+
+/**
+ * Card of a word or a sentence: the age or the day of the first time, its label, its current spoken
+ * form and status, whether it keeps sounds, what changed since this device last looked, and the
+ * milestones it reached.
+ */
+export function toWordCard(
+  word: Word,
+  change: WordChange | null = null,
+  context: CardContext = plainCardContext(),
+): WordCardView {
   const current = currentPronunciation(word);
   const first = firstSaidDate(word);
-  const { day, month } = dayAndMonth(first);
+  const currentYear = Number(context.today.slice(0, 4));
   const news = change ? `, ${translate(CHANGE_LABELS[word.kind][change])}` : '';
   const soundCount = word.recordings.length;
   const sounds =
@@ -114,8 +174,11 @@ export function toWordCard(word: Word, change: WordChange | null = null): WordCa
     label: word.label,
     spoken: current.spoken,
     status: current.status,
-    day,
-    month,
+    tile: cardTile(first, context.birthDate),
+    saidOn: context.birthDate
+      ? translate('home.wordCard.saidOn', { date: formatShortDate(first, currentYear) })
+      : null,
+    markers: context.markers.get(word.id) ?? [],
     change,
     hasSound: soundCount > 0,
     ariaLabel: translate('home.wordCard.ariaLabel', {
@@ -131,12 +194,14 @@ export function toWordCard(word: Word, change: WordChange | null = null): WordCa
 
 /**
  * The list cut into months of first-said date, in the order given (newest first), each titled and
- * counted with the noun of `kind` ("mot", "phrase"); `changeOf` tells what changed in each entry.
+ * counted with the noun of `kind` ("mot", "phrase"); `changeOf` tells what changed in each entry, and
+ * `context` what every card needs besides it.
  */
 export function groupByMonth(
   words: readonly Word[],
   kind: WordKind,
   changeOf: (word: Word) => WordChange | null = () => null,
+  context: CardContext = plainCardContext(),
 ): MonthGroup[] {
   const groups: MonthGroup[] = [];
   words.forEach((word, index) => {
@@ -147,7 +212,7 @@ export function groupByMonth(
       group = { key, title: formatMonthYear(first), countText: '', cards: [], offset: index };
       groups.push(group);
     }
-    group.cards.push(toWordCard(word, changeOf(word)));
+    group.cards.push(toWordCard(word, changeOf(word), context));
   });
   return groups.map((group) => ({ ...group, countText: countWithNoun(group.cards.length, kind) }));
 }

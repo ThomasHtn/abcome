@@ -1,5 +1,6 @@
 <section
   class="home-summary flex flex-wrap items-center gap-3"
+  [class.home-summary--settled]="settled()"
   [attr.aria-label]="'home.summary.label' | transloco"
 >
   <!-- Lapinou jumps when tapped, just for fun. -->

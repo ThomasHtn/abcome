@@ -1,6 +1,8 @@
 import { DOCUMENT } from '@angular/common';
 import { inject, Service, signal } from '@angular/core';
 
+import { storageOf } from '@core/storage/storage.utils';
+
 import { CHANGE_RETENTION_MS, SEEN_STORAGE_KEY } from './word.constants';
 import { SeenMarks, Word, WordChange } from './word.model';
 import { changeSince, latestChangeAt } from './word.utils';
@@ -103,17 +105,6 @@ function withMark(marks: SeenMarks, id: number, instant: number): SeenMarks {
   }
   const kept = Object.entries(marks.entries).filter(([, seen]) => seen > cutoff);
   return { since: marks.since, entries: { ...Object.fromEntries(kept), [id]: instant } };
-}
-
-/**
- * Local storage of the page, `null` when the browser blocks even reaching it.
- */
-function storageOf(document: Document): Storage | null {
-  try {
-    return document.defaultView?.localStorage ?? null;
-  } catch {
-    return null;
-  }
 }
 
 /**

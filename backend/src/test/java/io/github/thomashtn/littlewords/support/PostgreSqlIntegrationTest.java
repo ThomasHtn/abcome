@@ -50,6 +50,11 @@ public abstract class PostgreSqlIntegrationTest {
     protected static final String CHILD_NAME = "Alix";
 
     /**
+     * Made-up birth date of the child.
+     */
+    protected static final String CHILD_BIRTH_DATE = "2025-05-12";
+
+    /**
      * Name of the session cookie, as configured in {@code application.properties}.
      */
     protected static final String SESSION_COOKIE = "__Host-LITTLEWORDS_SESSION";
@@ -98,7 +103,7 @@ public abstract class PostgreSqlIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     /**
-     * Points the datasource at the shared container and sets both password hashes and the child name.
+     * Points the datasource at the shared container and sets both password hashes, the child name and birth date.
      *
      * @param registry Spring dynamic property registry
      */
@@ -110,6 +115,7 @@ public abstract class PostgreSqlIntegrationTest {
         registry.add("app.auth.password-hash", () -> FAMILY_PASSWORD_HASH);
         registry.add("app.auth.reader-password-hash", () -> READER_PASSWORD_HASH);
         registry.add("app.child-name", () -> CHILD_NAME);
+        registry.add("app.child-birth-date", () -> CHILD_BIRTH_DATE);
     }
 
     /**

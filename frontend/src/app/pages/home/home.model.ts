@@ -1,3 +1,4 @@
+import { MilestoneKind } from '@core/milestones/milestone.model';
 import { PronunciationStatus, WordChange } from '@core/words/word.model';
 
 /**
@@ -101,14 +102,21 @@ export interface WordCardView {
   status: PronunciationStatus;
 
   /**
-   * Day of the first time, for the date tile ("16").
+   * Tile at the start of the card: the child's age the first time when his birth date is known
+   * ("17" over "mois"), else the day of the first time ("16" over "sept").
    */
-  day: string;
+  tile: CardTile;
 
   /**
-   * Short month of the first time, for the date tile ("sept").
+   * Day of the first time after what the child says (", le 16 sept."), when the tile shows the age;
+   * `null` when the tile already shows the day.
    */
-  month: string;
+  saidOn: string | null;
+
+  /**
+   * Milestones this entry reached, drawn as markers just above its card.
+   */
+  markers: MilestoneMarkerView[];
 
   /**
    * What changed since this device last looked, shown as a tag after the title; `null` when nothing.
@@ -124,6 +132,71 @@ export interface WordCardView {
    * Whole card read as one sentence by screen readers.
    */
   ariaLabel: string;
+}
+
+/**
+ * Number over a unit, in the tile at the start of a card.
+ */
+export interface CardTile {
+  /**
+   * Big number ("17", "16").
+   */
+  value: string;
+
+  /**
+   * Small word under it ("mois", "sept").
+   */
+  unit: string;
+
+  /**
+   * Whether it tells the child's age rather than a day, which tints it salmon.
+   */
+  age: boolean;
+}
+
+/**
+ * A milestone marker in the list: a dotted line with a label between two cards.
+ */
+export interface MilestoneMarkerView {
+  /**
+   * Milestone key, to track the marker.
+   */
+  key: string;
+
+  /**
+   * Kind of milestone, which picks the badge.
+   */
+  kind: MilestoneKind;
+
+  /**
+   * Words reached, shown in the badge; `null` for a first time.
+   */
+  count: number | null;
+
+  /**
+   * Its line ("10 mots, à 17 mois").
+   */
+  label: string;
+}
+
+/**
+ * What every card of a list needs besides its entry.
+ */
+export interface CardContext {
+  /**
+   * Birth date of the child, `null` when not set: the cards then show days instead of ages.
+   */
+  birthDate: string | null;
+
+  /**
+   * Today in the family's zone, so dates of this year leave the year out.
+   */
+  today: string;
+
+  /**
+   * Milestone markers by entry id; empty while a search or a filter is on.
+   */
+  markers: ReadonlyMap<number, MilestoneMarkerView[]>;
 }
 
 /**

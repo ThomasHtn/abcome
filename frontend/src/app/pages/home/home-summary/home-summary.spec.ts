@@ -55,4 +55,17 @@ describe('HomeSummaryCard', () => {
     expect(text).toContain('Le carnet attend son premier mot !');
     expect(text).not.toContain('Dernier');
   });
+
+  it('marks the card settled when the screen comes back, so the bubble does not grow again', () => {
+    TestBed.inject(AuthSession).childName.set('Alix');
+    const fixture = TestBed.createComponent(HomeSummaryCard);
+    fixture.componentRef.setInput('summary', SUMMARY);
+    fixture.detectChanges();
+    const card = (fixture.nativeElement as HTMLElement).querySelector('.home-summary')!;
+    expect(card.classList).not.toContain('home-summary--settled');
+
+    fixture.componentRef.setInput('settled', true);
+    fixture.detectChanges();
+    expect(card.classList).toContain('home-summary--settled');
+  });
 });

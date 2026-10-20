@@ -1,9 +1,12 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { AuthSession } from '@core/auth/auth-session';
 import { DictionaryApi } from '@core/dictionary/dictionary-api';
+import { QueuedSound } from '@core/outbox/outbox.model';
+import { SoundOutbox } from '@core/outbox/sound-outbox';
 import { aPronunciation, aRecording, aWord } from '@core/words/word.fixtures';
 import {
   CreateWordRequest,
@@ -36,6 +39,8 @@ describe('RecordingNewPage', () => {
   let created: CreateWordRequest[];
   let addedStages: PronunciationRequest[];
   let words: ReturnType<typeof signal<Word[]>>;
+  let uploadError: unknown;
+  let kept: QueuedSound[];
 
   afterEach(() => vi.unstubAllGlobals());
 
@@ -48,6 +53,8 @@ describe('RecordingNewPage', () => {
     created = [];
     addedStages = [];
     words = signal<Word[]>([lapin]);
+    uploadError = null;
+    kept = [];
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -77,6 +84,9 @@ describe('RecordingNewPage', () => {
               return Promise.resolve(stage);
             },
             addRecording: (pronunciationId: number, audio: Blob, durationMs: number) => {
+              if (uploadError) {
+                return Promise.reject(uploadError);
+              }
               uploads.push([pronunciationId, durationMs]);
               uploadedTypes.push(audio.type);
               const wordId = pronunciationId === 20 ? 2 : 1;
@@ -88,6 +98,15 @@ describe('RecordingNewPage', () => {
               });
               words.update((list) => addRecording(list, recording));
               return Promise.resolve(recording);
+            },
+          },
+        },
+        {
+          provide: SoundOutbox,
+          useValue: {
+            keep: (sound: QueuedSound) => {
+              kept.push(sound);
+              return Promise.resolve(true);
             },
           },
         },
@@ -269,6 +288,40 @@ describe('RecordingNewPage', () => {
       [11, 2400],
     ]);
     expect(element.textContent).toContain('Il a maintenant 2 sons.');
+  });
+
+  it('keeps the sound on the device when the notebook cannot be reached, without a page link', async () => {
+    uploadError = new HttpErrorResponse({ status: 0 });
+    const fixture = render('1');
+    const element = fixture.nativeElement as HTMLElement;
+
+    await press(fixture, "Commencer l'enregistrement");
+    await press(fixture, 'Garder ce son');
+    await press(fixture, 'apin');
+
+    expect(kept).toEqual([
+      {
+        audio: clip.blob,
+        durationMs: 2400,
+        label: 'lapin',
+        target: { kind: 'stage', stageId: 11 },
+      },
+    ]);
+    expect(element.textContent).toContain('Son gardé sur ce téléphone');
+    expect(element.textContent).toContain('rejoindra «\u00A0lapin\u00A0» tout seul');
+    expect(element.querySelector('a[href^="/words/"]')).toBeNull();
+  });
+
+  it('reports a refused sound instead of keeping it', async () => {
+    uploadError = new HttpErrorResponse({ status: 415, error: { code: 'UNSUPPORTED_MEDIA_TYPE' } });
+    const fixture = render('1');
+
+    await press(fixture, "Commencer l'enregistrement");
+    await press(fixture, 'Garder ce son');
+    await press(fixture, 'apin');
+
+    expect(kept).toEqual([]);
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Son gardé');
   });
 
   it('files the sound under a stage of a word picked in the search', async () => {

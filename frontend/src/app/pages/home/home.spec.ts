@@ -56,15 +56,23 @@ describe('HomePage', () => {
   afterEach(() => http.verify());
 
   /**
-   * Renders the home screen on a tab, with a search from the URL, and serves the notebook.
+   * Renders the home screen on a tab, with a search and a filter from the URL, and serves the
+   * notebook.
    */
-  async function render(tab?: string, q?: string): Promise<ComponentFixture<HomePage>> {
+  async function render(
+    tab?: string,
+    q?: string,
+    filter?: string,
+  ): Promise<ComponentFixture<HomePage>> {
     const fixture = TestBed.createComponent(HomePage);
     if (tab) {
       fixture.componentRef.setInput('tab', tab);
     }
     if (q) {
       fixture.componentRef.setInput('q', q);
+    }
+    if (filter) {
+      fixture.componentRef.setInput('filter', filter);
     }
     fixture.detectChanges();
     http.expectOne(API_ENDPOINTS.words).flush(ENTRIES);
@@ -96,6 +104,45 @@ describe('HomePage', () => {
   function openSearch(fixture: ComponentFixture<HomePage>): void {
     (fixture.nativeElement as HTMLElement)
       .querySelector<HTMLButtonElement>('button[aria-label="Chercher un mot de Alix"]')!
+      .click();
+    fixture.detectChanges();
+  }
+
+  /**
+   * The toggle folding the status filters.
+   */
+  function filterToggle(fixture: ComponentFixture<HomePage>): HTMLButtonElement {
+    return (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '.home__filter-toggle',
+    )!;
+  }
+
+  /**
+   * The status filter chips, none while folded.
+   */
+  function filterChips(fixture: ComponentFixture<HomePage>): HTMLButtonElement[] {
+    return [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>(
+        '.filter-chips__chip',
+      ),
+    ];
+  }
+
+  /**
+   * Unfolds the status filters with their toggle.
+   */
+  function openFilters(fixture: ComponentFixture<HomePage>): void {
+    filterToggle(fixture).click();
+    fixture.detectChanges();
+  }
+
+  /**
+   * Unfolds the status filters and picks the one with this label.
+   */
+  function pickFilter(fixture: ComponentFixture<HomePage>, label: string): void {
+    openFilters(fixture);
+    filterChips(fixture)
+      .find((chip) => chip.textContent?.trim() === label)!
       .click();
     fixture.detectChanges();
   }
@@ -225,11 +272,7 @@ describe('HomePage', () => {
     const fixture = await render();
     const element = fixture.nativeElement as HTMLElement;
 
-    const learning = [...element.querySelectorAll<HTMLButtonElement>('.filter-chips__chip')].find(
-      (chip) => chip.textContent?.trim() === 'En route',
-    )!;
-    learning.click();
-    fixture.detectChanges();
+    pickFilter(fixture, 'En route');
 
     expect(element.querySelectorAll('app-word-card')).toHaveLength(1);
     expect(text(fixture)).toContain('«\u00A0ka\u00A0»');
@@ -240,9 +283,7 @@ describe('HomePage', () => {
     const element = fixture.nativeElement as HTMLElement;
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
-    [...element.querySelectorAll<HTMLButtonElement>('.filter-chips__chip')]
-      .find((chip) => chip.textContent?.trim() === 'En route')!
-      .click();
+    pickFilter(fixture, 'En route');
 
     expect(navigate).toHaveBeenCalledWith(
       [],
@@ -255,8 +296,73 @@ describe('HomePage', () => {
     expect(text(fixture)).toContain('lapin');
   });
 
+  it('folds the filters behind a toggle, which unfolds them', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(filterChips(fixture)).toHaveLength(0);
+    expect(filterToggle(fixture).getAttribute('aria-expanded')).toBe('false');
+
+    openFilters(fixture);
+
+    expect(filterChips(fixture).map((chip) => chip.textContent?.trim())).toEqual([
+      'Tous',
+      'Bien dit',
+      'Presque',
+      'En route',
+    ]);
+    expect(filterToggle(fixture).getAttribute('aria-expanded')).toBe('true');
+    expect(element.querySelector('#home-filters')).not.toBeNull();
+  });
+
+  it('folds the filters once one is picked, keeping it in sight on the toggle', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+    document.body.append(element);
+
+    pickFilter(fixture, 'En route');
+    await fixture.whenStable();
+
+    expect(filterChips(fixture)).toHaveLength(0);
+    expect(filterToggle(fixture).getAttribute('aria-label')).toBe(
+      "Filtrer par couleur, En route pour l'instant",
+    );
+    expect(filterToggle(fixture).querySelector('.home__filter-badge')).not.toBeNull();
+    expect(document.activeElement).toBe(filterToggle(fixture));
+    element.remove();
+  });
+
+  it('shows the filter kept in the URL on the folded toggle, until every status is picked again', async () => {
+    const fixture = await render(undefined, undefined, 'learning');
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelectorAll('app-word-card')).toHaveLength(1);
+    expect(filterChips(fixture)).toHaveLength(0);
+    expect(filterToggle(fixture).querySelector('.home__filter-badge')).not.toBeNull();
+
+    pickFilter(fixture, 'Tous');
+
+    expect(element.querySelectorAll('app-word-card')).toHaveLength(2);
+    expect(filterToggle(fixture).querySelector('.home__filter-badge')).toBeNull();
+    expect(filterToggle(fixture).getAttribute('aria-label')).toBe('Filtrer par couleur');
+  });
+
+  it('folds the filters on Escape', async () => {
+    const fixture = await render();
+
+    openFilters(fixture);
+    filterChips(fixture)[0].dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    fixture.detectChanges();
+
+    expect(filterChips(fixture)).toHaveLength(0);
+  });
+
   it('agrees the "all" filter with the sentences', async () => {
     const fixture = await render('sentences');
+
+    openFilters(fixture);
 
     expect(text(fixture)).toContain('Toutes');
     expect(text(fixture)).not.toContain('Tous');
@@ -294,16 +400,38 @@ describe('HomePage', () => {
     );
   });
 
+  it('marks the first sentence in the list, but not among search results', async () => {
+    const fixture = await render('sentences');
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('app-milestone-marker')?.textContent).toMatch(
+      /Première phrase, le 14 octobre/u,
+    );
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
+    });
+    http = TestBed.inject(HttpTestingController);
+    TestBed.inject(AuthSession).status.set('signed-in');
+    const searched = await render('sentences', 'gâteau');
+
+    expect(
+      (searched.nativeElement as HTMLElement).querySelector('app-milestone-marker'),
+    ).toBeNull();
+  });
+
   it('stays in the notebook and says so when the logout cannot reach the server', async () => {
     const fixture = await render();
     const element = fixture.nativeElement as HTMLElement;
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
 
-    element.querySelector<HTMLButtonElement>('button[aria-label="Se déconnecter"]')!.click();
+    element.querySelector<HTMLButtonElement>('app-home-menu button[role="menuitem"]')!.click();
     fixture.detectChanges();
     [...element.querySelectorAll<HTMLButtonElement>('app-confirm-sheet button')]
       .find((button) => button.textContent?.trim() === 'Se déconnecter')!
       .click();
+    await new Promise((resolve) => setTimeout(resolve));
     http.expectOne(API_ENDPOINTS.logout).error(new ProgressEvent('error'));
     await new Promise((resolve) => setTimeout(resolve));
 
@@ -321,7 +449,7 @@ describe('HomePage', () => {
     expect(element.querySelector('app-action-bar')).toBeNull();
     expect(element.querySelector('a[href^="/words/new"]')).toBeNull();
     expect(element.querySelector('.home--read-only')).not.toBeNull();
-    expect(element.querySelector('button[aria-label="Se déconnecter"]')).not.toBeNull();
+    expect(element.querySelector('app-home-menu')).not.toBeNull();
   });
 
   it('logs out after confirmation and returns to the login screen', async () => {
@@ -329,12 +457,13 @@ describe('HomePage', () => {
     const element = fixture.nativeElement as HTMLElement;
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
 
-    element.querySelector<HTMLButtonElement>('button[aria-label="Se déconnecter"]')!.click();
+    element.querySelector<HTMLButtonElement>('app-home-menu button[role="menuitem"]')!.click();
     fixture.detectChanges();
     const confirm = [
       ...element.querySelectorAll<HTMLButtonElement>('app-confirm-sheet button'),
     ].find((button) => button.textContent?.trim() === 'Se déconnecter')!;
     confirm.click();
+    await new Promise((resolve) => setTimeout(resolve));
     http.expectOne(API_ENDPOINTS.logout).flush(null, { status: 204, statusText: 'No Content' });
     await new Promise((resolve) => setTimeout(resolve));
 

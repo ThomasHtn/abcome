@@ -24,6 +24,11 @@ export class HomeSummaryCard {
   public readonly summary = input.required<HomeSummary>();
 
   /**
+   * Whether the bubble is shown in place, without growing, when the screen comes back.
+   */
+  public readonly settled = input(false);
+
+  /**
    * First name of the child, given by the server with the session.
    */
   protected readonly childName = inject(AuthSession).childName;

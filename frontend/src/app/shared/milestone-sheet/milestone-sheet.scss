@@ -1,0 +1,74 @@
+/* Milestone drawer: Lapinou over a lavender medal, a big title, the story and the next step. */
+
+@use 'tools' as *;
+
+/* Content centred, tight between Lapinou and the medal. */
+.milestone-sheet {
+  gap: 0.5rem;
+  padding-block-start: 0.25rem;
+}
+
+/* Lapinou overlaps the top of the medal, as if holding it up. */
+.milestone-sheet__mascot {
+  margin-block-end: -1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* The medal and its face stacked in one cell. */
+.milestone-sheet__medal {
+  display: grid;
+  inline-size: 7.5rem;
+  block-size: 9.375rem;
+}
+
+/* Image and face share the cell. */
+.milestone-sheet__medal > * {
+  grid-area: 1 / 1;
+}
+
+/* The face's content centred on the white disc, at (60, 56) of the 120 × 150 medal. */
+.milestone-sheet__face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 7.5rem;
+  block-size: 7rem;
+  color: var(--color-lavender-700);
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 700;
+}
+
+/* Title in the display face, the biggest text of the drawer. */
+.milestone-sheet__title {
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+/* What happened, in the reading size. */
+.milestone-sheet__story {
+  max-inline-size: 22rem;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* The entry that reached it, salmon like on the cards. */
+.milestone-sheet__entry {
+  color: var(--color-salmon-700);
+  font-weight: 800;
+}
+
+/* Next step, small and lavender. */
+.milestone-sheet__next {
+  margin: 0;
+  color: var(--color-lavender-700);
+  font-size: var(--text-meta);
+  font-weight: 700;
+}

@@ -1,0 +1,81 @@
+/* Start-up screen of index.html: Lapinou on the cream ground until the first screen shows, then a fade. */
+
+/* Covers the page from the first paint, above the app booting underneath. */
+.app-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background-color: var(--color-background);
+  transition: opacity var(--duration-fade) ease-out;
+}
+
+/* Fading out once the app has drawn its first screen; taps already reach the app. */
+.app-splash--leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Salmon disc behind Lapinou, the same halo as a word page's hero. */
+.app-splash__halo {
+  display: grid;
+  place-items: center;
+  inline-size: 10rem;
+  block-size: 10rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-salmon-100);
+}
+
+/* Lapinou himself sways and blinks inside his SVG. */
+.app-splash__mascot {
+  inline-size: 6rem;
+  block-size: auto;
+}
+
+/* Fast starts never flash the splash: it appears only after a short wait, then breathes. */
+@media (prefers-reduced-motion: no-preference) {
+  .app-splash__halo {
+    animation:
+      splash-in var(--duration-pop) var(--ease-pop) 150ms both,
+      splash-breathe 2.4s ease-in-out calc(150ms + var(--duration-pop)) infinite;
+  }
+}
+
+/* Less motion: the same short wait, then the splash simply shows. */
+@media (prefers-reduced-motion: reduce) {
+  .app-splash__halo {
+    animation: splash-show 0s linear 150ms both;
+  }
+}
+
+/* The disc and Lapinou popping into view. */
+@keyframes splash-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Slow swell of the disc while the app loads. */
+@keyframes splash-breathe {
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+/* Plain appearance, for reduced motion. */
+@keyframes splash-show {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

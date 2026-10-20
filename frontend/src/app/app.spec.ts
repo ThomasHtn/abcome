@@ -1,15 +1,23 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 
 import { ServerStatus } from '@core/http/server-status';
 
 import { App } from './app';
 
 describe('App', () => {
+  // The shell loads the outbox and the milestone drawer apart: let them finish before the test ends.
+  afterEach(async () => {
+    await import('@core/outbox/sound-outbox');
+    await import('@shared/milestone-sheet/milestone-sheet');
+  });
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     });
   });
 
@@ -35,5 +43,18 @@ describe('App', () => {
     const band = element.querySelector('[role="alert"]');
     expect(band?.textContent).toContain("Le carnet ne répond pas pour l'instant.");
     expect(band?.querySelector('button')?.textContent?.trim()).toBe('Réessayer');
+  });
+
+  it('fades out the start-up screen once the first screen is settled', async () => {
+    const splash = document.createElement('div');
+    splash.className = 'app-splash';
+    document.body.append(splash);
+    TestBed.createComponent(App).detectChanges();
+    expect(splash.classList).not.toContain('app-splash--leaving');
+
+    await TestBed.inject(Router).navigateByUrl('/');
+
+    expect(splash.classList).toContain('app-splash--leaving');
+    splash.remove();
   });
 });

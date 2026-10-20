@@ -52,7 +52,11 @@
     "longWithYear": "{{ month }} {{ day }}, {{ year }}",
     "weekday": "{{ weekday }}, {{ month }} {{ day }}",
     "weekdayWithYear": "{{ weekday }}, {{ month }} {{ day }}, {{ year }}",
-    "monthYear": "{{ month }} {{ year }}"
+    "monthYear": "{{ month }} {{ year }}",
+    "monthUnitOne": "month",
+    "monthUnitOther": "months",
+    "atAgeOne": "at {{ months }} month",
+    "atAgeOther": "at {{ months }} months"
   },
   "recordings": {
     "durationSecond": "{{ seconds }} second",
@@ -128,7 +132,7 @@
     "tabsLabel": "Entry type",
     "tabNews": ", something new",
     "filterLabel": "Filter by color",
-    "loading": "Opening the notebook…",
+    "filterLabelActive": "Filter by color, {{ status }} for now",    "loading": "Opening the notebook…",
     "loadFailed": "The notebook couldn't open.",
     "retry": "Try again",
     "addSearchedWord": "Add {{ query }} to the words",
@@ -150,7 +154,8 @@
       "soundsOne": ", with {{ count }} sound",
       "soundsOther": ", with {{ count }} sounds",
       "saidBefore": "{{ childName }} says ",
-      "saidAfter": ""
+      "saidAfter": "",
+      "saidOn": ", on {{ date }}"
     },
     "emptyWordsSearch": "{{ childName }} hasn't said {{ query }} yet.",
     "emptyWordsSearchFiltered": "{{ childName }} hasn't said {{ query }} in this color yet.",
@@ -171,6 +176,11 @@
       "spokenLabel": "What {{ childName }} said",
       "saved": "New sentence noted",
       "saveFailed": "The sentence couldn't be saved. Try again."
+    },
+    "menu": {
+      "label": "Notebook menu",
+      "download": "Download words and sounds",
+      "downloadStarted": "The notebook is downloading, with all its sounds."
     }
   },
   "login": {
@@ -263,7 +273,9 @@
       "stageText": "{{ childName }} says it {{ spoken }}. The sound is with it on its page.",
       "soundTitle": "Sound added to {{ label }}!",
       "soundsText": "It now has {{ count }} sounds. You'll find them on its page.",
-      "soundText": "You'll find it on its page."
+      "soundText": "You'll find it on its page.",
+      "queuedTitle": "Sound kept on this phone",
+      "queuedText": "The notebook can't be reached right now. The sound will join {{ label }} on its own as soon as it answers."
     },
     "save": {
       "notReady": "First write down what you heard",
@@ -317,24 +329,18 @@
     "cancel": "Cancel",
     "save": "Save",
     "keep": "Keep",
-    "confirmRemove": "Yes, remove",
     "lastStageHeading": "It's the only pronunciation",
     "moveSoundAction": "File with another pronunciation",
     "removeSoundAction": "Delete the sound",
     "moveSoundHeading": "File the sound",
     "moveSoundQuestion": "Which pronunciation should it go with?",
-    "removeSoundHeading": "Delete the sound?",
-    "confirmDelete": "Yes, delete",
-    "deleteMessage": "Its whole pronunciation history and its sounds will be erased. This can't be undone.",
     "loadFailed": "The notebook couldn't open.",
     "retry": "Try again",
     "actionsLabel": "Actions on {{ label }}",
     "recordLabel": "Record a sound of {{ label }}",
-    "deleteHeading": "Delete {{ label }} from {{ childName }}'s list?",
     "stageHeadingEdit": "Edit the pronunciation",
     "stageHeadingNew": "New pronunciation",
     "spokenBefore": "before: {{ spoken }}",
-    "removeStageHeading": "Remove {{ spoken }} from the progress?",
     "stageEdited": "Pronunciation updated",
     "stageAdded": "New pronunciation noted",
     "stageSaveFailed": "The pronunciation couldn't be saved, try again.",
@@ -362,12 +368,7 @@
     "soundActionsLabel": "Actions on the sound recorded on {{ date }}, {{ length }}",
     "moveTargetLabel": "File with {{ spoken }}, {{ title }}",
     "soundSheetHeading": "Sound recorded on {{ date }}",
-    "soundSheetText": "{{ childName }} says {{ spoken }} on it. It lasts {{ length }}.",
-    "removeSoundText": "The sound recorded on {{ date }}, where {{ childName }} says {{ spoken }}, will be erased. This can't be undone.",
-    "removeStageErased": "This pronunciation from {{ date }} will be erased.",
-    "removeStageSoundOne": "Its sound will be filed with {{ spoken }}.",
-    "removeStageSoundOther": "Its {{ count }} sounds will be filed with {{ spoken }}.",
-    "cannotUndo": "This can't be undone."
+    "soundSheetText": "{{ childName }} says {{ spoken }} on it. It lasts {{ length }}."
   },
   "wordNew": {
     "heading": "New word",
@@ -428,5 +429,32 @@
     "addAnyway": "Not in the dictionary: add {{ label }} anyway",
     "recentWords": "Recent words",
     "frequentWords": "Common words at this age"
+  },
+  "feedback": {
+    "undo": "Undo"
+  },
+  "outbox": {
+    "sent": "The sound of {{ label }} kept on this phone has reached the notebook.",
+    "lost": "A sound of {{ label }} kept on this phone could not join the notebook."
+  },
+  "milestones": {
+    "title": {
+      "words": "{{ count }} words",
+      "firstMastered": "First “Got it”",
+      "firstSentence": "First sentence"
+    },
+    "onDay": "on {{ date }}",
+    "marker": "{{ title }}, {{ when }}",
+    "story": {
+      "wordsBefore": "With ",
+      "wordsAfter": ", {{ childName }} reaches {{ count }} words, {{ when }}.",
+      "firstMasteredBefore": "{{ childName }} says ",
+      "firstMasteredAfter": " just right for the first time, {{ when }}.",
+      "firstSentenceBefore": "First sentence, {{ when }}: ",
+      "firstSentenceAfter": "."
+    },
+    "sheetTitle": "{{ title }}!",
+    "next": "Next milestone: {{ count }} words",
+    "bravo": "Well done {{ childName }}!"
   }
 }

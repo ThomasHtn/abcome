@@ -1,5 +1,5 @@
 @if (deletedLabel(); as label) {
-  <!-- Goodbye screen after the deletion. -->
+  <!-- Goodbye screen when the entry was deleted from another phone. -->
   <div class="word-detail__gone pop flex flex-1 flex-col items-center justify-center gap-4">
     <h1 class="word-detail__gone-title">{{ label | quote }} {{ copy().deletedSuffix }}</h1>
     <a app-button variant="secondary" routerLink="/" [queryParams]="copy().listQuery">
@@ -174,7 +174,7 @@
       <button
         class="word-detail__action word-detail__action--danger press flex items-center gap-3.5"
         type="button"
-        (click)="open('delete')"
+        (click)="deleteWord()"
       >
         <span class="word-detail__action-icon" aria-hidden="true">
           <svg app-icon name="trash-2" [size]="20" [strokeWidth]="2.2"></svg>
@@ -198,7 +198,7 @@
       [(draft)]="draft"
     />
     @if (editing()) {
-      <button class="word-detail__remove-stage" type="button" (click)="askRemoveStage()">
+      <button class="word-detail__remove-stage" type="button" (click)="removeStage()">
         {{ 'wordDetail.removeStage' | transloco }}
       </button>
     }
@@ -237,18 +237,6 @@
     </div>
   </app-bottom-sheet>
 
-  <!-- Removal of a stage. -->
-  <app-confirm-sheet
-    [cancelLabel]="'wordDetail.keep' | transloco"
-    [confirmLabel]="'wordDetail.confirmRemove' | transloco"
-    [heading]="removeStageHeading()"
-    [message]="removeStageMessage()"
-    [busy]="busy()"
-    [open]="sheet() === 'remove-stage'"
-    (openChange)="onSheetToggle('remove-stage', $event)"
-    (confirmed)="removeStage()"
-  />
-
   <!-- The only stage cannot go: the word itself has to. -->
   <app-confirm-sheet
     [heading]="'wordDetail.lastStageHeading' | transloco"
@@ -257,7 +245,7 @@
     [confirmLabel]="copy().deleteAction"
     [open]="sheet() === 'last-stage'"
     (openChange)="onSheetToggle('last-stage', $event)"
-    (confirmed)="open('delete')"
+    (confirmed)="deleteWord()"
   />
 
   <!-- Actions of one sound, behind its "⋮". -->
@@ -283,7 +271,7 @@
       <button
         class="word-detail__action word-detail__action--danger press flex items-center gap-3.5"
         type="button"
-        (click)="askRemoveSound()"
+        (click)="removeSound()"
       >
         <span class="word-detail__action-icon" aria-hidden="true">
           <svg app-icon name="trash-2" [size]="20" [strokeWidth]="2.2"></svg>
@@ -324,30 +312,6 @@
       }
     </ul>
   </app-bottom-sheet>
-
-  <!-- Deletion of one sound. -->
-  <app-confirm-sheet
-    [heading]="'wordDetail.removeSoundHeading' | transloco"
-    [cancelLabel]="'wordDetail.keep' | transloco"
-    [confirmLabel]="'wordDetail.confirmDelete' | transloco"
-    [message]="removeSoundMessage()"
-    [busy]="busy()"
-    [open]="sheet() === 'remove-sound'"
-    (openChange)="onSheetToggle('remove-sound', $event)"
-    (confirmed)="removeSound()"
-  />
-
-  <!-- Deletion of the word. -->
-  <app-confirm-sheet
-    [cancelLabel]="'wordDetail.keep' | transloco"
-    [confirmLabel]="'wordDetail.confirmDelete' | transloco"
-    [message]="'wordDetail.deleteMessage' | transloco"
-    [heading]="deleteHeading()"
-    [busy]="busy()"
-    [open]="sheet() === 'delete'"
-    (openChange)="onSheetToggle('delete', $event)"
-    (confirmed)="deleteWord()"
-  />
 } @else if (loaded()) {
   <!-- Unknown id: a deleted word or a wrong link. -->
   <div class="word-detail__gone pop flex flex-1 flex-col items-center justify-center gap-4">

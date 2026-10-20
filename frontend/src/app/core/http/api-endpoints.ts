@@ -25,6 +25,12 @@ export const API_ENDPOINTS = {
   branding: '/api/branding',
 
   /**
+   * The whole notebook as a zip archive (words and stages as JSON and CSV, every sound as a file),
+   * downloaded through a plain link.
+   */
+  export: '/api/export',
+
+  /**
    * Built-in list of common first words in one language, read-only.
    */
   dictionary: (language: AppLocale): string => `/api/dictionary?language=${language}`,

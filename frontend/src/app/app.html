@@ -23,3 +23,8 @@
 <!-- Feedback shared by every screen. -->
 <app-toast-outlet />
 <app-celebration-burst />
+
+<!-- Milestone drawer, loaded once the first screen is idle so it never weighs on the start. -->
+@defer (on idle) {
+  <app-milestone-sheet />
+}

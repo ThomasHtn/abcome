@@ -1,0 +1,54 @@
+<!-- The "⋯" button; the browser opens the menu and tells its state to assistive technologies. -->
+<button
+  app-icon-button
+  #trigger
+  type="button"
+  tone="ghost"
+  popovertarget="home-menu"
+  aria-haspopup="menu"
+  [attr.aria-label]="'home.menu.label' | transloco"
+>
+  <svg app-icon name="ellipsis" [size]="24" [strokeWidth]="2.4"></svg>
+</button>
+
+<!-- The menu, in the top layer under the button; a tap outside or Escape closes it, arrows move between items. -->
+<div
+  #menu
+  id="home-menu"
+  class="home-menu"
+  popover
+  role="menu"
+  tabindex="-1"
+  [attr.aria-label]="'home.menu.label' | transloco"
+  (beforetoggle)="onBeforeToggle($event)"
+  (toggle)="onToggle($event)"
+  (keydown)="moveFocus($event)"
+>
+  <!-- The rows; the popover itself keeps the browser's display, so it stays hidden while closed. -->
+  <div class="flex flex-col gap-1">
+    <!-- A plain link: the browser streams the archive to disk with the session cookie. -->
+    <a
+      class="home-menu__item press flex items-center gap-3"
+      role="menuitem"
+      download
+      [href]="exportUrl"
+      (click)="download()"
+    >
+      <span class="home-menu__icon" aria-hidden="true">
+        <svg app-icon name="download" [size]="20" [strokeWidth]="2.2"></svg>
+      </span>
+      {{ 'home.menu.download' | transloco }}
+    </a>
+    <button
+      class="home-menu__item press flex items-center gap-3"
+      type="button"
+      role="menuitem"
+      (click)="chooseLogout()"
+    >
+      <span class="home-menu__icon" aria-hidden="true">
+        <svg app-icon name="log-out" [size]="20" [strokeWidth]="2.2"></svg>
+      </span>
+      {{ 'home.logout' | transloco }}
+    </button>
+  </div>
+</div>

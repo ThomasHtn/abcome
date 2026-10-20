@@ -17,8 +17,10 @@ import { DictionaryEntry } from '@core/dictionary/dictionary.model';
 import { DictionaryApi } from '@core/dictionary/dictionary-api';
 import { Celebration } from '@core/feedback/celebration';
 import { ToastQueue } from '@core/feedback/toast-queue';
-import { apiErrorCode } from '@core/http/api-error.utils';
+import { apiErrorCode, isServerFailure } from '@core/http/api-error.utils';
 import { resourceValue } from '@core/http/resource.utils';
+import { OutboxTarget } from '@core/outbox/outbox.model';
+import { SoundOutbox } from '@core/outbox/sound-outbox';
 import {
   RECORDING_MAX_BYTES,
   RECORDING_MAX_DURATION_MS,
@@ -134,6 +136,11 @@ export class RecordingNewPage {
    * Confetti once the sound is saved.
    */
   private readonly celebration = inject(Celebration);
+
+  /**
+   * Keeps a sound the notebook could not take, and sends it once it answers.
+   */
+  private readonly outbox = inject(SoundOutbox);
 
   /**
    * First name of the child, given by the server with the session.
@@ -417,10 +424,12 @@ export class RecordingNewPage {
       return null;
     }
     const word = this.words().find((entry) => entry.id === outcome.wordId);
-    return {
-      ...doneCopy(outcome, this.childName()),
-      path: entryPath(word ?? { id: outcome.wordId, kind: 'word' }),
-    };
+    // A kept sound is not on the word's page yet, so the screen offers no way there.
+    const path =
+      outcome.kind === 'queued' || outcome.wordId === null
+        ? null
+        : entryPath(word ?? { id: outcome.wordId, kind: 'word' });
+    return { ...doneCopy(outcome, this.childName()), path };
   });
 
   /**
@@ -571,7 +580,16 @@ export class RecordingNewPage {
       await this.wordsApi.addRecording(pronunciation.id, clip.blob, clip.durationMs);
       this.finish('added', word.label, '', word.id);
     } catch (error) {
-      this.reportFailure(error, word.label);
+      const kept =
+        isServerFailure(error) &&
+        (await this.keepForLater(
+          { kind: 'stage', stageId: pronunciation.id },
+          word.label,
+          word.id,
+        ));
+      if (!kept) {
+        this.reportFailure(error, word.label);
+      }
     } finally {
       this.saving.set(false);
     }
@@ -597,7 +615,13 @@ export class RecordingNewPage {
       this.finish(word ? 'stage' : 'new', target.label, request.spoken, pending.wordId);
       this.pending = null;
     } catch (error) {
-      this.reportFailure(error, target.label);
+      const label = word?.label ?? target.label.trim();
+      const kept =
+        isServerFailure(error) &&
+        (await this.keepForLater(this.remainingSteps(request), label, word?.id ?? null));
+      if (!kept) {
+        this.reportFailure(error, target.label);
+      }
     } finally {
       this.saving.set(false);
     }
@@ -626,6 +650,48 @@ export class RecordingNewPage {
   ): Promise<PendingStage> {
     const word = await this.wordsApi.create({ label: label.trim(), pronunciation });
     return { wordId: word.id, stageId: word.pronunciations[0].id };
+  }
+
+  /**
+   * What is left of a save cut short: the upload under the stage already created, else the new stage,
+   * else the new word.
+   */
+  private remainingSteps(request: PronunciationRequest): OutboxTarget {
+    const word = this.targetWord();
+    if (this.pending) {
+      return { kind: 'stage', stageId: this.pending.stageId };
+    }
+    if (word) {
+      return { kind: 'new-stage', wordId: word.id, stage: request };
+    }
+    return { kind: 'new-word', label: this.target()?.label.trim() ?? '', stage: request };
+  }
+
+  /**
+   * Keeps the clip on the device when the notebook cannot be reached, and says it will follow;
+   * `false` when this browser cannot keep it either, so the failure is reported as before.
+   */
+  private async keepForLater(
+    target: OutboxTarget,
+    label: string,
+    wordId: number | null,
+  ): Promise<boolean> {
+    const clip = this.clip();
+    if (!clip) {
+      return false;
+    }
+    const kept = await this.outbox.keep({
+      audio: clip.blob,
+      durationMs: clip.durationMs,
+      label,
+      target,
+    });
+    if (kept) {
+      this.pending = null;
+      this.outcome.set({ kind: 'queued', label, spoken: '', soundCount: 0, wordId });
+      this.phase.set('done');
+    }
+    return kept;
   }
 
   /**

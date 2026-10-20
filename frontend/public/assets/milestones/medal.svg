@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150" width="120" height="150">
+  <!-- Milestone medal without its number: two ribbons under a lavender disc with a dotted inner ring.
+       The number or icon is laid over the disc's centre (60, 56) by app-milestone-sheet. -->
+  <style>
+    /* Ribbons sway once, like a medal just hung, for users who did not ask for less motion. */
+    .ribbon {
+      transform-box: view-box;
+      transform-origin: 60px 90px;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .ribbon--left {
+        animation: sway-left 1.2s ease-out 0.3s both;
+      }
+
+      .ribbon--right {
+        animation: sway-right 1.2s ease-out 0.3s both;
+      }
+    }
+
+    /* Left ribbon swinging out then settling. */
+    @keyframes sway-left {
+      0% {
+        transform: rotate(0);
+      }
+      40% {
+        transform: rotate(6deg);
+      }
+      100% {
+        transform: rotate(0);
+      }
+    }
+
+    /* Right ribbon swinging the other way. */
+    @keyframes sway-right {
+      0% {
+        transform: rotate(0);
+      }
+      40% {
+        transform: rotate(-6deg);
+      }
+      100% {
+        transform: rotate(0);
+      }
+    }
+  </style>
+  <!-- Ribbons: lavender on the left, salmon on the right, notched at the end. -->
+  <path class="ribbon ribbon--left" d="M44 88 L30 142 L40 134 L50 144 L62 96 Z" fill="#B3A9EC" />
+  <path class="ribbon ribbon--right" d="M76 88 L90 142 L80 134 L70 144 L58 96 Z" fill="#F7957C" />
+  <!-- Outer disc and its rim. -->
+  <circle cx="60" cy="56" r="48" fill="#E8E4FB" stroke="#D2CBF6" stroke-width="6" />
+  <!-- White face with a dotted ring, where the number sits. -->
+  <circle cx="60" cy="56" r="36" fill="#FFFFFF" stroke="#9488DF" stroke-width="2.5" stroke-dasharray="2 5" stroke-linecap="round" />
+</svg>

@@ -7,6 +7,7 @@ import {
   Pronunciation,
   PronunciationStatus,
   Recording,
+  RemovalTarget,
   Word,
   WordCategory,
   WordChange,
@@ -211,6 +212,37 @@ export function removeRecording(words: readonly Word[], recordingId: number): Wo
       ? { ...word, recordings: word.recordings.filter((recording) => recording.id !== recordingId) }
       : word,
   );
+}
+
+/**
+ * Entry holding a removal target (the entry itself, or the owner of the stage or sound); `undefined`
+ * once it is gone.
+ */
+export function ownerOf(words: readonly Word[], target: RemovalTarget): Word | undefined {
+  return words.find((word) => {
+    switch (target.kind) {
+      case 'word':
+        return word.id === target.id;
+      case 'pronunciation':
+        return word.pronunciations.some((pronunciation) => pronunciation.id === target.id);
+      case 'recording':
+        return word.recordings.some((recording) => recording.id === target.id);
+    }
+  });
+}
+
+/**
+ * Copy of the list without a removal target, as the API leaves it once deleted.
+ */
+export function applyRemoval(words: readonly Word[], target: RemovalTarget): Word[] {
+  switch (target.kind) {
+    case 'word':
+      return words.filter((word) => word.id !== target.id);
+    case 'pronunciation':
+      return removePronunciation(words, target.id);
+    case 'recording':
+      return removeRecording(words, target.id);
+  }
 }
 
 /**

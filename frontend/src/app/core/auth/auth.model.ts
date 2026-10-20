@@ -13,6 +13,11 @@ export interface SessionInfo {
   readonly childName: string;
 
   /**
+   * Birth date of the child, `yyyy-MM-dd`, so the cards tell his age; `null` when the family did not set it.
+   */
+  readonly childBirthDate: string | null;
+
+  /**
    * Whether the visitor signed in with the reader password, and may only look.
    */
   readonly readOnly: boolean;

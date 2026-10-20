@@ -100,7 +100,8 @@ export interface KindCopy {
   renameAction: string;
 
   /**
-   * Goodbye title after the deletion, agreed with the noun ("a été supprimé", "a été supprimée").
+   * End of the deletion toast and of the goodbye title, agreed with the noun ("a été supprimé",
+   * "a été supprimée").
    */
   deletedSuffix: string;
 
@@ -162,20 +163,11 @@ export type MissingTarget = 'word' | 'stage' | 'sound';
 
 /**
  * Which bottom sheet is open on the word page.
- * `actions` the "⋯" menu, `stage` the stage form, `remove-stage` its removal,
- * `last-stage` why the only stage cannot go, `rename` the word's label, `delete` the word's deletion,
- * `sound` the actions of one sound, `move-sound` the stage it moves to, `remove-sound` its deletion.
+ * `actions` the "⋯" menu, `stage` the stage form, `last-stage` why the only stage cannot go,
+ * `rename` the word's label, `sound` the actions of one sound, `move-sound` the stage it moves to.
+ * Deletions need no sheet: they happen at once and the toast offers to undo them.
  */
-export type WordSheet =
-  | 'actions'
-  | 'stage'
-  | 'remove-stage'
-  | 'last-stage'
-  | 'rename'
-  | 'delete'
-  | 'sound'
-  | 'move-sound'
-  | 'remove-sound';
+export type WordSheet = 'actions' | 'stage' | 'last-stage' | 'rename' | 'sound' | 'move-sound';
 
 /**
  * Wording of the actions sheet of one sound.

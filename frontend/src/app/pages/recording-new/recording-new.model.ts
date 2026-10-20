@@ -34,9 +34,10 @@ export interface RecordedClip {
 
 /**
  * What a save did, for the closing screen: a new word with its first sound, a sound filed under an
- * existing stage, or a new stage of an existing word with its sound.
+ * existing stage, a new stage of an existing word with its sound, or the sound kept on the device
+ * until the notebook can be reached.
  */
-export type SaveKind = 'new' | 'added' | 'stage';
+export type SaveKind = 'new' | 'added' | 'stage' | 'queued';
 
 /**
  * Stage created by a save, kept while its sound is not uploaded yet.
@@ -98,9 +99,9 @@ export interface SaveOutcome {
   soundCount: number;
 
   /**
-   * The word's page.
+   * The word's page; `null` for a kept sound whose word is not created yet.
    */
-  wordId: number;
+  wordId: number | null;
 }
 
 /**

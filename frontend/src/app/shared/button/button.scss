@@ -42,6 +42,13 @@
   white-space: normal;
 }
 
+/* Narrow bar (phones up to 360 px): tighter sides, so the label holds on one line. */
+@container action-bar (width < 20.5rem) {
+  :host(.button--lg) {
+    padding-inline: 1rem;
+  }
+}
+
 /* Stacked bar (200 % zoom): the button never outgrows the bar, a long word hyphenates instead. */
 @container action-bar (width < 16rem) {
   :host(.button--lg) {

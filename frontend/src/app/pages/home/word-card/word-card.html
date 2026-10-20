@@ -1,37 +1,51 @@
 <!-- Whole card is the link to the word's page, read as one sentence. -->
 <a
-  class="word-card pop flex items-center gap-3.5"
+  class="word-card flex items-center gap-3.5"
+  [class.pop]="!settled()"
+  [class.word-card--settled]="settled()"
   [routerLink]="card().path"
   [attr.aria-label]="card().ariaLabel"
   [style.--word-card-index]="stagger()"
 >
-  <app-date-tile [day]="card().day" [month]="card().month" />
+  <app-date-tile [value]="card().tile.value" [unit]="card().tile.unit" [age]="card().tile.age" />
 
-  <!-- The word as the title, then what the child says now, in salmon. -->
+  <!-- The word as the title, then what the child says now, in salmon, and since when. -->
   <span class="word-card__text flex min-w-0 flex-1 flex-col gap-0.5">
     <!-- The title, a microphone when it keeps sounds, then what changed elsewhere since this device last looked as a lavender tag until its page is opened; the aria-label says both. -->
     <span class="word-card__label">
-      {{ card().label }}
       @if (card().hasSound || card().change) {
-        <!-- Kept together after the last word, so the microphone never wraps away from the tag. -->
-        <span class="word-card__marks">
-          <!-- A new sound already shows the microphone in its tag. -->
-          @if (card().hasSound && card().change !== 'recording') {
-            <svg class="word-card__sound" app-icon name="mic" [size]="16" [strokeWidth]="2.4"></svg>
-          }
-          @if (card().change; as change) {
-            <span class="word-card__change" aria-hidden="true">
-              <svg app-icon [name]="changeIcons[change]" [size]="14" [strokeWidth]="2.6"></svg>
-            </span>
-          }
+        <!-- The last word and the marks wrap as one block, so the marks never land on a line alone. -->
+        {{ labelParts().head
+        }}<span class="word-card__tail"
+          >{{ labelParts().last }}
+          <span class="word-card__marks">
+            <!-- A new sound already shows the microphone in its tag. -->
+            @if (card().hasSound && card().change !== 'recording') {
+              <svg
+                class="word-card__sound"
+                app-icon
+                name="mic"
+                [size]="16"
+                [strokeWidth]="2.4"
+              ></svg>
+            }
+            @if (card().change; as change) {
+              <span class="word-card__change" aria-hidden="true">
+                <svg app-icon [name]="changeIcons[change]" [size]="14" [strokeWidth]="2.6"></svg>
+              </span>
+            }
+          </span>
         </span>
+      } @else {
+        {{ card().label }}
       }
     </span>
-    <!-- Each language orders the name and the spoken form its own way, around the salmon span. -->
+    <!-- Each language orders the name and the spoken form its own way, around the salmon span; then the day of the first time when the tile shows the age. -->
     <span class="word-card__said"
       >{{ 'home.wordCard.saidBefore' | transloco: { childName: childName() }
       }}<span class="word-card__spoken">{{ card().spoken | quote }}</span
-      >{{ 'home.wordCard.saidAfter' | transloco: { childName: childName() } }}</span
+      >{{ 'home.wordCard.saidAfter' | transloco: { childName: childName() }
+      }}{{ card().saidOn }}</span
     >
   </span>
 

@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
-import { computed, effect, inject, Service, signal, untracked } from '@angular/core';
+import { computed, effect, inject, linkedSignal, Service, signal, untracked } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { translate } from '@jsverse/transloco';
@@ -53,9 +53,15 @@ export class AuthSession {
   public readonly signedIn = computed(() => this.status() === 'signed-in');
 
   /**
-   * First name of the child, given by the server with the session; a neutral one until then.
+   * First name of the child, given by the server with the session; a neutral one until then, translated
+   * on first read since this service can be built while the translations still load.
    */
-  public readonly childName = signal(translate(CHILD_NAME_FALLBACK));
+  public readonly childName = linkedSignal(() => translate(CHILD_NAME_FALLBACK));
+
+  /**
+   * Birth date of the child, `yyyy-MM-dd`, given with the session; `null` until then or when not set.
+   */
+  public readonly childBirthDate = signal<string | null>(null);
 
   /**
    * Whether the visitor may only look, which hides every write; the API refuses a reader's writes anyway.
@@ -155,6 +161,7 @@ export class AuthSession {
    */
   private open(session: SessionInfo): void {
     this.childName.set(session.childName);
+    this.childBirthDate.set(session.childBirthDate ?? null);
     this.readOnly.set(session.readOnly);
     this.status.set('signed-in');
   }

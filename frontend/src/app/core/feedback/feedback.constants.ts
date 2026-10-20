@@ -9,6 +9,11 @@ export const TOAST_DURATIONS_MS: Readonly<Record<Toast['tone'], number>> = {
 };
 
 /**
+ * How long a deletion can be undone: its toast keeps the undo button that long, then the server deletes.
+ */
+export const UNDO_WINDOW_MS = 6000;
+
+/**
  * How long the confetti burst lasts, matching `assets/celebration/confetti.svg`.
  */
 export const CELEBRATION_DURATION_MS = 1400;

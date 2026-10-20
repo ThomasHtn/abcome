@@ -52,7 +52,11 @@
     "longWithYear": "{{ day }} {{ month }} {{ year }}",
     "weekday": "{{ weekday }} {{ day }} {{ month }}",
     "weekdayWithYear": "{{ weekday }} {{ day }} {{ month }} {{ year }}",
-    "monthYear": "{{ month }} {{ year }}"
+    "monthYear": "{{ month }} {{ year }}",
+    "monthUnitOne": "mois",
+    "monthUnitOther": "mois",
+    "atAgeOne": "à {{ months }} mois",
+    "atAgeOther": "à {{ months }} mois"
   },
   "recordings": {
     "durationSecond": "{{ seconds }} seconde",
@@ -128,7 +132,7 @@
     "tabsLabel": "Type de notes",
     "tabNews": ", du nouveau",
     "filterLabel": "Filtrer par couleur",
-    "loading": "Ouverture du carnet…",
+    "filterLabelActive": "Filtrer par couleur, {{ status }} pour l'instant",    "loading": "Ouverture du carnet…",
     "loadFailed": "Le carnet n'a pas pu s'ouvrir.",
     "retry": "Réessayer",
     "addSearchedWord": "Ajouter {{ query }} à ses mots",
@@ -150,7 +154,8 @@
       "soundsOne": ", avec {{ count }} son",
       "soundsOther": ", avec {{ count }} sons",
       "saidBefore": "{{ childName }} dit ",
-      "saidAfter": ""
+      "saidAfter": "",
+      "saidOn": ", le {{ date }}"
     },
     "emptyWordsSearch": "{{ childName }} n'a pas encore dit {{ query }}.",
     "emptyWordsSearchFiltered": "{{ childName }} n'a pas encore dit {{ query }} dans cette couleur.",
@@ -171,6 +176,11 @@
       "spokenLabel": "Ce que {{ childName }} a dit",
       "saved": "Nouvelle phrase notée",
       "saveFailed": "La phrase n'a pas pu être enregistrée. Réessaie."
+    },
+    "menu": {
+      "label": "Menu du carnet",
+      "download": "Télécharger les mots et les sons",
+      "downloadStarted": "Le carnet se télécharge, avec tous ses sons."
     }
   },
   "login": {
@@ -263,7 +273,9 @@
       "stageText": "{{ childName }} le dit {{ spoken }}. Le son l'accompagne sur sa page.",
       "soundTitle": "Son ajouté à {{ label }} !",
       "soundsText": "Il a maintenant {{ count }} sons. Tu les retrouves sur sa page.",
-      "soundText": "Tu le retrouves sur sa page."
+      "soundText": "Tu le retrouves sur sa page.",
+      "queuedTitle": "Son gardé sur ce téléphone",
+      "queuedText": "Le carnet ne répond pas pour l'instant. Le son rejoindra {{ label }} tout seul dès qu'il répondra."
     },
     "save": {
       "notReady": "Note d'abord ce qu'il dit",
@@ -317,24 +329,18 @@
     "cancel": "Annuler",
     "save": "Enregistrer",
     "keep": "Garder",
-    "confirmRemove": "Oui, retirer",
     "lastStageHeading": "C'est sa seule prononciation",
     "moveSoundAction": "Ranger avec une autre prononciation",
     "removeSoundAction": "Supprimer le son",
     "moveSoundHeading": "Ranger le son",
     "moveSoundQuestion": "Avec quelle prononciation le ranger ?",
-    "removeSoundHeading": "Supprimer le son ?",
-    "confirmDelete": "Oui, supprimer",
-    "deleteMessage": "Tout son historique de prononciation et ses sons seront effacés. On ne pourra pas revenir en arrière.",
     "loadFailed": "Le carnet n'a pas pu s'ouvrir.",
     "retry": "Réessayer",
     "actionsLabel": "Actions sur {{ label }}",
     "recordLabel": "Enregistrer un son de {{ label }}",
-    "deleteHeading": "Supprimer {{ label }} de la liste de {{ childName }} ?",
     "stageHeadingEdit": "Modifier la prononciation",
     "stageHeadingNew": "Nouvelle prononciation",
     "spokenBefore": "avant : {{ spoken }}",
-    "removeStageHeading": "Retirer {{ spoken }} de ses progrès ?",
     "stageEdited": "Prononciation modifiée",
     "stageAdded": "Nouvelle prononciation notée",
     "stageSaveFailed": "La prononciation n'a pas pu être enregistrée, réessaie.",
@@ -362,12 +368,7 @@
     "soundActionsLabel": "Actions sur le son enregistré le {{ date }}, {{ length }}",
     "moveTargetLabel": "Ranger avec {{ spoken }}, {{ title }}",
     "soundSheetHeading": "Son enregistré le {{ date }}",
-    "soundSheetText": "{{ childName }} y dit {{ spoken }}. Il dure {{ length }}.",
-    "removeSoundText": "Le son enregistré le {{ date }}, où {{ childName }} dit {{ spoken }}, sera effacé. On ne pourra pas revenir en arrière.",
-    "removeStageErased": "Cette prononciation du {{ date }} sera effacée.",
-    "removeStageSoundOne": "Le son de cette prononciation sera rangé avec {{ spoken }}.",
-    "removeStageSoundOther": "Ses {{ count }} sons seront rangés avec {{ spoken }}.",
-    "cannotUndo": "On ne pourra pas revenir en arrière."
+    "soundSheetText": "{{ childName }} y dit {{ spoken }}. Il dure {{ length }}."
   },
   "wordNew": {
     "heading": "Nouveau mot",
@@ -428,5 +429,32 @@
     "addAnyway": "Pas dans le dictionnaire : ajouter {{ label }} quand même",
     "recentWords": "Ses mots",
     "frequentWords": "Mots fréquents à cet âge"
+  },
+  "feedback": {
+    "undo": "Annuler"
+  },
+  "outbox": {
+    "sent": "Le son de {{ label }} gardé sur ce téléphone est bien arrivé dans le carnet.",
+    "lost": "Un son de {{ label }} gardé sur ce téléphone n'a pas pu rejoindre le carnet."
+  },
+  "milestones": {
+    "title": {
+      "words": "{{ count }} mots",
+      "firstMastered": "Premier « Bien dit »",
+      "firstSentence": "Première phrase"
+    },
+    "onDay": "le {{ date }}",
+    "marker": "{{ title }}, {{ when }}",
+    "story": {
+      "wordsBefore": "Avec ",
+      "wordsAfter": ", {{ childName }} passe le cap des {{ count }} mots, {{ when }}.",
+      "firstMasteredBefore": "{{ childName }} dit ",
+      "firstMasteredAfter": " comme il faut pour la première fois, {{ when }}.",
+      "firstSentenceBefore": "Sa première phrase, {{ when }} : ",
+      "firstSentenceAfter": "."
+    },
+    "sheetTitle": "{{ title }} !",
+    "next": "Prochain jalon : {{ count }} mots",
+    "bravo": "Bravo {{ childName }} !"
   }
 }

@@ -77,6 +77,11 @@ export class BottomSheet {
   public readonly closable = input(true, { transform: booleanAttribute });
 
   /**
+   * Leaves out the title row, for a sheet whose content brings its own title; `heading` still names it.
+   */
+  public readonly bare = input(false, { transform: booleanAttribute });
+
+  /**
    * Save error to show inside the sheet, above its actions; a toast would sit under the modal.
    */
   public readonly error = input<string | null>(null);

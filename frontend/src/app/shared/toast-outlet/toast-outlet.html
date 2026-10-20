@@ -20,7 +20,13 @@
             [strokeWidth]="2.6"
           ></svg>
         }
-        {{ toast.text }}
+        <span class="min-w-0 flex-1">{{ toast.text }}</span>
+        @if (toast.action; as action) {
+          <!-- Undo and the like: the only part of the toast that takes taps. -->
+          <button class="toast-outlet__action press" type="button" (click)="toasts.runAction()">
+            {{ action.label }}
+          </button>
+        }
       </p>
     }
   }

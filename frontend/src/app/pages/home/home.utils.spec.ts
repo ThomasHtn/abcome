@@ -1,3 +1,4 @@
+import { milestonesOf } from '@core/milestones/milestone.utils';
 import { aPronunciation, aRecording, aWord } from '@core/words/word.fixtures';
 
 import {
@@ -6,6 +7,7 @@ import {
   emptyWordsMessage,
   groupByMonth,
   listState,
+  markersByEntry,
   sentencesSummary,
   tabFromParam,
   toWordCard,
@@ -122,8 +124,9 @@ describe('toWordCard', () => {
       label: 'lapin',
       spoken: 'apin',
       status: 'almost',
-      day: '16',
-      month: 'sept',
+      tile: { value: '16', unit: 'sept', age: false },
+      saidOn: null,
+      markers: [],
     });
     expect(card.ariaLabel).toBe(
       'apin, pour lapin, Presque, depuis le 16 septembre 2026. Voir sa page',
@@ -153,6 +156,55 @@ describe('toWordCard', () => {
     expect(toWordCard(LAPIN, 'pronunciation').ariaLabel).toContain(', nouvelle prononciation.');
     expect(toWordCard(SENTENCES[0], 'entry')).toMatchObject({ change: 'entry' });
     expect(toWordCard(SENTENCES[0], 'entry').ariaLabel).toContain(', nouvelle phrase.');
+  });
+});
+
+describe("cards with the child's age", () => {
+  it('shows the age on the first day in the tile and that day after what the child says', () => {
+    const card = toWordCard(LAPIN, null, {
+      birthDate: '2025-05-12',
+      today: '2026-10-20',
+      markers: new Map(),
+    });
+
+    expect(card.tile).toEqual({ value: '16', unit: 'mois', age: true });
+    expect(card.saidOn).toBe(', le 16 sept.');
+  });
+
+  it('adds the year to a day of another year', () => {
+    const card = toWordCard(LAPIN, null, {
+      birthDate: '2025-05-12',
+      today: '2027-01-05',
+      markers: new Map(),
+    });
+
+    expect(card.saidOn).toBe(', le 16 sept. 2026');
+  });
+
+  it('hangs each milestone marker on the entry that reached it, newest first', () => {
+    const milestones = milestonesOf([
+      ...Array.from({ length: 10 }, (_, index) =>
+        aWord({
+          id: index + 1,
+          label: `mot${index}`,
+          pronunciations: [
+            aPronunciation({
+              id: 100 + index,
+              status: index === 9 ? 'mastered' : 'learning',
+              date: `2026-09-${String(10 + index)}`,
+            }),
+          ],
+        }),
+      ),
+    ]);
+
+    const markers = markersByEntry(milestones, '2025-05-12', '2026-10-20');
+
+    expect(markers.get(10)?.map((marker) => marker.label)).toEqual([
+      'Premier «\u00A0Bien dit\u00A0», à 16\u00A0mois',
+      '10 mots, à 16\u00A0mois',
+    ]);
+    expect(markers.get(10)?.[1]).toMatchObject({ kind: 'words', count: 10 });
   });
 });
 

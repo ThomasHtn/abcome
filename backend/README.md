@@ -54,8 +54,9 @@ Root package `io.github.thomashtn.littlewords`. A feature package only uses `sha
 | `dictionary` | Read-only dictionaries (French IFDC, English CDI), cached in memory |
 | `word` | Words and sentences (entries of kind `sentence`) with their pronunciation stages |
 | `recording` | Word sounds, stored as `bytea` |
+| `export` | The whole notebook as one zip (`GET /api/export`): `notebook.json` and every sound under `sounds/`, streamed one sound at a time; readers may download it |
 
-Each feature package splits into `controller`, `dto`, `entity`, `repository`, `service`.
+Each feature package splits into `controller`, `dto`, `entity`, `repository`, `service` (only those it needs).
 
 ## Design notes
 
@@ -84,6 +85,7 @@ The repository ships images and a template ([deploy/](../deploy/README.md): Post
 | `FAMILY_PASSWORD_HASH` | Required, see [Family password](#family-password) |
 | `READER_PASSWORD_HASH` | Optional, empty turns the read-only sign-in off |
 | `CHILD_NAME` | Required, shown after login only |
+| `CHILD_BIRTHDATE` | Optional birth date (`yyyy-MM-dd`), shown after login only: cards tell the child's age instead of the day |
 | `APP_NAME`, `APP_NAME_ACCENT` | Name of the app and its accented end (`ABCome`, `ome` by default); public, served by `GET /api/branding` |
 | `APP_TIME_ZONE` | IANA zone of the family (`Europe/Paris` by default), in which "today" is judged; public, served by `GET /api/branding` |
 | `LOGGING_STRUCTURED_FORMAT_CONSOLE` | Optional: `ecs`, `logstash` or `gelf` for JSON logs to a collector (`LOG_FORMAT` in the template) |

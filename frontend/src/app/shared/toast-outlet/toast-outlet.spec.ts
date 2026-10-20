@@ -17,6 +17,21 @@ describe('ToastOutlet', () => {
     expect(region?.textContent?.trim()).toBe('Mot ajouté');
   });
 
+  it('runs the action of the toast from its button, then hides it', () => {
+    const fixture = TestBed.createComponent(ToastOutlet);
+    const run = vi.fn();
+    TestBed.inject(ToastQueue).show('Son supprimé', 'success', { label: 'Annuler', run });
+    fixture.detectChanges();
+
+    const button = (fixture.nativeElement as HTMLElement).querySelector('button');
+    expect(button?.textContent?.trim()).toBe('Annuler');
+    button?.click();
+    fixture.detectChanges();
+
+    expect(run).toHaveBeenCalledTimes(1);
+    expect((fixture.nativeElement as HTMLElement).querySelector('button')).toBeNull();
+  });
+
   it('raises its popover for every toast, so it shows above an open sheet', () => {
     const shown = vi.fn();
     const hidden = vi.fn();

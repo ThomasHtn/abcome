@@ -122,6 +122,12 @@ export function recordingTitle(phase: RecordingPhase, newWord: boolean): string 
  * Title and sentence of the closing screen.
  */
 export function doneCopy(outcome: SaveOutcome, childName: string): DoneCopy {
+  if (outcome.kind === 'queued') {
+    return {
+      title: translate('recordingNew.done.queuedTitle'),
+      text: translate('recordingNew.done.queuedText', { label: quote(outcome.label) }),
+    };
+  }
   if (outcome.kind === 'new') {
     return {
       title: translate('recordingNew.done.newTitle', { label: quote(outcome.label) }),

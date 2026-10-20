@@ -56,6 +56,11 @@
   }
 }
 
+/* Screen coming back: the bubble is already there. */
+.home-summary--settled .home-summary__bubble {
+  animation: none;
+}
+
 /* "[child] a déjà dit ...". */
 .home-summary__headline {
   margin: 0;

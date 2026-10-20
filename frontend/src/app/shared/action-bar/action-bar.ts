@@ -6,6 +6,7 @@ import {
   DestroyRef,
   ElementRef,
   inject,
+  input,
   viewChild,
 } from '@angular/core';
 
@@ -37,6 +38,11 @@ export class ActionBar {
    * The fixed bar, measured whenever it changes size (wrapping text, zoom, rotation).
    */
   private readonly bar = viewChild.required<ElementRef<HTMLElement>>('bar');
+
+  /**
+   * Whether the bar is shown in place, without sliding up, when its screen comes back.
+   */
+  public readonly settled = input(false);
 
   /**
    * Root element carrying the published height.

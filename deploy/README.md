@@ -21,7 +21,7 @@ cp -r ~/littlewords/deploy /opt/littlewords && cd /opt/littlewords
 cp .env.example .env && chmod 600 .env
 openssl rand -base64 24             # DB_PASSWORD
 make -C ~/littlewords hash          # FAMILY_PASSWORD_HASH, single-quoted in .env (or backend/README.md)
-$EDITOR .env                        # DOMAIN, DB_PASSWORD, FAMILY_PASSWORD_HASH, CHILD_NAME, IMAGE_TAG
+$EDITOR .env                        # DOMAIN, DB_PASSWORD, FAMILY_PASSWORD_HASH, CHILD_NAME, CHILD_BIRTHDATE (optional), IMAGE_TAG
 docker compose up --detach --wait
 curl https://<your-domain>/readyz   # 200: the API and its database answer
 ```

@@ -14,3 +14,6 @@
 
 /* Shared keyframes and motion utilities (`enter`, `pop`, `motion-step-N`, `press`). */
 @import './styles/motion.css';
+
+/* Start-up screen of index.html, shown before the app draws. */
+@import './styles/splash.css';

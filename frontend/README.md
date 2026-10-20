@@ -72,23 +72,26 @@ A 401 signs out and redirects to `/login`.
 
 Lists are loaded whole, shared by every screen and patched locally after each write. Read a resource through `resourceValue(resource, fallback)`: `value()` throws on error.
 
-| File                                | Gives                                                                  |
-| ----------------------------------- | ---------------------------------------------------------------------- |
-| `core/auth/auth-session.ts`         | `signedIn()`, `ensureChecked()`, `signIn(password)`, `signOut()`       |
-| `core/words/words-api.ts`           | `words` resource (words and sentences), entry, stage, recording writes |
-| `core/dictionary/dictionary-api.ts` | `entries` resource, in acquisition order                               |
-| `core/feedback/`                    | `ToastQueue.show(text)`, `Celebration.play()` (confetti)               |
-| `core/words/word.utils.ts`          | Current stage and status, sorting, counting, search                    |
-| `core/words/seen-words.ts`          | Seen marks, tag kept until opened: `changeOf(word)`, `markSeen(word)`  |
-| `core/words/word.constants.ts`      | Statuses and their labels                                              |
-| `core/text/text.utils.ts`           | Normalization and search ranking (twin of the backend)                 |
-| `core/date/date.utils.ts`           | `todayIso()` in the family's zone, `setFamilyTimeZone()`, formatting   |
-| `core/http/api-error.utils.ts`      | `apiErrorCode(error)`, `retryAfterSeconds(error)`, `isNotFound(error)` |
-| `core/http/resource.utils.ts`       | `resourceValue(resource, fallback)`, `keepValueOnError(resource)`      |
-| `core/http/stale-build.utils.ts`    | Reloads a screen whose lazy bundle went away with a deployment         |
-| `core/recordings/`                  | Duration and size limits, MIME type choice, decoded waveforms          |
-| `core/branding/`                    | `provideBranding()` loads name and zone before the first screen        |
-| `core/i18n/`                        | `provideI18n()`, `activeLocale()`, `isSingular(count)` for plurals     |
+| File                                | Gives                                                                                                                      |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `core/auth/auth-session.ts`         | `signedIn()`, `ensureChecked()`, `signIn(password)`, `signOut()`                                                           |
+| `core/words/words-api.ts`           | `words` resource, entry, stage, sound writes; `removeLater()` deletes after the undo toast                                 |
+| `core/milestones/`                  | `milestonesOf(words)` (10, 50, 100 words then every 50, first "Bien dit", first sentence), `MilestoneWatch` for the drawer |
+| `core/outbox/`                      | `SoundOutbox`: sounds kept in IndexedDB when offline, sent on their own                                                    |
+| `core/startup/`                     | `hideSplash()`: fades the start-up screen of `index.html` out                                                              |
+| `core/dictionary/dictionary-api.ts` | `entries` resource, in acquisition order                                                                                   |
+| `core/feedback/`                    | `ToastQueue.show(text, tone, action?)`, `Celebration.play()` (confetti)                                                    |
+| `core/words/word.utils.ts`          | Current stage and status, sorting, counting, search                                                                        |
+| `core/words/seen-words.ts`          | Seen marks, tag kept until opened: `changeOf(word)`, `markSeen(word)`                                                      |
+| `core/words/word.constants.ts`      | Statuses and their labels                                                                                                  |
+| `core/text/text.utils.ts`           | Normalization and search ranking (twin of the backend)                                                                     |
+| `core/date/date.utils.ts`           | `todayIso()` in the family's zone, `setFamilyTimeZone()`, formatting                                                       |
+| `core/http/api-error.utils.ts`      | `apiErrorCode(error)`, `retryAfterSeconds(error)`, `isNotFound(error)`                                                     |
+| `core/http/resource.utils.ts`       | `resourceValue(resource, fallback)`, `keepValueOnError(resource)`                                                          |
+| `core/http/stale-build.utils.ts`    | Reloads a screen whose lazy bundle went away with a deployment                                                             |
+| `core/recordings/`                  | Duration and size limits, MIME type choice, decoded waveforms                                                              |
+| `core/branding/`                    | `provideBranding()` loads name and zone before the first screen                                                            |
+| `core/i18n/`                        | `provideI18n()`, `activeLocale()`, `isSingular(count)` for plurals                                                         |
 
 Test factories `aWord()` and `aPronunciation()` are in `core/words/word.fixtures.ts`.
 
@@ -110,5 +113,6 @@ Test factories `aWord()` and `aPronunciation()` are in `core/words/word.fixtures
 | `app-pronunciation-form`                                  | Spoken form, status and day of a stage               |
 | `app-word-picker`                                         | Search over the notebook and the dictionary          |
 | `app-toast-outlet`, `app-celebration-burst`               | Mounted once in the app shell                        |
+| `app-milestone-sheet`, `app-milestone-badge`              | Milestone drawer (app shell, deferred) and its badge |
 
 Global motion classes (`src/styles/motion.css`): `enter`, `enter-bottom`, `pop`, `motion-step-N`, `shake`, `press`.

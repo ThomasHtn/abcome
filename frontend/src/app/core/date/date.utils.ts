@@ -1,6 +1,6 @@
 import { translate } from '@jsverse/transloco';
 
-import { activeLocale } from '@core/i18n/i18n.utils';
+import { activeLocale, isSingular } from '@core/i18n/i18n.utils';
 
 import { DAY_MS, DEFAULT_TIME_ZONE, LONG_MONTHS, SHORT_MONTHS, WEEKDAYS } from './date.constants';
 import { DayAndMonth } from './date.model';
@@ -39,11 +39,39 @@ function parts(iso: string): [number, number, number] {
 }
 
 /**
- * "16 sept.", for lists where the year is obvious.
+ * "16 sept.", for lists where the year is obvious; with the year when it is not `currentYear`.
  */
-export function formatShortDate(iso: string): string {
-  const [, month, day] = parts(iso);
-  return translate('date.short', { day, month: translate(SHORT_MONTHS[month - 1]) });
+export function formatShortDate(iso: string, currentYear?: number): string {
+  const [year, month, day] = parts(iso);
+  const date = translate('date.short', { day, month: translate(SHORT_MONTHS[month - 1]) });
+  return currentYear === undefined || year === currentYear
+    ? date
+    : translate('date.shortWithYear', { date, year });
+}
+
+/**
+ * Whole months of life on `iso` for a child born on `birthIso`, as paediatricians count them
+ * (17 months from the 12th to the 11th); 0 before the first month or before birth.
+ */
+export function ageInMonths(birthIso: string, iso: string): number {
+  const [birthYear, birthMonth, birthDay] = parts(birthIso);
+  const [year, month, day] = parts(iso);
+  const months = (year - birthYear) * 12 + (month - birthMonth) - (day < birthDay ? 1 : 0);
+  return Math.max(0, months);
+}
+
+/**
+ * Unit under the months of an age tile, agreed with the number ("mois", "months").
+ */
+export function monthsUnit(months: number): string {
+  return translate(isSingular(months) ? 'date.monthUnitOne' : 'date.monthUnitOther');
+}
+
+/**
+ * "à 17 mois", when a moment happened in the child's life.
+ */
+export function atAge(months: number): string {
+  return translate(isSingular(months) ? 'date.atAgeOne' : 'date.atAgeOther', { months });
 }
 
 /**

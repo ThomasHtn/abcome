@@ -17,31 +17,85 @@
   padding: 0.5rem var(--layout-gutter) var(--layout-action-bar-space);
 }
 
-/* White card of the chosen word. */
-.word-new__chosen {
+/* White card of the chosen word, measured by the queries below. */
+.word-new__card {
+  container-type: inline-size;
   border-radius: var(--radius-block);
   padding: 0.875rem 1rem;
   background-color: var(--color-surface);
   box-shadow: var(--shadow-card);
 }
 
-/* Word and category take the room left; under about 4rem (200 % zoom) "Changer" wraps below them. */
-.word-new__chosen-text {
-  flex: 1 1 4rem;
+/* Tile, word over its category, "Changer" on the right, as in the mockup. */
+.word-new__chosen {
+  display: grid;
+  grid-template-areas:
+    'tile label change'
+    'tile category change';
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.25rem 0.875rem;
+  align-items: center;
 }
 
-/* The word itself. */
+/* The word itself, hyphenated between syllables before breaking anywhere. */
 .word-new__label {
-  font-family: var(--font-display);
+  grid-area: label;
+  align-self: end;
   overflow-wrap: anywhere;
+  hyphens: auto;
+  font-family: var(--font-display);
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.2;
 }
 
+/* Category and "Changer": plain grid cells here, one wrapping row on phones. */
+.word-new__meta {
+  display: contents;
+}
+
+/* Back to the search. */
+.word-new__change {
+  grid-area: change;
+  justify-self: end;
+}
+
+/* Phones (iPhone SE): the word takes the whole width beside the tile, "Changer" goes beside the category, or below it if too long. */
+@container (width < 22rem) {
+  .word-new__chosen {
+    grid-template-areas:
+      'tile label'
+      'tile meta';
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 0.375rem;
+  }
+
+  .word-new__meta {
+    display: flex;
+    flex-wrap: wrap;
+    grid-area: meta;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* Strong zoom: the tile on top, so the word keeps the whole width. */
+@container (width < 15rem) {
+  .word-new__chosen {
+    grid-template-areas:
+      'tile'
+      'label'
+      'meta';
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.5rem;
+  }
+}
+
 /* Salmon tile with the picture of the word's category. */
 .word-new__tile {
   display: flex;
+  grid-area: tile;
   flex: none;
   align-items: center;
   justify-content: center;
@@ -54,6 +108,8 @@
 
 /* Its category, a lavender pill like in the search results. */
 .word-new__category {
+  grid-area: category;
+  place-self: start;
   border-radius: var(--radius-pill);
   padding: 0.25rem 0.625rem;
   background-color: var(--color-lavender-50);
@@ -94,4 +150,11 @@
   border-radius: 50%;
   background-color: var(--color-surface);
   color: var(--color-salmon-700);
+}
+
+/* Narrow bar (phones up to 360 px): the label keeps one line without the disc. */
+@container action-bar (width < 20.5rem) {
+  .word-new__plus {
+    display: none;
+  }
 }

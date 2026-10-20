@@ -35,9 +35,23 @@ export class WordCard {
   public readonly index = input(0);
 
   /**
+   * Whether the card is shown in place, without popping in, when the list comes back.
+   */
+  public readonly settled = input(false);
+
+  /**
    * Stagger step, capped so the end of a long list does not lag.
    */
   protected readonly stagger = computed(() => Math.min(this.index(), CARD_STAGGER_LIMIT));
+
+  /**
+   * Title split before its last word, which the marks stay glued to.
+   */
+  protected readonly labelParts = computed(() => {
+    const label = this.card().label.trim();
+    const cut = label.search(/\S+$/);
+    return { head: label.slice(0, cut), last: label.slice(cut) };
+  });
 
   /**
    * Icon of the news tag for each kind of change.

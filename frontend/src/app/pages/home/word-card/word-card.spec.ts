@@ -15,8 +15,9 @@ const CARD: WordCardView = {
   label: 'lapin',
   spoken: 'apin',
   status: 'almost',
-  day: '16',
-  month: 'sept',
+  tile: { value: '16', unit: 'sept', age: false },
+  saidOn: null,
+  markers: [],
   change: null,
   hasSound: false,
   ariaLabel: 'apin, pour lapin, Presque, depuis le 16 septembre 2026. Voir sa page',
@@ -24,13 +25,14 @@ const CARD: WordCardView = {
 
 describe('WordCard', () => {
   /**
-   * Renders a card and returns its link.
+   * Renders a card, popping in unless settled, and returns its link.
    */
-  function render(card: WordCardView): HTMLAnchorElement {
+  function render(card: WordCardView, settled = false): HTMLAnchorElement {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
     TestBed.inject(AuthSession).childName.set('Alix');
     const fixture = TestBed.createComponent(WordCard);
     fixture.componentRef.setInput('card', card);
+    fixture.componentRef.setInput('settled', settled);
     fixture.detectChanges();
     return (fixture.nativeElement as HTMLElement).querySelector('a')!;
   }
@@ -53,6 +55,21 @@ describe('WordCard', () => {
     expect(link.querySelector('app-card-tag')).toBeNull();
   });
 
+  it('shows the age in a salmon tile and the day after what the child says', () => {
+    const link = render({
+      ...CARD,
+      tile: { value: '17', unit: 'mois', age: true },
+      saidOn: ', le 16 sept.',
+    });
+
+    expect(link.querySelector('app-date-tile')!.classList).toContain('date-tile--age');
+    expect(link.querySelector('.date-tile__day')!.textContent).toBe('17');
+    expect(link.querySelector('.date-tile__month')!.textContent).toBe('mois');
+    expect(link.querySelector('.word-card__said')!.textContent!.trim()).toBe(
+      'Alix dit «\u00A0apin\u00A0», le 16 sept.',
+    );
+  });
+
   it('shows a microphone after the title of an entry that keeps sounds', () => {
     expect(render(CARD).querySelector('.word-card__sound')).toBeNull();
     TestBed.resetTestingModule();
@@ -60,6 +77,17 @@ describe('WordCard', () => {
 
     expect(sound.getAttribute('aria-hidden')).toBe('true');
     expect(sound.querySelector('use')!.getAttribute('href')).toContain('#mic');
+  });
+
+  it('keeps the marks with the last word of a long title', () => {
+    const label = render({ ...CARD, label: 'il a plus de gateau', hasSound: true }).querySelector(
+      '.word-card__label',
+    )!;
+    const tail = label.querySelector('.word-card__tail')!;
+
+    expect(label.textContent!.trim()).toBe('il a plus de gateau');
+    expect(tail.textContent!.trim()).toBe('gateau');
+    expect(tail.querySelector('.word-card__sound')).not.toBeNull();
   });
 
   it('leaves the microphone to the tag of a new sound, and keeps it beside other news', () => {
@@ -103,6 +131,15 @@ describe('WordCard', () => {
       '.word-card__change svg',
     )!;
     expect(stage.querySelector('use')!.getAttribute('href')).toContain('#message-circle');
+  });
+
+  it('pops in by default, and shows in place when the list comes back', () => {
+    expect(render(CARD).classList).toContain('pop');
+    TestBed.resetTestingModule();
+    const settled = render({ ...CARD, change: 'entry' }, true);
+
+    expect(settled.classList).not.toContain('pop');
+    expect(settled.classList).toContain('word-card--settled');
   });
 
   it('ends with a small dot of the current status, and no stage dots', () => {

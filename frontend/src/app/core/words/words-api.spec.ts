@@ -4,6 +4,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
 import { AuthSession } from '@core/auth/auth-session';
+import { UNDO_WINDOW_MS } from '@core/feedback/feedback.constants';
+import { ToastQueue } from '@core/feedback/toast-queue';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
 
 import { SeenWords } from './seen-words';
@@ -209,24 +211,104 @@ describe('WordsApi', () => {
     expect(api.words.value()?.[0].recordings.map((recording) => recording.id)).toEqual([77]);
   });
 
-  it('removes a deleted sound from its word gallery', async () => {
-    await loadList([aWord({ recordings: [aRecording({ id: 5 }), aRecording({ id: 6 })] })]);
+  describe('deletions', () => {
+    afterEach(() => vi.useRealTimers());
 
-    const removal = api.removeRecording(5);
-    const request = http.expectOne(API_ENDPOINTS.recording(5));
-    expect(request.request.method).toBe('DELETE');
-    request.flush(null, { status: 204, statusText: 'No Content' });
-    await removal;
+    /**
+     * Loads `words`, then freezes time so the undo window only ends when a test says so.
+     */
+    async function loadWithClock(words = [aWord()]): Promise<void> {
+      await loadList(words);
+      vi.useFakeTimers();
+    }
 
-    expect(api.words.value()?.[0].recordings.map((recording) => recording.id)).toEqual([6]);
-  });
+    it('takes a sound away at once and sends its deletion when the undo window ends', async () => {
+      await loadWithClock([aWord({ recordings: [aRecording({ id: 5 }), aRecording({ id: 6 })] })]);
 
-  it('removes a deleted word from the list', async () => {
-    await loadList();
-    const removal = api.remove(1);
-    http.expectOne(API_ENDPOINTS.word(1)).flush(null, { status: 204, statusText: 'No Content' });
-    await removal;
+      api.removeLater({ kind: 'recording', id: 5 }, 'Son supprimé', 'Raté');
+      expect(api.words.value()?.[0].recordings.map((recording) => recording.id)).toEqual([6]);
+      expect(TestBed.inject(ToastQueue).current()?.action?.label).toBe('Annuler');
+      http.expectNone(API_ENDPOINTS.recording(5));
 
-    expect(api.words.value()).toEqual([]);
+      vi.advanceTimersByTime(UNDO_WINDOW_MS);
+      const request = http.expectOne(API_ENDPOINTS.recording(5));
+      expect(request.request.method).toBe('DELETE');
+      request.flush(null, { status: 204, statusText: 'No Content' });
+    });
+
+    it('puts a word back untouched on undo and never sends its deletion', async () => {
+      const lapin = aWord();
+      await loadWithClock([lapin]);
+
+      api.removeLater({ kind: 'word', id: 1 }, 'Supprimé', 'Raté');
+      expect(api.words.value()).toEqual([]);
+      TestBed.inject(ToastQueue).runAction();
+
+      expect(api.words.value()).toEqual([lapin]);
+      vi.advanceTimersByTime(UNDO_WINDOW_MS);
+      http.expectNone(API_ENDPOINTS.word(1));
+    });
+
+    it('keeps a pending deletion out of a list fetched meanwhile', async () => {
+      await loadWithClock([aWord(), aWord({ id: 2, label: 'chat' })]);
+      api.removeLater({ kind: 'word', id: 2 }, 'Supprimé', 'Raté');
+      vi.useRealTimers();
+
+      api.words.reload();
+      TestBed.tick();
+      http.expectOne(API_ENDPOINTS.words).flush([aWord(), aWord({ id: 2, label: 'chat' })]);
+      await new Promise((resolve) => setTimeout(resolve));
+      TestBed.tick();
+
+      expect(api.words.value()?.map((word) => word.label)).toEqual(['lapin']);
+      const flushed = api.flushRemovals();
+      http.expectOne(API_ENDPOINTS.word(2)).flush(null, { status: 204, statusText: 'No Content' });
+      await flushed;
+    });
+
+    it('puts a stage back and says so when the server refuses its deletion', async () => {
+      const lapin = aWord({
+        pronunciations: [
+          aPronunciation({ id: 10 }),
+          aPronunciation({ id: 11, date: '2026-10-12' }),
+        ],
+      });
+      await loadWithClock([lapin]);
+      const stageId = 11;
+
+      api.removeLater({ kind: 'pronunciation', id: stageId }, 'Retirée', 'Pas retirée');
+      vi.advanceTimersByTime(UNDO_WINDOW_MS);
+      http
+        .expectOne(API_ENDPOINTS.pronunciation(stageId))
+        .flush(null, { status: 500, statusText: 'Server Error' });
+      await vi.waitFor(() => expect(api.words.value()).toEqual([lapin]));
+
+      expect(TestBed.inject(ToastQueue).current()).toMatchObject({
+        text: 'Pas retirée',
+        tone: 'error',
+      });
+    });
+
+    it('accepts a deletion the server had already made from another phone', async () => {
+      await loadWithClock();
+
+      api.removeLater({ kind: 'word', id: 1 }, 'Supprimé', 'Raté');
+      vi.advanceTimersByTime(UNDO_WINDOW_MS);
+      http.expectOne(API_ENDPOINTS.word(1)).flush(null, { status: 404, statusText: 'Not Found' });
+      await Promise.resolve();
+
+      expect(api.words.value()).toEqual([]);
+      expect(TestBed.inject(ToastQueue).current()?.tone).not.toBe('error');
+    });
+
+    it('sends pending deletions at once when the app leaves the screen', async () => {
+      await loadWithClock();
+      api.removeLater({ kind: 'word', id: 1 }, 'Supprimé', 'Raté');
+
+      vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+      document.dispatchEvent(new Event('visibilitychange'));
+
+      http.expectOne(API_ENDPOINTS.word(1)).flush(null, { status: 204, statusText: 'No Content' });
+    });
   });
 });

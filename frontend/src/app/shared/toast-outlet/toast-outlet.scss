@@ -43,6 +43,23 @@
   color: var(--color-almost-dot);
 }
 
+/* Action button, salmon text on the ink bubble; a tall hit area, and the only part taking taps. */
+.toast-outlet__action {
+  flex: none;
+  min-block-size: 2.75rem;
+  margin-block: -0.625rem;
+  margin-inline-end: -0.5rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  padding: 0 0.75rem;
+  background: transparent;
+  color: var(--color-salmon-300);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
 /* Tablets and desktops: a bubble of reading width, centred, rather than one as wide as the column. */
 @include from(md) {
   .toast-outlet {

@@ -20,6 +20,12 @@
   color: var(--color-ink);
 }
 
+/* Back through the back button: the screen is already known, so its blocks show in place. */
+.home--settled .enter,
+.home--settled .pop {
+  animation: none;
+}
+
 /* A reader has no action bar to clear: the list ends at the usual gutter. */
 .home--read-only {
   padding-block-end: calc(var(--layout-gutter) + var(--layout-safe-bottom));
@@ -99,6 +105,53 @@
 /* Tabs, search and filters, spaced like the blocks of the screen. */
 .home__controls {
   gap: var(--home-gap);
+}
+
+/* Filter toggle, holding the folded status's dot in its corner. */
+.home__filter-toggle {
+  position: relative;
+}
+
+/* Filters unfolded: a deeper lavender and an ink icon, like a pressed button. */
+.home__filter-toggle.home__filter-toggle--open {
+  background-color: var(--color-lavender-100);
+  color: var(--color-ink);
+}
+
+/* Folded on "En route": the toggle in its tint, its dot in red. */
+.home__filter-toggle.home__filter-toggle--learning {
+  --home-filter-dot: var(--color-learning-dot);
+
+  background-color: var(--color-learning-bg);
+  color: var(--color-learning-text);
+}
+
+/* Folded on "Presque": the toggle in its tint, its dot in orange. */
+.home__filter-toggle.home__filter-toggle--almost {
+  --home-filter-dot: var(--color-almost-dot);
+
+  background-color: var(--color-almost-bg);
+  color: var(--color-almost-text);
+}
+
+/* Folded on "Bien dit": the toggle in its tint, its dot in green. */
+.home__filter-toggle.home__filter-toggle--mastered {
+  --home-filter-dot: var(--color-mastered-dot);
+
+  background-color: var(--color-mastered-bg);
+  color: var(--color-mastered-text);
+}
+
+/* Dot of the folded status on the toggle, ringed in white so it stands off the tint. */
+.home__filter-badge {
+  position: absolute;
+  inset-block-start: 0.375rem;
+  inset-inline-end: 0.375rem;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  background-color: var(--home-filter-dot);
 }
 
 /* List area under the search. */
@@ -200,6 +253,13 @@
   border-radius: 50%;
   background-color: var(--color-surface);
   color: var(--color-salmon-700);
+}
+
+/* Narrow bar (phones up to 360 px): the label keeps one line without the disc. */
+@container action-bar (width < 20.5rem) {
+  .home__plus {
+    display: none;
+  }
 }
 
 /* Round lavender microphone next to "Ajouter un mot". */

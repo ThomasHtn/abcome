@@ -1,0 +1,41 @@
+<!-- Big drawer, without the title row: the medal and its own title fill it. -->
+<app-bottom-sheet
+  bare
+  [heading]="view()?.title ?? ''"
+  [open]="view() !== null"
+  (openChange)="onOpenChange($event)"
+>
+  @if (view(); as view) {
+    <div class="milestone-sheet flex flex-col items-center text-center">
+      <!-- Lapinou jumping above the medal. -->
+      <app-mascot class="milestone-sheet__mascot" state="jump" [size]="88" />
+
+      <!-- Medal with the count, or the icon of a first time, on its white face. -->
+      <div class="milestone-sheet__medal pop" aria-hidden="true">
+        <img ngSrc="assets/milestones/medal.svg" alt="" width="120" height="150" />
+        <span class="milestone-sheet__face">
+          @if (view.icon; as icon) {
+            <svg app-icon [name]="icon" [size]="34" [strokeWidth]="2.6"></svg>
+          } @else {
+            {{ view.count }}
+          }
+        </span>
+      </div>
+
+      <h2 class="milestone-sheet__title">{{ view.title }}</h2>
+      <!-- What happened, the entry in salmon as on the cards. -->
+      <p class="milestone-sheet__story">
+        {{ view.story.before }}<span class="milestone-sheet__entry">{{ view.story.entry }}</span
+        >{{ view.story.after }}
+      </p>
+      @if (view.next; as next) {
+        <p class="milestone-sheet__next">{{ next }}</p>
+      }
+    </div>
+  }
+  <div sheetActions class="mt-2">
+    <button app-button type="button" size="lg" block (click)="onOpenChange(false)">
+      {{ 'milestones.bravo' | transloco: { childName: childName() } }}
+    </button>
+  </div>
+</app-bottom-sheet>

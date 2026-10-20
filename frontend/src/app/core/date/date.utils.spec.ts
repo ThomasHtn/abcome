@@ -1,12 +1,15 @@
 import { DEFAULT_TIME_ZONE } from './date.constants';
 import {
   addDays,
+  ageInMonths,
+  atAge,
   dayAndMonth,
   formatLongDate,
   formatMonthYear,
   formatShortDate,
   formatShortDateWithYear,
   formatWeekdayDate,
+  monthsUnit,
   setFamilyTimeZone,
   todayIso,
 } from './date.utils';
@@ -58,6 +61,25 @@ describe('French date formats', () => {
   it('prints the weekday form, with the year only when it is not the current one', () => {
     expect(formatWeekdayDate('2026-10-18', 2026)).toBe('dimanche 18 octobre');
     expect(formatWeekdayDate('2025-12-31', 2026)).toBe('mercredi 31 décembre 2025');
+  });
+});
+
+describe('child age', () => {
+  it('counts whole months, the month turning on the day of birth', () => {
+    expect(ageInMonths('2025-05-12', '2026-10-11')).toBe(16);
+    expect(ageInMonths('2025-05-12', '2026-10-12')).toBe(17);
+    expect(ageInMonths('2025-05-31', '2025-06-30')).toBe(0);
+    expect(ageInMonths('2025-05-12', '2025-01-01')).toBe(0);
+  });
+
+  it('words an age in months', () => {
+    expect(monthsUnit(17)).toBe('mois');
+    expect(atAge(17)).toBe('à 17\u00A0mois');
+  });
+
+  it('adds the year to a short date of another year only', () => {
+    expect(formatShortDate('2026-10-19', 2026)).toBe('19 oct.');
+    expect(formatShortDate('2026-10-19', 2027)).toBe('19 oct. 2026');
   });
 });
 

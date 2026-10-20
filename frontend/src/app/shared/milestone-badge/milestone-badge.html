@@ -1,0 +1,6 @@
+<!-- The count, or the icon of a first time. -->
+@if (icon(); as name) {
+  <svg app-icon [name]="name" [size]="12" [strokeWidth]="3"></svg>
+} @else {
+  {{ count() }}
+}

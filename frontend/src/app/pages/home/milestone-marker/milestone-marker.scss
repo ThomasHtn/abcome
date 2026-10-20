@@ -1,0 +1,26 @@
+/* Milestone marker of the home list: lavender label tied across the list by a dotted line. */
+
+@use 'tools' as *;
+
+/* A little air above and below, so it reads apart from the cards. */
+.milestone-marker {
+  margin: 0;
+  padding-block: 0.25rem;
+}
+
+/* Dotted thread on each side, short dashes like stitches. */
+.milestone-marker__line {
+  border-block-start: 2px dashed var(--color-lavender-200);
+}
+
+/* The label: a lavender tag that wraps rather than overflows on a narrow screen. */
+.milestone-marker__label {
+  max-inline-size: 85%;
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+  background-color: var(--color-lavender-100);
+  color: var(--color-lavender-700);
+  font-size: var(--text-meta);
+  font-weight: 800;
+  line-height: 1.2;
+}

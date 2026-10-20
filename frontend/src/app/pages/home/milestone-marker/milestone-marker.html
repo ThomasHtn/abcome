@@ -1,0 +1,9 @@
+<!-- Dotted line on both sides of the label, like a tab tied across the list. -->
+<p class="milestone-marker flex items-center gap-2">
+  <span class="milestone-marker__line min-w-0 flex-1" aria-hidden="true"></span>
+  <span class="milestone-marker__label flex items-center gap-1.5">
+    <app-milestone-badge [kind]="marker().kind" [count]="marker().count" />
+    {{ marker().label }}
+  </span>
+  <span class="milestone-marker__line min-w-0 flex-1" aria-hidden="true"></span>
+</p>

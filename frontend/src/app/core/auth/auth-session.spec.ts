@@ -115,10 +115,11 @@ describe('AuthSession', () => {
     const accepted = session.signIn('une phrase de passe');
     const request = http.expectOne(API_ENDPOINTS.login);
     expect(request.request.body).toEqual({ password: 'une phrase de passe' });
-    request.flush({ childName: 'Alix', readOnly: false });
+    request.flush({ childName: 'Alix', childBirthDate: '2025-05-12', readOnly: false });
     await accepted;
     expect(session.signedIn()).toBe(true);
     expect(session.childName()).toBe('Alix');
+    expect(session.childBirthDate()).toBe('2025-05-12');
   });
 
   it('rejects with the HTTP error on a wrong password and stays signed out', async () => {

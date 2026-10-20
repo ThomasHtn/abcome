@@ -29,7 +29,6 @@ import {
   currentStatus,
   entryPath,
   firstPronunciation,
-  heirStage,
 } from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
 import { ActionBar } from '@shared/action-bar/action-bar';
@@ -61,8 +60,6 @@ import {
   gallerySounds,
   moveTargetLabel,
   progressLabel,
-  removeSoundText,
-  removeStageText,
   soundSheetCopy,
   stageDateLabel,
   timelineStages,
@@ -74,6 +71,7 @@ import {
 /**
  * Word page: the word and its status, the timeline of its pronunciations (newest first) each with its
  * sounds, and sheets to add, edit or remove a stage, delete a sound, rename or delete the word.
+ * Deletions happen at once, the toast offering to undo them.
  */
 @Component({
   selector: 'app-word-detail-page',
@@ -172,12 +170,17 @@ export class WordDetailPage {
   );
 
   /**
+   * Word being deleted, still shown while the page goes back to the list instead of "not found".
+   */
+  private readonly departing = signal<Word | null>(null);
+
+  /**
    * The word shown, `null` while loading or when the id is unknown.
    */
   protected readonly word = computed<Word | null>(() => {
     const id = Number(this.id());
     const words = resourceValue(this.wordsApi.words, []) ?? [];
-    return words.find((word) => word.id === id) ?? null;
+    return words.find((word) => word.id === id) ?? this.departing();
   });
 
   /**
@@ -191,7 +194,7 @@ export class WordDetailPage {
   protected readonly sheetError = signal<string | null>(null);
 
   /**
-   * Label of the word just deleted, for the goodbye screen; `null` otherwise.
+   * Label of the word deleted from another phone, for the goodbye screen; `null` otherwise.
    */
   protected readonly deletedLabel = signal<string | null>(null);
 
@@ -243,20 +246,6 @@ export class WordDetailPage {
   );
 
   /**
-   * Sound waiting for its deletion to be confirmed; `null` otherwise.
-   */
-  protected readonly removingSound = signal<Recording | null>(null);
-
-  /**
-   * Consequence of the sound deletion, naming its day and what the child says on it.
-   */
-  protected readonly removeSoundMessage = computed(() => {
-    const removing = this.removingSound();
-    const sound = this.sounds().find((item) => item.recording.id === removing?.id);
-    return sound ? removeSoundText(sound, this.spokenOn(sound.recording), this.childName()) : '';
-  });
-
-  /**
    * Screen reader name of the "⋯" menu, naming the word.
    */
   protected readonly actionsLabel = computed(() =>
@@ -268,16 +257,6 @@ export class WordDetailPage {
    */
   protected readonly recordLabel = computed(() =>
     translate('wordDetail.recordLabel', { label: quote(this.word()?.label ?? '') }),
-  );
-
-  /**
-   * Question of the word deletion sheet, naming the word and whose list it leaves.
-   */
-  protected readonly deleteHeading = computed(() =>
-    translate('wordDetail.deleteHeading', {
-      label: quote(this.word()?.label ?? ''),
-      childName: this.childName(),
-    }),
   );
 
   /**
@@ -342,28 +321,6 @@ export class WordDetailPage {
     const editing = this.editing();
     const word = this.word();
     return stageDateLabel(!!editing && !!word && firstPronunciation(word).id === editing.id);
-  });
-
-  /**
-   * Question of the stage removal sheet.
-   */
-  protected readonly removeStageHeading = computed(() =>
-    translate('wordDetail.removeStageHeading', { spoken: quote(this.editing()?.spoken ?? '') }),
-  );
-
-  /**
-   * Consequence of the stage removal, saying which stage keeps its sounds.
-   */
-  protected readonly removeStageMessage = computed(() => {
-    const editing = this.editing();
-    const word = this.word();
-    if (!editing || !word) {
-      return '';
-    }
-    const soundCount = word.recordings.filter(
-      (recording) => recording.pronunciationId === editing.id,
-    ).length;
-    return removeStageText(editing.date, soundCount, heirStage(word, editing.id)?.spoken);
   });
 
   /**
@@ -513,36 +470,23 @@ export class WordDetailPage {
   }
 
   /**
-   * Asks to remove the edited stage, or explains why the only stage cannot go.
+   * Removes the edited stage, its sounds going to a neighbour, or explains why the only stage cannot go.
    */
-  protected askRemoveStage(): void {
-    const word = this.word();
-    this.open(word && word.pronunciations.length > 1 ? 'remove-stage' : 'last-stage');
-  }
-
-  /**
-   * Removes the edited stage.
-   */
-  protected async removeStage(): Promise<void> {
+  protected removeStage(): void {
     const editing = this.editing();
-    if (!editing || this.busy()) {
+    const word = this.word();
+    if (!editing || !word) {
       return;
     }
-    await this.run(
-      async () => {
-        try {
-          await this.wordsApi.removePronunciation(editing.id);
-          this.sheet.set(null);
-          this.toasts.show(translate('wordDetail.stageRemoved'));
-        } catch (error) {
-          if (apiErrorCode(error) !== 'LAST_PRONUNCIATION') {
-            throw error;
-          }
-          this.open('last-stage');
-        }
-      },
+    if (word.pronunciations.length < 2) {
+      this.open('last-stage');
+      return;
+    }
+    this.sheet.set(null);
+    this.wordsApi.removeLater(
+      { kind: 'pronunciation', id: editing.id },
+      translate('wordDetail.stageRemoved'),
       translate('wordDetail.stageRemoveFailed'),
-      'stage',
     );
   }
 
@@ -600,22 +544,21 @@ export class WordDetailPage {
   }
 
   /**
-   * Deletes the word with its whole history, then says goodbye.
+   * Deletes the word with its whole history and goes back to the list, where the toast can undo it.
    */
-  protected async deleteWord(): Promise<void> {
+  protected deleteWord(): void {
     const word = this.word();
-    if (!word || this.busy()) {
+    if (!word) {
       return;
     }
-    await this.run(
-      async () => {
-        await this.wordsApi.remove(word.id);
-        this.deletedLabel.set(word.label);
-        this.sheet.set(null);
-      },
+    this.departing.set(word);
+    this.sheet.set(null);
+    this.wordsApi.removeLater(
+      { kind: 'word', id: word.id },
+      `${quote(word.label)} ${this.copy().deletedSuffix}`,
       this.copy().deleteFailed,
-      'word',
     );
+    this.back();
   }
 
   /**
@@ -664,30 +607,18 @@ export class WordDetailPage {
   }
 
   /**
-   * Asks to confirm the deletion of the sound of the actions sheet.
+   * Deletes the sound of the actions sheet.
    */
-  protected askRemoveSound(): void {
-    this.removingSound.set(this.actionSound());
-    this.open('remove-sound');
-  }
-
-  /**
-   * Deletes the sound waiting for confirmation.
-   */
-  protected async removeSound(): Promise<void> {
-    const removing = this.removingSound();
-    if (!removing || this.busy()) {
+  protected removeSound(): void {
+    const sound = this.actionSound();
+    if (!sound) {
       return;
     }
-    await this.run(
-      async () => {
-        await this.wordsApi.removeRecording(removing.id);
-        this.removingSound.set(null);
-        this.sheet.set(null);
-        this.toasts.show(translate('wordDetail.soundRemoved'));
-      },
+    this.sheet.set(null);
+    this.wordsApi.removeLater(
+      { kind: 'recording', id: sound.id },
+      translate('wordDetail.soundRemoved'),
       translate('wordDetail.soundRemoveFailed'),
-      'sound',
     );
   }
 
@@ -749,7 +680,6 @@ export class WordDetailPage {
     const label = this.word()?.label;
     this.sheet.set(null);
     this.actionSound.set(null);
-    this.removingSound.set(null);
     this.movingSound.set(null);
     this.wordsApi.words.reload();
     if (missing === 'word' && label !== undefined) {

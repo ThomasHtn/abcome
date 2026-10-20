@@ -200,6 +200,7 @@ class LoginAttemptLimiterTest {
             new ApplicationProperties(
                 false,
                 "Alix",
+                null,
                 new ApplicationProperties.Branding("ABCome", "ome"),
                 ZoneId.of("Europe/Paris"),
                 new ApplicationProperties.Auth(

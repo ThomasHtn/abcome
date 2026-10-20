@@ -1,5 +1,9 @@
-<div class="home flex flex-col" [class.home--read-only]="readOnly()">
-  <!-- Title of the open tab and the log out button. -->
+<div
+  class="home flex flex-col"
+  [class.home--read-only]="readOnly()"
+  [class.home--settled]="restored"
+>
+  <!-- Title of the open tab and the notebook menu (download, log out). -->
   <header class="home__header enter flex items-center justify-between gap-3">
     @if (activeTab() === 'words') {
       <!-- Each language places the name its own way around the salmon span ("Côme's words"). -->
@@ -14,118 +18,138 @@
         >{{ 'home.titleSentencesAfter' | transloco }}
       </h1>
     }
-    <button
-      app-icon-button
-      type="button"
-      tone="ghost"
-      [attr.aria-label]="'home.logout' | transloco"
-      (click)="logoutOpen.set(true)"
-    >
-      <svg app-icon name="log-out" [size]="22" [strokeWidth]="2"></svg>
-    </button>
+    <app-home-menu (logout)="logoutOpen.set(true)" />
   </header>
 
   <!-- Lapinou and the notebook in one sentence. -->
-  <app-home-summary class="enter motion-step-1" [summary]="summary()" />
+  <app-home-summary class="enter motion-step-1" [summary]="summary()" [settled]="restored" />
 
-  <!-- Tabs or search, then the status filters; one row on wider screens when they fit. -->
+  <!-- Tabs or search with the filter toggle, then the unfolded filters; one row on wider screens when they fit. -->
   <div class="home__controls flex flex-col md:flex-row md:flex-wrap md:items-center">
-    @if (searchShown()) {
-      <!-- Open search in place of the tabs, focused only when opened by hand; the cross or Escape closes and clears it (Escape's native clearing would reopen it). -->
-      <div class="pop flex items-center gap-2 md:w-80 md:flex-none">
-        <app-search-field
-          class="min-w-0 flex-1"
-          tone="outline"
-          [autofocus]="searchOpen()"
-          [label]="searchLabel()"
-          [value]="query()"
-          (valueChange)="search($event)"
-          (keydown.escape)="$event.preventDefault(); closeSearch()"
-        />
-        <button
-          app-icon-button
-          type="button"
-          tone="tint"
-          [attr.aria-label]="'home.closeSearch' | transloco"
-          (click)="closeSearch()"
-        >
-          <svg app-icon name="x" [size]="18" [strokeWidth]="2.4"></svg>
-        </button>
-      </div>
-    } @else {
-      <!-- Words / sentences tabs, with the search folded into a magnifier. -->
-      <div class="enter motion-step-2 flex items-center gap-2 md:w-80 md:flex-none">
-        <!-- Arrow keys move between the two tabs. -->
-        <div
-          class="home__tabs grid min-w-0 flex-1 grid-cols-2 gap-1"
-          role="tablist"
-          [attr.aria-label]="'home.tabsLabel' | transloco"
-        >
+    <div class="flex items-center gap-2 md:w-96 md:flex-none">
+      @if (searchShown()) {
+        <!-- Open search in place of the tabs, focused only when opened by hand; the cross or Escape closes and clears it (Escape's native clearing would reopen it). -->
+        <div class="pop flex min-w-0 flex-1 items-center gap-2">
+          <app-search-field
+            class="min-w-0 flex-1"
+            tone="outline"
+            [autofocus]="searchOpen()"
+            [label]="searchLabel()"
+            [value]="query()"
+            (valueChange)="search($event)"
+            (keydown.escape)="$event.preventDefault(); closeSearch()"
+          />
           <button
-            #wordsTab
-            id="home-tab-words"
-            class="home__tab"
+            app-icon-button
             type="button"
-            role="tab"
-            aria-controls="home-panel"
-            [class.home__tab--selected]="activeTab() === 'words'"
-            [attr.aria-selected]="activeTab() === 'words'"
-            [attr.tabindex]="activeTab() === 'words' ? 0 : -1"
-            (click)="selectTab('words')"
-            (keydown.arrowleft)="switchTabByKey()"
-            (keydown.arrowright)="switchTabByKey()"
+            tone="tint"
+            [attr.aria-label]="'home.closeSearch' | transloco"
+            (click)="closeSearch()"
           >
-            {{ tabLabels.words | transloco }}
-            <!-- Lavender dot while the other tab is open and some word changed elsewhere. -->
-            @if (activeTab() !== 'words' && wordNews() > 0) {
-              <span class="home__tab-news" aria-hidden="true"></span>
-              <span class="sr-only">{{ 'home.tabNews' | transloco }}</span>
-            }
-          </button>
-          <button
-            #sentencesTab
-            id="home-tab-sentences"
-            class="home__tab"
-            type="button"
-            role="tab"
-            aria-controls="home-panel"
-            [class.home__tab--selected]="activeTab() === 'sentences'"
-            [attr.aria-selected]="activeTab() === 'sentences'"
-            [attr.tabindex]="activeTab() === 'sentences' ? 0 : -1"
-            (click)="selectTab('sentences')"
-            (keydown.arrowleft)="switchTabByKey()"
-            (keydown.arrowright)="switchTabByKey()"
-          >
-            {{ tabLabels.sentences | transloco }}
-            <!-- Lavender dot while the other tab is open and some sentence changed elsewhere. -->
-            @if (activeTab() !== 'sentences' && sentenceNews() > 0) {
-              <span class="home__tab-news" aria-hidden="true"></span>
-              <span class="sr-only">{{ 'home.tabNews' | transloco }}</span>
-            }
+            <svg app-icon name="x" [size]="18" [strokeWidth]="2.4"></svg>
           </button>
         </div>
-        <button
-          #searchToggle
-          app-icon-button
-          type="button"
-          tone="tint"
-          [attr.aria-label]="searchLabel()"
-          (click)="searchOpen.set(true)"
-        >
-          <svg app-icon name="search" [size]="20" [strokeWidth]="2.2"></svg>
-        </button>
-      </div>
-    }
+      } @else {
+        <!-- Words / sentences tabs, with the search folded into a magnifier. -->
+        <div class="enter motion-step-2 flex min-w-0 flex-1 items-center gap-2">
+          <!-- Arrow keys move between the two tabs. -->
+          <div
+            class="home__tabs grid min-w-0 flex-1 grid-cols-2 gap-1"
+            role="tablist"
+            [attr.aria-label]="'home.tabsLabel' | transloco"
+          >
+            <button
+              #wordsTab
+              id="home-tab-words"
+              class="home__tab"
+              type="button"
+              role="tab"
+              aria-controls="home-panel"
+              [class.home__tab--selected]="activeTab() === 'words'"
+              [attr.aria-selected]="activeTab() === 'words'"
+              [attr.tabindex]="activeTab() === 'words' ? 0 : -1"
+              (click)="selectTab('words')"
+              (keydown.arrowleft)="switchTabByKey()"
+              (keydown.arrowright)="switchTabByKey()"
+            >
+              {{ tabLabels.words | transloco }}
+              <!-- Lavender dot while the other tab is open and some word changed elsewhere. -->
+              @if (activeTab() !== 'words' && wordNews() > 0) {
+                <span class="home__tab-news" aria-hidden="true"></span>
+                <span class="sr-only">{{ 'home.tabNews' | transloco }}</span>
+              }
+            </button>
+            <button
+              #sentencesTab
+              id="home-tab-sentences"
+              class="home__tab"
+              type="button"
+              role="tab"
+              aria-controls="home-panel"
+              [class.home__tab--selected]="activeTab() === 'sentences'"
+              [attr.aria-selected]="activeTab() === 'sentences'"
+              [attr.tabindex]="activeTab() === 'sentences' ? 0 : -1"
+              (click)="selectTab('sentences')"
+              (keydown.arrowleft)="switchTabByKey()"
+              (keydown.arrowright)="switchTabByKey()"
+            >
+              {{ tabLabels.sentences | transloco }}
+              <!-- Lavender dot while the other tab is open and some sentence changed elsewhere. -->
+              @if (activeTab() !== 'sentences' && sentenceNews() > 0) {
+                <span class="home__tab-news" aria-hidden="true"></span>
+                <span class="sr-only">{{ 'home.tabNews' | transloco }}</span>
+              }
+            </button>
+          </div>
+          <button
+            #searchToggle
+            app-icon-button
+            type="button"
+            tone="tint"
+            [attr.aria-label]="searchLabel()"
+            (click)="searchOpen.set(true)"
+          >
+            <svg app-icon name="search" [size]="20" [strokeWidth]="2.2"></svg>
+          </button>
+        </div>
+      }
 
-    <!-- Status filters, sharing the width so all four always fit on one row. -->
-    <app-filter-chips
-      class="md:w-96 md:flex-none"
-      [label]="'home.filterLabel' | transloco"
-      fill
-      [options]="filterOptions()"
-      [value]="activeFilter()"
-      (valueChange)="selectFilter($event)"
-    />
+      <!-- Folds the status filters away; while folded on a status, it takes its tint and its dot. -->
+      <button
+        #filterToggle
+        app-icon-button
+        type="button"
+        tone="tint"
+        class="home__filter-toggle enter motion-step-2"
+        [class.home__filter-toggle--open]="filtersOpen()"
+        [class.home__filter-toggle--learning]="foldedFilter() === 'learning'"
+        [class.home__filter-toggle--almost]="foldedFilter() === 'almost'"
+        [class.home__filter-toggle--mastered]="foldedFilter() === 'mastered'"
+        [attr.aria-controls]="filtersOpen() ? 'home-filters' : null"
+        [attr.aria-expanded]="filtersOpen()"
+        [attr.aria-label]="filterToggleLabel()"
+        (click)="filtersOpen.set(!filtersOpen())"
+      >
+        <svg app-icon name="list-filter" [size]="20" [strokeWidth]="2.4"></svg>
+        @if (foldedFilter()) {
+          <span class="home__filter-badge" aria-hidden="true"></span>
+        }
+      </button>
+    </div>
+
+    @if (filtersOpen()) {
+      <!-- Status filters, sharing the width so all four always fit on one row; picking one or Escape folds them back. -->
+      <app-filter-chips
+        id="home-filters"
+        class="pop md:w-96 md:flex-none"
+        [label]="'home.filterLabel' | transloco"
+        fill
+        [options]="filterOptions()"
+        [value]="activeFilter()"
+        (valueChange)="pickFilter($event)"
+        (keydown.escape)="closeFilters()"
+      />
+    }
   </div>
 
   <!-- Content of the open tab. -->
@@ -170,7 +194,17 @@
                   </h2>
                   <ul class="home__list">
                     @for (card of month.cards; track card.id; let index = $index) {
-                      <li><app-word-card [card]="card" [index]="month.offset + index" /></li>
+                      <!-- Milestones this entry reached, on a full row of the list just above it. -->
+                      @for (marker of card.markers; track marker.key) {
+                        <li class="col-span-full"><app-milestone-marker [marker]="marker" /></li>
+                      }
+                      <li>
+                        <app-word-card
+                          [card]="card"
+                          [index]="month.offset + index"
+                          [settled]="restored"
+                        />
+                      </li>
                     }
                   </ul>
                 </section>
@@ -205,7 +239,17 @@
                   </h2>
                   <ul class="home__list">
                     @for (card of month.cards; track card.id; let index = $index) {
-                      <li><app-word-card [card]="card" [index]="month.offset + index" /></li>
+                      <!-- Milestones this entry reached, on a full row of the list just above it. -->
+                      @for (marker of card.markers; track marker.key) {
+                        <li class="col-span-full"><app-milestone-marker [marker]="marker" /></li>
+                      }
+                      <li>
+                        <app-word-card
+                          [card]="card"
+                          [index]="month.offset + index"
+                          [settled]="restored"
+                        />
+                      </li>
                     }
                   </ul>
                 </section>
@@ -222,7 +266,7 @@
 
 <!-- Main actions of the open tab, none for a reader. -->
 @if (!readOnly()) {
-  <app-action-bar>
+  <app-action-bar [settled]="restored">
     @if (activeTab() === 'words') {
       <a app-button class="min-w-0 flex-1" size="lg" routerLink="/words/new">
         <span class="home__plus" aria-hidden="true">

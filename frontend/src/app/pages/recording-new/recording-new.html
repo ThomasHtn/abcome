@@ -162,16 +162,23 @@
   }
 
   @case ('done') {
-    <!-- Step 4: saved, with confetti. -->
+    <!-- Step 4: saved, with confetti, or kept on the device until the notebook answers. -->
     @if (done(); as copy) {
       <div class="recording-new__done pop flex flex-1 flex-col items-center justify-center gap-4">
-        <app-mascot state="jump" [alt]="'recordingNew.mascotAlt' | transloco" [size]="120" />
+        <!-- A kept sound gets Lapinou at rest, already loaded by the record step, since offline nothing else loads. -->
+        <app-mascot
+          [state]="outcome()?.kind === 'queued' ? 'idle' : 'jump'"
+          [alt]="'recordingNew.mascotAlt' | transloco"
+          [size]="120"
+        />
         <p class="recording-new__done-title" role="status">{{ copy.title }}</p>
         <p class="recording-new__done-text">{{ copy.text }}</p>
         <div class="mt-2 flex flex-col gap-2.5 self-stretch">
-          <a app-button size="lg" block [routerLink]="copy.path">{{
-            'recordingNew.seePage' | transloco
-          }}</a>
+          @if (copy.path; as path) {
+            <a app-button size="lg" block [routerLink]="path">{{
+              'recordingNew.seePage' | transloco
+            }}</a>
+          }
           <button app-button type="button" variant="outline" block (click)="another()">
             {{ 'recordingNew.another' | transloco }}
           </button>

@@ -330,6 +330,13 @@
   color: var(--color-salmon-700);
 }
 
+/* Narrow bar (phones up to 360 px): the label keeps one line without the disc. */
+@container action-bar (width < 20.5rem) {
+  .recording-new__plus {
+    display: none;
+  }
+}
+
 /* Closing screen, centred. */
 .recording-new__done {
   padding: 0 1.75rem calc(2.5rem + var(--layout-safe-bottom));

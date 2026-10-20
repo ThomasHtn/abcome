@@ -154,6 +154,41 @@ export interface Word {
 export type WordChange = 'entry' | 'pronunciation' | 'recording';
 
 /**
+ * What a deletion takes away: a whole entry, one of its stages, or one of its sounds.
+ */
+export interface RemovalTarget {
+  /**
+   * Kind of thing removed.
+   */
+  kind: 'word' | 'pronunciation' | 'recording';
+
+  /**
+   * Its id.
+   */
+  id: number;
+}
+
+/**
+ * A deletion gone from the list but not yet sent, so it can still be undone.
+ */
+export interface PendingRemoval {
+  /**
+   * What goes.
+   */
+  target: RemovalTarget;
+
+  /**
+   * The entry holding it, as it was before, to put back on undo or on a refusal.
+   */
+  before: Word;
+
+  /**
+   * Toast text when the server refuses the deletion.
+   */
+  failure: string;
+}
+
+/**
  * What this device has seen, kept in browser storage, instants in epoch milliseconds.
  */
 export interface SeenMarks {

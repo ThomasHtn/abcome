@@ -6,13 +6,16 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -20,6 +23,7 @@ import org.springframework.validation.annotation.Validated;
  *
  * @param apiDocsEnabled whether the OpenAPI document and Swagger UI are served and reachable
  * @param childName      first name of the child, kept out of the repository and shown only after login
+ * @param childBirthDate birth date of the child, so the app tells his age; {@code null} when not set
  * @param branding       name of the app, so each family's deployment carries its own
  * @param timeZone       zone of the family, in which "today" is judged
  * @param auth           family and reader passwords, and login lockout
@@ -30,6 +34,8 @@ import org.springframework.validation.annotation.Validated;
 public record ApplicationProperties(
     boolean apiDocsEnabled,
     @NotBlank(message = "CHILD_NAME must be set") String childName,
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @PastOrPresent(message = "CHILD_BIRTHDATE cannot be in the future") LocalDate childBirthDate,
     @NotNull @Valid Branding branding,
     @NotNull ZoneId timeZone,
     @NotNull @Valid Auth auth,

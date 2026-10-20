@@ -17,9 +17,12 @@ import { translate, TranslocoPipe } from '@jsverse/transloco';
 
 import { LOGIN_ROUTE } from '@core/auth/auth.constants';
 import { AuthSession } from '@core/auth/auth-session';
+import { Today } from '@core/date/today';
 import { ToastQueue } from '@core/feedback/toast-queue';
 import { resourceValue } from '@core/http/resource.utils';
+import { milestonesOf } from '@core/milestones/milestone.utils';
 import { SeenWords } from '@core/words/seen-words';
+import { STATUS_LABELS } from '@core/words/word.constants';
 import { Word, WordChange } from '@core/words/word.model';
 import { entriesOfKind, findWordByLabel } from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
@@ -41,19 +44,22 @@ import {
   SUMMARY_PENDING_HEADLINE,
   TAB_LABELS,
 } from './home.constants';
-import { HomeTab, ListState, StatusFilter } from './home.model';
+import { CardContext, HomeTab, ListState, StatusFilter } from './home.model';
 import {
   emptySentencesMessage,
   emptyWordsMessage,
   filterFromParam,
   groupByMonth,
   listState,
+  markersByEntry,
   sentencesSummary,
   tabFromParam,
   visibleWords,
   wordsSummary,
 } from './home.utils';
+import { HomeMenu } from './home-menu/home-menu';
 import { HomeSummaryCard } from './home-summary/home-summary';
+import { MilestoneMarker } from './milestone-marker/milestone-marker';
 import { SentenceSheet } from './sentence-sheet/sentence-sheet';
 import { WordCard } from './word-card/word-card';
 
@@ -74,7 +80,9 @@ import { WordCard } from './word-card/word-card';
     Icon,
     IconButton,
     SearchField,
+    HomeMenu,
     HomeSummaryCard,
+    MilestoneMarker,
     SentenceSheet,
     WordCard,
   ],
@@ -103,12 +111,19 @@ export class HomePage {
   private readonly router = inject(Router);
 
   /**
+   * Whether the screen comes back through the back button: everything is then shown in place, since
+   * the cards popping in one after the other would leave the restored spot empty for a while.
+   */
+  protected readonly restored = this.router.currentNavigation()?.trigger === 'popstate';
+
+  /**
    * Says when the logout failed.
    */
   private readonly toasts = inject(ToastQueue);
 
   /**
-   * Schedules the focus move back to the magnifier once the tabs are rendered again.
+   * Schedules the focus moves back to the magnifier and the filter toggle once the screen is rendered
+   * again.
    */
   private readonly injector = inject(Injector);
 
@@ -126,6 +141,13 @@ export class HomePage {
    * Magnifier opening the search, focused again when the search closes.
    */
   private readonly searchToggle = viewChild('searchToggle', {
+    read: ElementRef<HTMLButtonElement>,
+  });
+
+  /**
+   * Toggle folding the filters, focused again when they fold away under the finger or the keyboard.
+   */
+  private readonly filterToggle = viewChild('filterToggle', {
     read: ElementRef<HTMLButtonElement>,
   });
 
@@ -189,6 +211,36 @@ export class HomePage {
   protected readonly activeFilter = linkedSignal(() => filterFromParam(this.filter()));
 
   /**
+   * Whether the status filters are unfolded under the tabs; folded by default, so they stay quiet.
+   */
+  protected readonly filtersOpen = signal(false);
+
+  /**
+   * Status filtered on while the filters are folded, which the toggle shows with its tint and dot.
+   */
+  protected readonly foldedFilter = computed(() => {
+    const filter = this.activeFilter();
+    return this.filtersOpen() || filter === 'all' ? null : filter;
+  });
+
+  /**
+   * Name of the filtered status, empty for every status.
+   */
+  protected readonly activeFilterLabel = computed(() => {
+    const filter = this.activeFilter();
+    return filter === 'all' ? '' : translate(STATUS_LABELS[filter]);
+  });
+
+  /**
+   * Accessible name of the filter toggle, naming the filtered status since only a tint shows it.
+   */
+  protected readonly filterToggleLabel = computed(() =>
+    this.activeFilter() === 'all'
+      ? translate('home.filterLabel')
+      : translate('home.filterLabelActive', { status: this.activeFilterLabel() }),
+  );
+
+  /**
    * Status filter chips, "Tous" on the words and "Toutes" on the sentences, their keys translated.
    */
   protected readonly filterOptions = computed(() =>
@@ -213,6 +265,29 @@ export class HomePage {
    * Every sentence.
    */
   protected readonly sentences = computed(() => entriesOfKind(this.entries(), 'sentence'));
+
+  /**
+   * Today in the family's zone, so the cards leave this year out of their dates.
+   */
+  private readonly today = inject(Today).iso;
+
+  /**
+   * What every card needs besides its entry: the child's birth date for the age tiles, and the
+   * milestone markers, left out while a search or a filter is on since "10 mots" would sit among
+   * cards that do not add up to it.
+   */
+  private readonly cardContext = computed<CardContext>(() => {
+    const birthDate = this.session.childBirthDate();
+    const today = this.today();
+    const narrowed = this.query().trim() !== '' || this.activeFilter() !== 'all';
+    return {
+      birthDate,
+      today,
+      markers: narrowed
+        ? new Map()
+        : markersByEntry(milestonesOf(this.entries()), birthDate, today),
+    };
+  });
 
   /**
    * What this device has already seen, to tag the entries that changed elsewhere.
@@ -250,8 +325,11 @@ export class HomePage {
    * Word cards matching the search and filter, by month of first-said date.
    */
   protected readonly wordMonths = computed(() =>
-    groupByMonth(visibleWords(this.words(), this.query(), this.activeFilter()), 'word', (word) =>
-      this.changeOf(word),
+    groupByMonth(
+      visibleWords(this.words(), this.query(), this.activeFilter()),
+      'word',
+      (word) => this.changeOf(word),
+      this.cardContext(),
     ),
   );
 
@@ -263,6 +341,7 @@ export class HomePage {
       visibleWords(this.sentences(), this.query(), this.activeFilter()),
       'sentence',
       (sentence) => this.changeOf(sentence),
+      this.cardContext(),
     ),
   );
 
@@ -346,6 +425,22 @@ export class HomePage {
   }
 
   /**
+   * Filters on the chip picked, then folds the filters away, their job done.
+   */
+  protected pickFilter(filter: StatusFilter): void {
+    this.selectFilter(filter);
+    this.closeFilters();
+  }
+
+  /**
+   * Folds the filters away; the toggle gets the focus back, as the chips leave with it.
+   */
+  protected closeFilters(): void {
+    this.filtersOpen.set(false);
+    afterNextRender(() => this.filterToggle()?.nativeElement.focus(), { injector: this.injector });
+  }
+
+  /**
    * Filters the list as the search is typed and mirrors it in the URL, without a history entry.
    */
   protected search(value: string): void {
@@ -383,6 +478,7 @@ export class HomePage {
   protected async logout(): Promise<void> {
     this.loggingOut.set(true);
     try {
+      await this.wordsApi.flushRemovals();
       await this.session.signOut();
       void this.router.navigateByUrl(LOGIN_ROUTE);
     } catch {

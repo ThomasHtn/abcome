@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.session.web.http.CookieSerializer;
@@ -49,11 +50,16 @@ public class AuthController {
     private final String childName;
 
     /**
+     * Birth date of the child, sent only to a signed-in visitor; {@code null} when not set.
+     */
+    private final LocalDate childBirthDate;
+
+    /**
      * Creates the controller.
      *
      * @param authService      session service
      * @param cookieSerializer session cookie writer
-     * @param properties       application settings, holding the child's name
+     * @param properties       application settings, holding the child's name and birth date
      */
     @SuppressFBWarnings(
         value = "EI_EXPOSE_REP2",
@@ -65,6 +71,7 @@ public class AuthController {
         this.authService = authService;
         this.cookieSerializer = cookieSerializer;
         this.childName = properties.childName();
+        this.childBirthDate = properties.childBirthDate();
     }
 
     /**
@@ -137,11 +144,11 @@ public class AuthController {
     }
 
     /**
-     * Describes the open session, naming the child only to a signed-in visitor.
+     * Describes the open session, naming the child and his birth date only to a signed-in visitor.
      *
      * @return session of the current request
      */
     private SessionResponse sessionResponse() {
-        return new SessionResponse(childName, authService.isReadOnly());
+        return new SessionResponse(childName, childBirthDate, authService.isReadOnly());
     }
 }

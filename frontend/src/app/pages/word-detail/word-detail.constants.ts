@@ -39,18 +39,12 @@ export const KIND_COPY: Readonly<Record<WordKind, KindCopy>> = {
 /**
  * Confirmation sheets: they cannot show an error inside, so a failure closes them before its toast.
  */
-export const CONFIRM_SHEETS: readonly WordSheet[] = [
-  'remove-stage',
-  'last-stage',
-  'delete',
-  'remove-sound',
-];
+export const CONFIRM_SHEETS: readonly WordSheet[] = ['last-stage'];
 
 /**
  * Sheet that a confirmation goes back to on "Garder", so the edits in progress there are kept.
  */
 export const PARENT_SHEETS: Readonly<Partial<Record<WordSheet, WordSheet>>> = {
-  'remove-stage': 'stage',
   'last-stage': 'stage',
 };
 

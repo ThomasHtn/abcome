@@ -169,38 +169,3 @@ export function soundSheetCopy(
     }),
   };
 }
-
-/**
- * Consequence of deleting a sound, naming it the way the actions sheet does.
- */
-export function removeSoundText(sound: GallerySound, spoken: string, childName: string): string {
-  return translate('wordDetail.removeSoundText', {
-    date: sound.recordedOn,
-    childName,
-    spoken: quote(spoken),
-  });
-}
-
-/**
- * Consequence of removing a stage: the API keeps its sounds and files them under `heirSpoken`'s stage,
- * so the family knows where to find them; no word on sounds when there is none.
- */
-export function removeStageText(
-  date: string,
-  soundCount: number,
-  heirSpoken: string | undefined,
-): string {
-  const sentences = [translate('wordDetail.removeStageErased', { date: formatLongDate(date) })];
-  if (soundCount > 0 && heirSpoken !== undefined) {
-    sentences.push(
-      soundCount === 1
-        ? translate('wordDetail.removeStageSoundOne', { spoken: quote(heirSpoken) })
-        : translate('wordDetail.removeStageSoundOther', {
-            count: soundCount,
-            spoken: quote(heirSpoken),
-          }),
-    );
-  }
-  sentences.push(translate('wordDetail.cannotUndo'));
-  return sentences.join(' ');
-}

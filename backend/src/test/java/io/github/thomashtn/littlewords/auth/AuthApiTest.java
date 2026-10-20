@@ -63,11 +63,12 @@ class AuthApiTest extends PostgreSqlIntegrationTest {
     }
 
     @Test
-    @DisplayName("Answers 200 with the child's name to a session check inside a session")
+    @DisplayName("Answers 200 with the child's name and birth date to a session check inside a session")
     void checksSessionOfFamilyMember() throws Exception {
         mockMvc().perform(get("/api/auth/session").cookie(signIn()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.childName").value(CHILD_NAME))
+            .andExpect(jsonPath("$.childBirthDate").value(CHILD_BIRTH_DATE))
             .andExpect(jsonPath("$.readOnly").value(false));
     }
 

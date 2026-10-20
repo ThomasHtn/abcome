@@ -1,5 +1,5 @@
-<!-- The screen's main actions, sliding up after the screen has arrived. -->
-<div #bar class="action-bar enter-bottom">
+<!-- The screen's main actions, sliding up after the screen has arrived, unless already in place. -->
+<div #bar class="action-bar" [class.enter-bottom]="!settled()">
   <!-- Row of actions; stacks when the bar is very narrow (200 % zoom, large text). -->
   <div class="action-bar__row flex gap-3">
     <ng-content />

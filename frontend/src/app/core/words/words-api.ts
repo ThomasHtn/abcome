@@ -1,28 +1,34 @@
 import { DOCUMENT } from '@angular/common';
 import { HttpClient, httpResource } from '@angular/common/http';
-import { inject, Service } from '@angular/core';
+import { effect, inject, Service, signal, untracked } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 
+import { translate } from '@jsverse/transloco';
 import { distinctUntilChanged, filter, firstValueFrom, map, skip } from 'rxjs';
 
 import { AuthSession } from '@core/auth/auth-session';
+import { UNDO_WINDOW_MS } from '@core/feedback/feedback.constants';
+import { ToastQueue } from '@core/feedback/toast-queue';
 import { API_ENDPOINTS } from '@core/http/api-endpoints';
-import { keepValueOnError, resourcePatcher } from '@core/http/resource.utils';
+import { isNotFound } from '@core/http/api-error.utils';
+import { keepValueOnError, resourcePatcher, resourceValue } from '@core/http/resource.utils';
 
 import { SeenWords } from './seen-words';
 import {
   CreateWordRequest,
   MoveRecordingRequest,
+  PendingRemoval,
   Pronunciation,
   PronunciationRequest,
   Recording,
+  RemovalTarget,
   UpdateWordRequest,
   Word,
 } from './word.model';
 import {
   addRecording,
-  removePronunciation,
-  removeRecording,
+  applyRemoval,
+  ownerOf,
   replaceRecording,
   upsertPronunciation,
   upsertWord,
@@ -51,6 +57,21 @@ export class WordsApi {
   private readonly seen = inject(SeenWords);
 
   /**
+   * Says a deletion happened, with its undo button, or that the server refused it.
+   */
+  private readonly toasts = inject(ToastQueue);
+
+  /**
+   * Deletions already gone from the list but not yet sent, still undoable.
+   */
+  private readonly pendingRemovals = signal<readonly PendingRemoval[]>([]);
+
+  /**
+   * Timer sending each pending deletion when its undo window ends.
+   */
+  private readonly removalTimers = new Map<PendingRemoval, ReturnType<typeof setTimeout>>();
+
+  /**
    * Every word with its stages and sounds; idle while signed out, so nothing leaks before login.
    * Read it through `resourceValue(words, [])`.
    */
@@ -67,10 +88,23 @@ export class WordsApi {
    * Fetches the list again on each new screen (not the first, which loads it, nor a tab or search
    * change, which only touch the query), when the app comes back to the screen and when the network
    * returns; a load already running is kept, and the shown list stays until the fresh one arrives,
-   * or after it fails.
+   * or after it fails. A fresh list still holding a pending deletion loses it again, and leaving the
+   * app sends the pending deletions at once, since a closed page would drop them.
    */
   constructor() {
     keepValueOnError(this.words);
+    effect(() => {
+      const pending = this.pendingRemovals();
+      const words = resourceValue(this.words, undefined);
+      const back = words ? pending.filter((removal) => ownerOf(words, removal.target)) : [];
+      if (back.length > 0) {
+        untracked(() =>
+          this.patch((list) =>
+            back.reduce((rest, removal) => applyRemoval(rest, removal.target), list),
+          ),
+        );
+      }
+    });
     const document = inject(DOCUMENT);
     inject(Router)
       .events.pipe(
@@ -83,6 +117,8 @@ export class WordsApi {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         this.words.reload();
+      } else {
+        void this.flushRemovals();
       }
     });
     document.defaultView?.addEventListener('online', () => this.words.reload());
@@ -105,14 +141,6 @@ export class WordsApi {
     const word = await firstValueFrom(this.http.put<Word>(API_ENDPOINTS.word(id), request));
     this.patch((words) => upsertWord(words, word));
     return word;
-  }
-
-  /**
-   * Deletes a word with all its stages and sounds.
-   */
-  public async remove(id: number): Promise<void> {
-    await firstValueFrom(this.http.delete<void>(API_ENDPOINTS.word(id)));
-    this.patch((words) => words.filter((word) => word.id !== id));
   }
 
   /**
@@ -142,15 +170,6 @@ export class WordsApi {
     );
     this.patch((words) => upsertPronunciation(words, stage));
     return stage;
-  }
-
-  /**
-   * Removes a stage, its sounds going to a neighbour; rejects with `LAST_PRONUNCIATION` when it is the
-   * word's only one.
-   */
-  public async removePronunciation(id: number): Promise<void> {
-    await firstValueFrom(this.http.delete<void>(API_ENDPOINTS.pronunciation(id)));
-    this.patch((words) => removePronunciation(words, id));
   }
 
   /**
@@ -186,10 +205,86 @@ export class WordsApi {
   }
 
   /**
-   * Deletes a sound.
+   * Deletes a word with its stages and sounds, a stage (its sounds going to a neighbour, never the
+   * word's only one) or a sound: gone from the list at once, sent once the undo window ends.
+   * The toast says `done` with an undo button; a refusal then puts it back and says `failure`.
    */
-  public async removeRecording(id: number): Promise<void> {
-    await firstValueFrom(this.http.delete<void>(API_ENDPOINTS.recording(id)));
-    this.patch((words) => removeRecording(words, id));
+  public removeLater(target: RemovalTarget, done: string, failure: string): void {
+    const before = ownerOf(resourceValue(this.words, []) ?? [], target);
+    if (!before) {
+      return;
+    }
+    const removal: PendingRemoval = { target, before, failure };
+    this.patch((words) => applyRemoval(words, target));
+    this.pendingRemovals.update((pending) => [...pending, removal]);
+    this.removalTimers.set(
+      removal,
+      setTimeout(() => void this.commitRemoval(removal), UNDO_WINDOW_MS),
+    );
+    this.toasts.show(done, 'success', {
+      label: translate('feedback.undo'),
+      run: () => this.undoRemoval(removal),
+    });
+  }
+
+  /**
+   * Sends every pending deletion now, before signing out or when the app leaves the screen.
+   */
+  public async flushRemovals(): Promise<void> {
+    await Promise.all(this.pendingRemovals().map((removal) => this.commitRemoval(removal)));
+  }
+
+  /**
+   * Puts back what a pending deletion took, as it was; too late once sent.
+   */
+  private undoRemoval(removal: PendingRemoval): void {
+    if (!this.forgetRemoval(removal)) {
+      return;
+    }
+    this.patch((words) => upsertWord(words, removal.before));
+  }
+
+  /**
+   * Sends a pending deletion; already gone on the server is fine, any other failure puts it back.
+   */
+  private async commitRemoval(removal: PendingRemoval): Promise<void> {
+    if (!this.forgetRemoval(removal)) {
+      return;
+    }
+    try {
+      await firstValueFrom(this.http.delete<void>(removalUrl(removal.target)));
+    } catch (error) {
+      if (!isNotFound(error)) {
+        this.patch((words) => upsertWord(words, removal.before));
+        this.toasts.show(removal.failure, 'error');
+      }
+    }
+  }
+
+  /**
+   * Drops a deletion from the pending ones with its timer; `false` when it was no longer pending.
+   */
+  private forgetRemoval(removal: PendingRemoval): boolean {
+    if (!this.pendingRemovals().includes(removal)) {
+      return false;
+    }
+    clearTimeout(this.removalTimers.get(removal));
+    this.removalTimers.delete(removal);
+    this.pendingRemovals.update((pending) => pending.filter((other) => other !== removal));
+    return true;
+  }
+}
+
+/**
+ * API route deleting a removal target.
+ */
+function removalUrl(target: RemovalTarget): string {
+  switch (target.kind) {
+    case 'word':
+      return API_ENDPOINTS.word(target.id);
+    case 'pronunciation':
+      return API_ENDPOINTS.pronunciation(target.id);
+    case 'recording':
+      return API_ENDPOINTS.recording(target.id);
   }
 }

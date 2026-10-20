@@ -1,6 +1,7 @@
 import { aPronunciation, aRecording, aWord } from './word.fixtures';
 import {
   addRecording,
+  applyRemoval,
   changeSince,
   countByStatus,
   currentPronunciation,
@@ -11,6 +12,7 @@ import {
   firstSaidDate,
   heirStage,
   latestChangeAt,
+  ownerOf,
   removePronunciation,
   removeRecording,
   sortByFirstSaidDesc,
@@ -158,6 +160,28 @@ describe('list updates', () => {
     const [updated, untouched] = removeRecording([withSounds, maman], 4);
     expect(updated.recordings.map((recording) => recording.id)).toEqual([3]);
     expect(untouched).toBe(maman);
+  });
+
+  it('finds the entry holding a word, a stage or a sound to remove', () => {
+    const withSound = { ...lapin, recordings: [aRecording({ id: 4, wordId: 1 })] };
+    const words = [withSound, maman];
+
+    expect(ownerOf(words, { kind: 'word', id: maman.id })).toBe(maman);
+    expect(ownerOf(words, { kind: 'pronunciation', id: lapin.pronunciations[0].id })).toBe(
+      withSound,
+    );
+    expect(ownerOf(words, { kind: 'recording', id: 4 })).toBe(withSound);
+    expect(ownerOf(words, { kind: 'recording', id: 99 })).toBeUndefined();
+  });
+
+  it('removes a word, a stage or a sound as the API does', () => {
+    const withSound = { ...lapin, recordings: [aRecording({ id: 4, wordId: 1 })] };
+
+    expect(applyRemoval([withSound, maman], { kind: 'word', id: lapin.id })).toEqual([maman]);
+    expect(applyRemoval([withSound], { kind: 'recording', id: 4 })[0].recordings).toEqual([]);
+    expect(
+      applyRemoval([withSound], { kind: 'pronunciation', id: lapin.pronunciations[1].id }),
+    ).toEqual(removePronunciation([withSound], lapin.pronunciations[1].id));
   });
 });
 

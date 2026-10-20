@@ -3,8 +3,6 @@ import { aPronunciation, aRecording, aWord } from '@core/words/word.fixtures';
 import {
   gallerySounds,
   progressLabel,
-  removeSoundText,
-  removeStageText,
   soundSheetCopy,
   stageDateLabel,
   stageTitle,
@@ -75,19 +73,6 @@ describe('word-detail utils', () => {
     expect(progressLabel('mastered')).toBe('Ajouter une prononciation');
   });
 
-  it('says where the sounds of a removed stage go, and nothing of sounds when it has none', () => {
-    expect(removeStageText('2026-10-12', 2, 'pin')).toBe(
-      'Cette prononciation du 12 octobre 2026 sera effacée. ' +
-        'Ses 2 sons seront rangés avec «\u00A0pin\u00A0». On ne pourra pas revenir en arrière.',
-    );
-    expect(removeStageText('2026-10-12', 1, 'pin')).toContain(
-      'Le son de cette prononciation sera rangé avec «\u00A0pin\u00A0».',
-    );
-    expect(removeStageText('2026-10-12', 0, 'pin')).toBe(
-      'Cette prononciation du 12 octobre 2026 sera effacée. On ne pourra pas revenir en arrière.',
-    );
-  });
-
   it('labels the day of the first stage differently', () => {
     expect(stageDateLabel(true)).toBe('Dit pour la première fois le');
     expect(stageDateLabel(false)).toBe('Entendu le');
@@ -143,9 +128,5 @@ describe('titleLength', () => {
       heading: 'Son enregistré le 17 octobre',
       text: 'Alix y dit «\u00A0apin\u00A0». Il dure 3 secondes.',
     });
-    expect(removeSoundText(sound, 'apin', 'Alix')).toBe(
-      'Le son enregistré le 17 octobre, où Alix dit «\u00A0apin\u00A0», sera effacé. ' +
-        'On ne pourra pas revenir en arrière.',
-    );
   });
 });

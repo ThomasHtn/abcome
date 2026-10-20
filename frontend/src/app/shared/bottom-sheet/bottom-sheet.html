@@ -12,21 +12,23 @@
     <!-- Grab handle, decorative. -->
     <div class="bottom-sheet__handle" aria-hidden="true"></div>
 
-    <!-- Title and close button; a long title wraps instead of widening the sheet. -->
-    <div class="flex min-w-0 items-center justify-between gap-3">
-      <h2 class="bottom-sheet__title">{{ heading() }}</h2>
-      @if (closable()) {
-        <button
-          app-icon-button
-          class="bottom-sheet__close"
-          type="button"
-          [attr.aria-label]="'bottomSheet.close' | transloco"
-          (click)="close()"
-        >
-          <svg app-icon name="x" [size]="18" [strokeWidth]="2.4"></svg>
-        </button>
-      }
-    </div>
+    <!-- Title and close button, unless the content brings its own; a long title wraps instead of widening the sheet. -->
+    @if (!bare()) {
+      <div class="flex min-w-0 items-center justify-between gap-3">
+        <h2 class="bottom-sheet__title">{{ heading() }}</h2>
+        @if (closable()) {
+          <button
+            app-icon-button
+            class="bottom-sheet__close"
+            type="button"
+            [attr.aria-label]="'bottomSheet.close' | transloco"
+            (click)="close()"
+          >
+            <svg app-icon name="x" [size]="18" [strokeWidth]="2.4"></svg>
+          </button>
+        }
+      </div>
+    }
 
     <!-- Content of the sheet, given by the screen; the wrapper leaves its layout to the body. -->
     <div #content class="contents">

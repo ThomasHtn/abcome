@@ -41,13 +41,20 @@
   line-height: 1.15;
 }
 
-/* Microphone and news tag after the title's last word, on one line together. */
+/* Last word of the title and its marks, moved to the next line together; still wraps inside if wider than the card. */
+.word-card__tail {
+  display: inline-block;
+  max-inline-size: 100%;
+}
+
+/* Microphone and news tag after the title's last word, on one line together, centred on that line whatever their height. */
 .word-card__marks {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  block-size: 1lh;
   margin-inline-start: 0.25rem;
-  vertical-align: text-bottom;
+  vertical-align: top;
 }
 
 /* Microphone of an entry that keeps sounds, quiet beside the title. */
@@ -75,6 +82,11 @@
   }
 }
 
+/* Card shown in place (back from a page): its tag is there at once, the wave still runs. */
+.word-card--settled .word-card__change {
+  animation: none;
+}
+
 /* Wave: a light band sweeps across the tag now and then, one card after the other down the list. */
 .word-card__change::after {
   @include motion {
@@ -90,9 +102,10 @@
   }
 }
 
-/* "[child] dit « apin »", quieter, shown whole too. */
+/* "[child] dit « apin »", quieter, shown whole too, never ending on a lone "oct.". */
 .word-card__said {
   overflow-wrap: anywhere;
+  text-wrap: pretty;
   color: var(--color-text-muted);
   font-size: var(--text-meta);
   font-weight: 700;

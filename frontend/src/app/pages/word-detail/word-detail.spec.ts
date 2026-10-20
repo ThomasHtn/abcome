@@ -9,17 +9,21 @@ import { ToastQueue } from '@core/feedback/toast-queue';
 import { Waveforms } from '@core/recordings/waveforms';
 import { SeenWords } from '@core/words/seen-words';
 import { aPronunciation, aRecording, aWord } from '@core/words/word.fixtures';
-import { Pronunciation, PronunciationRequest, Word, WordKind } from '@core/words/word.model';
-import { removeRecording, replaceRecording, upsertPronunciation } from '@core/words/word.utils';
+import {
+  Pronunciation,
+  PronunciationRequest,
+  RemovalTarget,
+  Word,
+  WordKind,
+} from '@core/words/word.model';
+import { applyRemoval, replaceRecording, upsertPronunciation } from '@core/words/word.utils';
 import { WordsApi } from '@core/words/words-api';
 
 import { WordDetailPage } from './word-detail';
 
 describe('WordDetailPage', () => {
   let words: ReturnType<typeof signal<Word[]>>;
-  let removed: number[];
-  let removedSounds: number[];
-  let removeStageError: unknown;
+  let removals: [RemovalTarget, string][];
   let addStageError: unknown;
   let reloads: number;
 
@@ -50,9 +54,7 @@ describe('WordDetailPage', () => {
         ],
       }),
     ]);
-    removed = [];
-    removedSounds = [];
-    removeStageError = null;
+    removals = [];
     addStageError = null;
     reloads = 0;
     TestBed.configureTestingModule({
@@ -82,17 +84,9 @@ describe('WordDetailPage', () => {
               words.update((list) => replaceRecording(list, moved));
               return Promise.resolve(moved);
             },
-            removeRecording: (id: number) => {
-              removedSounds.push(id);
-              words.update((list) => removeRecording(list, id));
-              return Promise.resolve();
-            },
-            removePronunciation: () =>
-              removeStageError ? Promise.reject(removeStageError) : Promise.resolve(),
-            remove: (id: number) => {
-              removed.push(id);
-              words.set([]);
-              return Promise.resolve();
+            removeLater: (target: RemovalTarget, done: string) => {
+              removals.push([target, done]);
+              words.update((list) => applyRemoval(list, target));
             },
           },
         },
@@ -193,38 +187,23 @@ describe('WordDetailPage', () => {
     ]);
   });
 
-  it('says where the sounds of a removed stage go, and "Garder" goes back to the edits', async () => {
-    words.update(([word]) => [
-      {
-        ...word,
-        recordings: [...word.recordings, aRecording({ id: 9, wordId: 1, pronunciationId: 11 })],
-      },
-    ]);
+  it('removes a stage at once, its sounds going to the stage before', async () => {
     const fixture = render();
     const element = fixture.nativeElement as HTMLElement;
 
     element.querySelector<HTMLButtonElement>('.word-detail__card')?.click();
     await fixture.whenStable();
-    const field = element.querySelector<HTMLInputElement>('dialog[open] input[type="text"]');
-    if (field) {
-      field.value = 'apine';
-      field.dispatchEvent(new Event('input'));
-    }
-    await fixture.whenStable();
     clickButton(element, 'Retirer cette prononciation');
     await fixture.whenStable();
-    const confirm = element.querySelector('dialog[open]') as HTMLElement;
-    expect(confirm.textContent).toContain('Ses 2 sons seront rangés avec «\u00A0pin\u00A0».');
 
-    clickButton(confirm, 'Garder');
-    await fixture.whenStable();
-    const stage = element.querySelector('dialog[open]') as HTMLElement;
-    expect(stage.getAttribute('aria-label')).toBe('Modifier la prononciation');
-    expect(stage.querySelector<HTMLInputElement>('input[type="text"]')?.value).toBe('apine');
+    expect(removals).toEqual([[{ kind: 'pronunciation', id: 11 }, 'Prononciation retirée']]);
+    expect(element.querySelector('dialog[open]')).toBeNull();
+    expect(element.querySelectorAll('.word-detail__stage')).toHaveLength(1);
+    expect(element.querySelectorAll('app-voice-note')).toHaveLength(2);
   });
 
-  it('says nothing of sounds when the removed stage has none', async () => {
-    words.update(([word]) => [{ ...word, recordings: [] }]);
+  it('explains that the only stage cannot be removed, without removing it', async () => {
+    words.update(([word]) => [{ ...word, pronunciations: [word.pronunciations[0]] }]);
     const fixture = render();
     const element = fixture.nativeElement as HTMLElement;
 
@@ -233,7 +212,10 @@ describe('WordDetailPage', () => {
     clickButton(element, 'Retirer cette prononciation');
     await fixture.whenStable();
 
-    expect(element.querySelector('dialog[open]')?.textContent).not.toContain('rangé');
+    expect(removals).toEqual([]);
+    expect(element.querySelector('dialog[open]')?.textContent).toContain(
+      "C'est sa seule prononciation",
+    );
   });
 
   it('says how to record the first sound of a word without any', () => {
@@ -290,7 +272,7 @@ describe('WordDetailPage', () => {
     expect(element.querySelector('dialog[open]')).toBeNull();
   });
 
-  it('deletes one sound after confirmation and keeps the others', async () => {
+  it('deletes one sound at once and keeps the others', async () => {
     const fixture = render();
     const element = fixture.nativeElement as HTMLElement;
 
@@ -300,16 +282,10 @@ describe('WordDetailPage', () => {
     await fixture.whenStable();
     clickButton(element.querySelector('dialog[open]') as HTMLElement, 'Supprimer le son');
     await fixture.whenStable();
-    const confirm = element.querySelector('dialog[open]') as HTMLElement;
-    expect(confirm.textContent).toMatch(
-      /Le son enregistré le 14 octobre( 2026)?, où Alix dit «\u00A0apin\u00A0», sera effacé\./,
-    );
-    clickButton(confirm, 'Oui, supprimer');
-    await fixture.whenStable();
 
-    expect(removedSounds).toEqual([8]);
+    expect(removals).toEqual([[{ kind: 'recording', id: 8 }, 'Son supprimé']]);
+    expect(element.querySelector('dialog[open]')).toBeNull();
     expect(element.querySelectorAll('app-voice-note')).toHaveLength(1);
-    expect(TestBed.inject(ToastQueue).current()?.text).toBe('Son supprimé');
   });
 
   it('adds a "Bien dit" stage and celebrates the word turning green', async () => {
@@ -385,27 +361,7 @@ describe('WordDetailPage', () => {
     expect(element.querySelector('h1')?.classList).toContain('word-detail__word--very-long');
   });
 
-  it('explains that the only stage cannot be removed when the API refuses it', async () => {
-    removeStageError = new HttpErrorResponse({
-      status: 409,
-      error: { code: 'LAST_PRONUNCIATION' },
-    });
-    const fixture = render();
-    const element = fixture.nativeElement as HTMLElement;
-
-    element.querySelector<HTMLButtonElement>('.word-detail__card')?.click();
-    await fixture.whenStable();
-    clickButton(element, 'Retirer cette prononciation');
-    await fixture.whenStable();
-    clickButton(element.querySelector('dialog[open]') as HTMLElement, 'Oui, retirer');
-    await fixture.whenStable();
-
-    expect(element.querySelector('dialog[open]')?.textContent).toContain(
-      "C'est sa seule prononciation",
-    );
-  });
-
-  it('deletes the word after confirmation and says goodbye', async () => {
+  it('deletes the word at once and keeps showing it while going back to the list', async () => {
     const fixture = render();
     const element = fixture.nativeElement as HTMLElement;
 
@@ -415,11 +371,9 @@ describe('WordDetailPage', () => {
     await fixture.whenStable();
     clickButton(element, 'Supprimer le mot');
     await fixture.whenStable();
-    clickButton(element.querySelector('dialog[open]') as HTMLElement, 'Oui, supprimer');
-    await fixture.whenStable();
 
-    expect(removed).toEqual([1]);
-    expect(element.querySelector('h1')?.textContent).toBe('«\u00A0lapin\u00A0» a été supprimé');
+    expect(removals).toEqual([[{ kind: 'word', id: 1 }, '«\u00A0lapin\u00A0» a été supprimé']]);
+    expect(element.querySelector('h1')?.textContent?.trim()).toBe('lapin');
   });
 
   it('says so when the word is not in the notebook', () => {

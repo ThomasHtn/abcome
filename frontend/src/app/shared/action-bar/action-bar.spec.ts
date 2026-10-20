@@ -22,6 +22,17 @@ describe('ActionBar', () => {
     expect(bar?.querySelector('button')?.textContent).toBe('Ajouter un mot');
   });
 
+  it('slides up by default, and shows in place when settled', () => {
+    const fixture = TestBed.createComponent(ActionBar);
+    fixture.detectChanges();
+    const bar = (fixture.nativeElement as HTMLElement).querySelector('.action-bar')!;
+    expect(bar.classList).toContain('enter-bottom');
+
+    fixture.componentRef.setInput('settled', true);
+    fixture.detectChanges();
+    expect(bar.classList).not.toContain('enter-bottom');
+  });
+
   it('publishes its measured height on the root and clears it when the screen leaves', async () => {
     const original = globalThis.ResizeObserver;
     // jsdom has no ResizeObserver: this one reports a 104 px bar as soon as it observes.

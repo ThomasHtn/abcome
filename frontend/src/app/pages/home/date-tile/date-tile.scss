@@ -1,4 +1,4 @@
-/* Date tile of the home cards: lavender square, day in display type over the month. */
+/* Tile of the home cards: lavender square with the day over the month, or salmon with the age in months. */
 
 @use 'tools' as *;
 
@@ -31,4 +31,16 @@
   font-weight: 800;
   letter-spacing: 0.03rem;
   text-transform: uppercase;
+}
+
+/* Age tile: salmon, so the child's age reads apart from a calendar day. */
+:host(.date-tile--age) {
+  background-color: var(--color-salmon-50);
+  color: var(--color-salmon-700);
+}
+
+/* Its unit stays a lower-case word ("mois"), not a month abbreviation. */
+:host(.date-tile--age) .date-tile__month {
+  letter-spacing: 0;
+  text-transform: none;
 }
