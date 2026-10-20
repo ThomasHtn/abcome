@@ -7,6 +7,8 @@ One list of first words per interface language, behind the add-word suggestions:
 | `dictionary.csv` | French | IFDC (French CDI by Sophie Kern, Words and Sentences form) | `V2__seed_dictionary.sql` |
 | `dictionary_en.csv` | English | American English CDI (MacArthur-Bates, Words and Sentences form, norming sample) | `V10__seed_english_dictionary.sql` |
 
+The comments of those two migrations still name this folder's former path, `docs/dictionary/`: an applied migration is never edited.
+
 Data from [Wordbank](https://wordbank.stanford.edu) under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). A word added to the notebook takes its category from either list, French first.
 
 ## Changes from the sources
@@ -31,8 +33,8 @@ Data from [Wordbank](https://wordbank.stanford.edu) under [CC BY 4.0](https://cr
 ## Regenerating
 
 ```bash
-python3 -I docs/dictionary/build_dictionary.py <folder with ws.csv and kern_data.csv> docs/dictionary/dictionary.csv
-python3 -I docs/dictionary/build_dictionary_en.py <folder with ws.csv, norming_data.csv and norming_fields.csv> docs/dictionary/dictionary_en.csv
+python3 -I tools/dictionary/build_dictionary.py <folder with ws.csv and kern_data.csv> tools/dictionary/dictionary.csv
+python3 -I tools/dictionary/build_dictionary_en.py <folder with ws.csv, norming_data.csv and norming_fields.csv> tools/dictionary/dictionary_en.csv
 ```
 
 The English inputs are `[English_WS].csv` and `EnglishWS_Marchman_Norming_{data,fields}.csv` from `raw_data/English_American_WS/` in the [Wordbank repository](https://github.com/langcog/wordbank). Then add a new Flyway migration with the differences.

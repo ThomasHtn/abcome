@@ -166,6 +166,17 @@
         </configuration>
       </plugin>
 
+      <!-- Tests never read the developer's backend/.env, so the suite gives the same result on every machine. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <springdotenv.enabled>false</springdotenv.enabled>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+
       <!-- Fixable formatting: `./mvnw spotless:apply` rewrites, `verify` only checks. -->
       <plugin>
         <groupId>com.diffplug.spotless</groupId>

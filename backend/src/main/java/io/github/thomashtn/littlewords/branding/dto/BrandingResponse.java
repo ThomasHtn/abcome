@@ -11,8 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 @Schema(description = "Name of the app and zone of the family.")
 public record BrandingResponse(
-    @Schema(description = "Name of the app.", example = "ABCome") String name,
-    @Schema(description = "End of the name drawn in the accent colour, empty for none.", example = "ome")
+    @Schema(description = "Name of the app.", example = "Little Words") String name,
+    @Schema(description = "End of the name drawn in the accent colour, empty for none.", example = "Words")
     String nameAccent,
     @Schema(description = "Zone of the family, in which \"today\" is judged.", example = "Europe/Paris")
     String timeZone

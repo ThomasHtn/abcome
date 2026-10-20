@@ -13,7 +13,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -24,14 +23,10 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  * <p>Singleton container pattern: started once in a static initializer and reaped by Ryuk, so the
  * container outlives every test class instead of stopping after the first one. Tests run on the
  * production {@code application.properties}, Flyway included, with known family and reader passwords and child
- * name.</p>
- *
- * <p>spring-dotenv also reads the developer's {@code backend/.env} during tests, so the production
- * login lockout is pinned here; a subclass may override it with its own {@link TestPropertySource}.</p>
+ * name. The developer's {@code backend/.env} is never read (surefire turns spring-dotenv off).</p>
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestPropertySource(properties = "app.auth.lockout-enabled=true")
 public abstract class PostgreSqlIntegrationTest {
 
     /**

@@ -9,7 +9,7 @@ import java.io.OutputStream;
 public interface ExportService {
 
     /**
-     * Names today's archive after the app ({@code abcome-2026-10-20.zip}).
+     * Names today's archive after the app ({@code little-words-2026-10-20.zip}).
      *
      * @return file name, ASCII only
      */

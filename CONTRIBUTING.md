@@ -37,11 +37,10 @@ make e2e       # browser tests against it (E2E_PASSPHRASE when backend/.env has 
 | Path | Role |
 |---|---|
 | `backend/` | Spring Boot REST API |
-| `frontend/` | Angular app served by nginx |
-| `docs/dictionary/` | Word dictionaries (French, English) and their build scripts |
+| `frontend/` | Angular app served by nginx, which relays `/api` to the backend |
+| `tools/dictionary/` | Word dictionaries (French, English) and their build scripts |
 | `docs/media/` | Tour video, poster, screenshots and icons shown in the README |
-| `deploy/` | Production template for one machine, started by every delivery |
-| `compose.yaml` | Whole app from its images on localhost, and the development database |
+| `compose.yaml` | Whole app from its images on localhost, started by every delivery, and the development database |
 | `Makefile` | Shortcuts for the commands of this file |
 | `.github/` | CI workflows and Dependabot (below) |
 
@@ -111,7 +110,7 @@ Coverage floors only go up.
 | Workflow | When | Does |
 |---|---|---|
 | `backend-ci.yml`, `frontend-ci.yml` | Pull request touching that side | The gates of that side |
-| `deliver.yml` | Push to `main`, tag `v*.*.*`, pull request touching images or `deploy/` | Both gates, both images started from `deploy/compose.yaml`, Grype scan, Playwright, then push (amd64 and arm64, SBOM, provenance) and, for a tag, the GitHub release |
+| `deliver.yml` | Push to `main`, tag `v*.*.*`, pull request touching images or `compose.yaml` | Both gates, both images started from `compose.yaml`, Grype scan, Playwright, then push (amd64 and arm64, SBOM, provenance) and, for a tag, the GitHub release |
 | `codeql.yml` | Push, pull request, weekly | Static analysis of Java, TypeScript and the workflows |
 
 ## Releases

@@ -15,9 +15,9 @@ npm run build                        # production bundle in dist/
 npm run e2e                          # Playwright against http://localhost:8000 (`make up` first)
 ```
 
-Browser tests (`e2e/`, `*.e2e.ts`) drive the real app, French locale, mobile viewport, reduced motion and a fake microphone. A setup project signs in once (the backend checks two passwords at once) and every test writes its own word. `E2E_BASE_URL` and `E2E_PASSPHRASE` point them at another stack; the delivery runs them against `deploy/compose.yaml`.
+Browser tests (`e2e/`, `*.e2e.ts`) drive the real app, French locale, mobile viewport, reduced motion and a fake microphone. A setup project signs in once (the backend checks two passwords at once) and every test writes its own word. `E2E_BASE_URL` and `E2E_PASSPHRASE` point them at another stack; the delivery runs them against `compose.yaml`.
 
-Production image: nginx serves the bundle and answers `/healthz` for the Docker `HEALTHCHECK` and uptime probes. Deployment and monitoring: [backend/README.md](../backend/README.md#deployment).
+Production image: nginx serves the bundle, relays `/api/*` and `/readyz` to `BACKEND_URL` (`http://backend:8080` by default) and answers `/healthz` for the Docker `HEALTHCHECK` and uptime probes. Its config is `nginx.conf.template`, filled in at startup. Deployment and monitoring: [backend/README.md](../backend/README.md#deployment).
 
 ## Folders
 

@@ -114,7 +114,8 @@ public class SecurityConfig {
                         "/livez", "/readyz",
                         "/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/prometheus"
                     ).permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/auth/session", "/api/branding").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/auth/session", "/api/branding", "/api/branding/manifest")
+                    .permitAll()
                     .requestMatchers(HttpMethod.POST, AUTH_ROUTES).permitAll();
 
                 // Same flag as springdoc, so the exception disappears with the routes it opens.

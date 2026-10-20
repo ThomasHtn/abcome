@@ -2,7 +2,7 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <title>ABCome</title>
+    <title>Little Words</title>
     <base href="/" />
     <!-- The on-screen keyboard overlays the page instead of resizing it, so fixed bars stay put. -->
     <meta
@@ -15,7 +15,8 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <!-- iOS ignores the manifest icons and needs an opaque PNG for the home screen. -->
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-    <link rel="manifest" href="manifest.webmanifest" />
+    <!-- Served by the API, so the home-screen shortcut carries the name of this deployment (APP_NAME). -->
+    <link rel="manifest" href="api/branding/manifest" />
     <!-- Both faces show on the first screen, so they load with the page. -->
     <link
       rel="preload"

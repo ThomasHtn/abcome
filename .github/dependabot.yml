@@ -85,3 +85,19 @@ updates:
       github-actions:
         patterns:
           - '*'
+
+  # The database image of compose.yaml, pinned by version and digest like the base images.
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+    # Major versions are migrations (Spring Boot, Angular and its TypeScript, Java, Node, Postgres),
+    # done on purpose, not merged from a weekly bump.
+    ignore:
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
+    groups:
+      compose-images:
+        patterns:
+          - '*'

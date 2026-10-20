@@ -8,14 +8,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.github.thomashtn.littlewords.support.PostgreSqlIntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * Specifies the security rules on the main port: probes are open, the actuator is absent, the API needs a session.
- *
- * <p>API docs are pinned off so a developer's {@code .env} cannot open them during the test.</p>
  */
-@TestPropertySource(properties = "app.api-docs-enabled=false")
 class SecurityConfigTest extends PostgreSqlIntegrationTest {
 
     @Test

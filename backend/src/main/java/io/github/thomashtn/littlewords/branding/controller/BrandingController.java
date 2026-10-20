@@ -1,6 +1,7 @@
 package io.github.thomashtn.littlewords.branding.controller;
 
 import io.github.thomashtn.littlewords.branding.dto.BrandingResponse;
+import io.github.thomashtn.littlewords.branding.dto.WebManifestResponse;
 import io.github.thomashtn.littlewords.shared.config.ApplicationProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,6 +24,11 @@ public class BrandingController {
     private final BrandingResponse branding;
 
     /**
+     * Home-screen manifest carrying the same name, fixed at startup.
+     */
+    private final WebManifestResponse manifest;
+
+    /**
      * Creates the controller.
      *
      * @param properties application settings, holding the app name and the family's zone
@@ -30,6 +36,7 @@ public class BrandingController {
     public BrandingController(ApplicationProperties properties) {
         this.branding = new BrandingResponse(
             properties.branding().name(), properties.branding().nameAccent(), properties.timeZone().getId());
+        this.manifest = WebManifestResponse.named(properties.branding().name());
     }
 
     /**
@@ -43,5 +50,17 @@ public class BrandingController {
     @ApiResponse(responseCode = "200", description = "Name of the app and zone of the family.")
     public BrandingResponse branding() {
         return branding;
+    }
+
+    /**
+     * Gives the web app manifest, so the home-screen shortcut is named after this deployment's app.
+     *
+     * @return the manifest
+     */
+    @GetMapping(path = "/manifest", produces = "application/manifest+json")
+    @Operation(summary = "Get the web app manifest of the home-screen shortcut")
+    @ApiResponse(responseCode = "200", description = "Manifest named after the app.")
+    public WebManifestResponse manifest() {
+        return manifest;
     }
 }

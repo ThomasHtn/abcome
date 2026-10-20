@@ -1,3 +1,11 @@
+# Template: at startup the image fills in ${BACKEND_URL} and ${NGINX_LOCAL_RESOLVERS}, every lowercase $name is nginx's.
+
+# Scheme the client used, as told by the proxy in front, or this connection's when nothing is in front.
+map $http_x_forwarded_proto $forwarded_proto {
+	default $http_x_forwarded_proto;
+	"" $scheme;
+}
+
 server {
 	# Unprivileged image: the worker cannot bind a port below 1024.
 	listen 8080;
@@ -11,15 +19,38 @@ server {
 	gzip_types text/plain text/css application/javascript application/json application/manifest+json image/svg+xml;
 
 	# Private family notebook: never indexed. Headers are repeated in each location because add_header
-	# does not inherit. HSTS belongs to the reverse proxy, which terminates HTTPS.
+	# does not inherit. HSTS belongs to whatever terminates HTTPS in front.
 	add_header X-Robots-Tag "noindex, nofollow" always;
 	add_header X-Content-Type-Options "nosniff" always;
 	add_header X-Frame-Options "DENY" always;
 	add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
-	# The reverse proxy sends /api to the backend; nginx only sees it when the backend is down. A JSON 503 then,
-	# rather than the SPA shell, so the app shows its outage band instead of misreading HTML as data.
+	# Resolved per request, so nginx starts and answers even while the backend is down or not created yet.
+	resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;
+	set $backend ${BACKEND_URL};
+
+	# One origin for the whole app: whatever sits in front only routes the domain to this port.
+	# Unbuffered responses, so the notebook export streams through instead of filling /tmp.
 	location /api/ {
+		# Largest recording (app.recording.max-bytes): bigger is refused before reaching the API.
+		client_max_body_size 2m;
+		proxy_pass $backend;
+		proxy_http_version 1.1;
+		proxy_buffering off;
+		proxy_set_header Host $host;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto $forwarded_proto;
+		add_header X-Robots-Tag "noindex, nofollow" always;
+		error_page 502 504 = @backend-down;
+	}
+
+	# Public uptime probe: the API and its database.
+	location = /readyz {
+		proxy_pass $backend;
+	}
+
+	# Backend unreachable: a JSON 503 rather than an HTML error page, so the app shows its outage band.
+	location @backend-down {
 		default_type application/json;
 		add_header X-Robots-Tag "noindex, nofollow" always;
 		add_header X-Content-Type-Options "nosniff" always;
@@ -42,14 +73,6 @@ server {
 		add_header X-Robots-Tag "noindex, nofollow" always;
 		add_header X-Content-Type-Options "nosniff" always;
 		add_header Cache-Control "public, max-age=31536000, immutable";
-	}
-
-	# Home-screen manifest: nginx's mime.types does not know the extension, so its type is set here.
-	location = /manifest.webmanifest {
-		default_type application/manifest+json;
-		add_header X-Robots-Tag "noindex, nofollow" always;
-		add_header X-Content-Type-Options "nosniff" always;
-		add_header Cache-Control "no-cache" always;
 	}
 
 	# Images and animations: a missing one is a 404, never the SPA shell served as an image.

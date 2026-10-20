@@ -69,13 +69,17 @@ Each feature package splits into `controller`, `dto`, `entity`, `repository`, `s
 
 ## Deployment
 
-The repository ships images and a template ([deploy/](../deploy/README.md): PostgreSQL, Caddy for HTTPS, backups), not a deployment: each server owns its copy, its domain, its secrets and its backups. Whatever runs the images must provide the following; the template already does.
+The repository ships two images and this contract, not a deployment: each server writes its own compose (or chart, or PaaS settings), and owns its domain, secrets, proxy rules and backups. `compose.yaml` at the root, started by every delivery, is a working local example.
 
-**Images**: `backend/Dockerfile` (API on 8080, actuator on 8081, user 10001, heap at 60 % of the memory limit, 512 MB is plenty, exits on OutOfMemoryError so the restart policy replaces it) and `frontend/Dockerfile` (nginx on 8080, non-root). Both declare a Docker `HEALTHCHECK` and run with a read-only root filesystem plus a `/tmp` tmpfs. Base images are pinned by version and digest; Dependabot bumps them. Every push to `main` whose tests, image scan and browser tests pass publishes both on GHCR (`.github/workflows/deliver.yml`) for amd64 and arm64, with an SBOM and provenance: `ghcr.io/thomashtn/littlewords-backend` and `-frontend`, tagged `sha-<commit>` and `main`, plus `x.y.z` and `x.y` for a release tag. A server pulls a release or `sha-<commit>`, so a failed commit has no image to deploy.
+**Images**: `ghcr.io/thomashtn/littlewords-backend` and `-frontend`, amd64 and arm64, with an SBOM and provenance, published by `.github/workflows/deliver.yml` once the tests, the image scan and the browser tests pass. Tags: `sha-<commit>` and `main`, plus `x.y.z` and `x.y` for a release. Deploy a release or a `sha-<commit>`: a failed commit has no image.
 
-**Routing**: one HTTPS origin. `/api/*` and `/readyz` go to the backend, everything else to the frontend; nginx answers a JSON `503` on `/api/*` if it ever receives it. Never route port 8081 (actuator); an external probe uses `/readyz` on 8080. Refuse request bodies above 2 MB at the proxy. The recording screen needs `Permissions-Policy: microphone=(self)`, so a shared header set with `microphone=()` breaks it.
+- Backend: API on 8080, actuator on 8081, user 10001, heap at 60 % of the memory limit (512 MB is plenty), exits on OutOfMemoryError so the restart policy replaces it.
+- Frontend: nginx on 8080, non-root. The single entry point: it serves the app and relays `/api/*` and `/readyz` to `BACKEND_URL` (`http://backend:8080` by default), refuses bodies above 2 MB, and answers a JSON `503` while the backend is down.
+- Both declare a Docker `HEALTHCHECK` and run with a read-only root filesystem plus a `/tmp` tmpfs.
 
-**Database**: PostgreSQL 16+, a dedicated role and database (`CREATE ROLE littlewords LOGIN PASSWORD '...'; CREATE DATABASE littlewords OWNER littlewords;`). Flyway creates the tables at first start. Keep it on a private network, never published.
+**Routing**: one HTTPS origin, one rule: the domain to the frontend's port 8080. The backend and the database stay on the stack's private network; never route port 8081 (actuator). Whatever terminates HTTPS sets HSTS; nginx sets every other security header, including `Permissions-Policy: microphone=(self)` for the recording screen, so a shared header set with `microphone=()` must not override it.
+
+**Database**: PostgreSQL 16+, a dedicated role and database (`CREATE ROLE littlewords LOGIN PASSWORD '...'; CREATE DATABASE littlewords OWNER littlewords;`). Flyway creates the tables at first start, and migrates them on each update: rolling an image back after a migration needs the dump taken before it.
 
 **Variables** (backend):
 
@@ -86,16 +90,27 @@ The repository ships images and a template ([deploy/](../deploy/README.md): Post
 | `READER_PASSWORD_HASH` | Optional, empty turns the read-only sign-in off |
 | `CHILD_NAME` | Required, shown after login only |
 | `CHILD_BIRTHDATE` | Optional birth date (`yyyy-MM-dd`), shown after login only: cards tell the child's age instead of the day |
-| `APP_NAME`, `APP_NAME_ACCENT` | Name of the app and its accented end (`ABCome`, `ome` by default); public, served by `GET /api/branding` |
+| `APP_NAME`, `APP_NAME_ACCENT` | Name of the app (`Little Words` by default) and its end drawn in the accent colour (none by default); public, on the login screen, in the tab titles and under the home-screen icon |
 | `APP_TIME_ZONE` | IANA zone of the family (`Europe/Paris` by default), in which "today" is judged; public, served by `GET /api/branding` |
-| `LOGGING_STRUCTURED_FORMAT_CONSOLE` | Optional: `ecs`, `logstash` or `gelf` for JSON logs to a collector (`LOG_FORMAT` in the template) |
+| `LOGGING_STRUCTURED_FORMAT_CONSOLE` | Optional: `ecs`, `logstash` or `gelf` for JSON logs to a collector |
 | `API_DOCS_ENABLED` | `false` (the default) |
 | `FORWARD_HEADERS_STRATEGY` | `native` (the default); never `framework` behind a proxy |
 | `LOGIN_LOCKOUT_ENABLED` | `true` (the default) |
 
-Secrets live in the server's `.env` (mode 600), never in the repository. After the first start, open the site and check that a wrong passphrase is refused.
+The frontend only reads `BACKEND_URL`, set when the backend answers under another name than `backend` (for instance when the frontend also sits on a network shared with other apps, where `backend` may resolve to theirs).
 
-**Backups**: dump the database nightly and test a restore now and then; it holds the recordings, there is no other copy. The template's `backup.sh` and `restore.sh` do it with `pg_dump` and `pg_restore`.
+Secrets live in the server's environment (a `.env` of mode 600), never in the repository. After the first start, open the site and check that a wrong passphrase is refused.
+
+**Several families on one machine**: one stack each, with its own database, settings, domain and backups. Nothing in the images is named after the machine, so stacks only differ by what the server gives them: project name, volume, domain.
+
+**Backups**: the database is the only copy of the recordings. Dump it nightly, copy the dumps off the machine, and try a restore now and then:
+
+```bash
+docker compose exec -T postgres pg_dump -U littlewords -d littlewords --format=custom > littlewords-$(date +%F).dump
+docker compose stop backend
+docker compose exec -T postgres pg_restore -U littlewords -d littlewords --clean --if-exists --no-owner < littlewords-<date>.dump
+docker compose start backend
+```
 
 ## Monitoring
 
@@ -103,12 +118,12 @@ The backend answers its probes on the main port and keeps the actuator on its ow
 
 | Target | Use |
 |---|---|
-| `https://<your-domain>/readyz` | `200` when the API and its database answer, `503` otherwise; the public uptime probe |
+| `https://<your-domain>/readyz` | `200` when the API and its database answer; the public uptime probe, relayed by nginx |
 | `http://littlewords-backend:8080/livez` | `200` while the JVM serves requests, even without the database |
 | `http://littlewords-backend:8081/actuator/health` | Same status from the management port |
 | `http://littlewords-backend:8081/actuator/info` | Version and build time of the running image |
 | `http://littlewords-backend:8081/actuator/prometheus` | Metrics (JVM, HTTP, Hikari pool), tagged `application="littlewords"` |
-| `https://<your-domain>/healthz` | Frontend path: proxy, TLS and nginx |
+| `https://<your-domain>/healthz` | Proxy, TLS and nginx, without the backend |
 
 Both images carry a Docker `HEALTHCHECK` (backend on `/readyz`, frontend on `/healthz`), shown by `docker ps`.
 
