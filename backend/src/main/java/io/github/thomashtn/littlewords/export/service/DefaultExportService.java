@@ -1,6 +1,5 @@
 package io.github.thomashtn.littlewords.export.service;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.thomashtn.littlewords.export.dto.ExportedEntry;
 import io.github.thomashtn.littlewords.export.dto.ExportedSound;
 import io.github.thomashtn.littlewords.export.dto.NotebookExport;
@@ -109,10 +108,6 @@ public class DefaultExportService implements ExportService {
      * @param objectMapper     JSON mapper of the API
      * @param clock            application clock
      */
-    @SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "Services, settings, mapper and clock are singletons shared on purpose."
-    )
     public DefaultExportService(
         WordService wordService,
         RecordingService recordingService,

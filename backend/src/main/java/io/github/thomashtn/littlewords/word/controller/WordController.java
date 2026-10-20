@@ -1,6 +1,5 @@
 package io.github.thomashtn.littlewords.word.controller;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.thomashtn.littlewords.shared.exception.ApiErrorResponse;
 import io.github.thomashtn.littlewords.word.dto.CreateWordRequest;
 import io.github.thomashtn.littlewords.word.dto.UpdateWordRequest;
@@ -42,11 +41,6 @@ public class WordController {
      *
      * @param wordService word service
      */
-    @SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "WordService is a stateless singleton shared on purpose; "
-            + "SpotBugs only deems it mutable because it declares delete."
-    )
     public WordController(WordService wordService) {
         this.wordService = wordService;
     }

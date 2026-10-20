@@ -1,7 +1,7 @@
 # Whole app from its images on http://localhost:8000: try it, or check the images before a delivery (CI does).
 # Local only: no TLS, no backups. Day-to-day development runs natively (CONTRIBUTING.md), on the postgres below.
 # Usage: `docker compose up --build` (or `make up`), nothing to configure; sign in with littlewords-demo-passphrase.
-# A server writes its own compose from the contract in backend/README.md ("Deployment").
+# A server writes its own compose from the contract in docs/deployment.md.
 name: littlewords
 
 services:

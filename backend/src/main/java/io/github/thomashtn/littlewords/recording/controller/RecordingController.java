@@ -1,6 +1,5 @@
 package io.github.thomashtn.littlewords.recording.controller;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.thomashtn.littlewords.recording.dto.MoveRecordingRequest;
 import io.github.thomashtn.littlewords.recording.dto.RecordingContent;
 import io.github.thomashtn.littlewords.recording.service.RecordingService;
@@ -51,11 +50,6 @@ public class RecordingController {
      *
      * @param recordingService recording service
      */
-    @SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "RecordingService is a stateless singleton shared on purpose; "
-            + "SpotBugs cannot prove an interface immutable."
-    )
     public RecordingController(RecordingService recordingService) {
         this.recordingService = recordingService;
     }

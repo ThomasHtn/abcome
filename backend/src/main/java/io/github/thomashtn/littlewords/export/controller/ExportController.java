@@ -1,6 +1,5 @@
 package io.github.thomashtn.littlewords.export.controller;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.thomashtn.littlewords.export.service.ExportService;
 import io.github.thomashtn.littlewords.shared.exception.ApiErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,11 +36,6 @@ public class ExportController {
      *
      * @param exportService export service
      */
-    @SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "ExportService is a stateless singleton shared on purpose; "
-            + "SpotBugs cannot prove an interface immutable."
-    )
     public ExportController(ExportService exportService) {
         this.exportService = exportService;
     }

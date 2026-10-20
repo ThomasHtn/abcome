@@ -3,7 +3,6 @@ package io.github.thomashtn.littlewords.shared.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import io.github.thomashtn.littlewords.shared.security.Role;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,8 +12,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.env.PropertiesPropertySourceLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.PropertySource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 
 /**
@@ -152,20 +154,21 @@ class PasswordHashSettingsTest {
     }
 
     @Test
-    @DisplayName("Reads the hash verbatim from backend/.env when unquoted or double-quoted, not single-quoted")
+    @DisplayName("Reads the hash verbatim from backend/.env when unquoted, keeps quotes as part of the value")
     void readsHashFromDotenv(@TempDir Path directory) throws IOException {
-        Files.writeString(directory.resolve(".env"), String.join("\n",
+        Path dotenv = directory.resolve(".env");
+        Files.writeString(dotenv, String.join("\n",
             "UNQUOTED=" + HASH,
-            "DOUBLE_QUOTED=\"" + HASH + "\"",
             "SINGLE_QUOTED='" + HASH + "'"
         ), StandardCharsets.UTF_8);
 
-        Dotenv dotenv = Dotenv.configure().directory(directory.toString()).load();
+        // Same loader as the `optional:file:.env[.properties]` import of `spring-boot:run`.
+        PropertySource<?> source = new PropertiesPropertySourceLoader()
+            .load("dotenv", new FileSystemResource(dotenv)).getFirst();
 
-        assertThat(dotenv.get("UNQUOTED")).isEqualTo(HASH);
-        assertThat(dotenv.get("DOUBLE_QUOTED")).isEqualTo(HASH);
-        // Single quotes are for the root .env read by Docker Compose; spring-dotenv keeps them.
-        assertThat(dotenv.get("SINGLE_QUOTED")).isEqualTo("'" + HASH + "'");
+        assertThat(source.getProperty("UNQUOTED")).hasToString(HASH);
+        // Single quotes are for a Docker Compose .env; the properties format keeps them.
+        assertThat(source.getProperty("SINGLE_QUOTED")).hasToString("'" + HASH + "'");
     }
 
     /**

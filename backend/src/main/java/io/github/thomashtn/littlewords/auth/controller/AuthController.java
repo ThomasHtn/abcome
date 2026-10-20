@@ -1,6 +1,5 @@
 package io.github.thomashtn.littlewords.auth.controller;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.thomashtn.littlewords.auth.dto.LoginRequest;
 import io.github.thomashtn.littlewords.auth.dto.SessionResponse;
 import io.github.thomashtn.littlewords.auth.service.AuthService;
@@ -61,10 +60,6 @@ public class AuthController {
      * @param cookieSerializer session cookie writer
      * @param properties       application settings, holding the child's name and birth date
      */
-    @SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "CookieSerializer is the shared Spring Session bean, configured once at startup."
-    )
     public AuthController(
         AuthService authService, CookieSerializer cookieSerializer, ApplicationProperties properties
     ) {

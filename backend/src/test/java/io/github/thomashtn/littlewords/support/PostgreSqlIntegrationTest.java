@@ -23,7 +23,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  * <p>Singleton container pattern: started once in a static initializer and reaped by Ryuk, so the
  * container outlives every test class instead of stopping after the first one. Tests run on the
  * production {@code application.properties}, Flyway included, with known family and reader passwords and child
- * name. The developer's {@code backend/.env} is never read (surefire turns spring-dotenv off).</p>
+ * name. The developer's {@code backend/.env} is never read (only {@code spring-boot:run} imports it).</p>
  */
 @SpringBootTest
 @AutoConfigureMockMvc

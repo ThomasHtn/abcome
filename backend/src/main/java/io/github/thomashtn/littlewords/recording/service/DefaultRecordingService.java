@@ -1,6 +1,5 @@
 package io.github.thomashtn.littlewords.recording.service;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.thomashtn.littlewords.recording.dto.RecordingContent;
 import io.github.thomashtn.littlewords.recording.entity.Recording;
 import io.github.thomashtn.littlewords.recording.repository.RecordingRepository;
@@ -94,11 +93,6 @@ public class DefaultRecordingService implements RecordingService {
      * @param properties           application settings holding the limits
      * @param clock                application clock
      */
-    @SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "Repository, service and transaction template are stateless singletons shared on purpose; "
-            + "SpotBugs only deems them mutable because they declare delete or setter methods."
-    )
     public DefaultRecordingService(
         RecordingRepository recordingRepository,
         PronunciationService pronunciationService,

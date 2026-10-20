@@ -49,8 +49,8 @@ test: ## Unit and integration tests of both halves (Docker for the backend)
 	cd frontend && npm test -- --watch=false
 	cd backend && ./mvnw --batch-mode --no-transfer-progress test
 
-verify: ## Every CI gate: format, lint, tests, SpotBugs, coverage, production bundle
-	cd frontend && npm run format:check && npm run lint && npm test -- --watch=false && npm run build
+verify: ## Every CI gate: format, lint, tests, coverage, SpotBugs, architecture, production bundle
+	cd frontend && npm run format:check && npm run lint && npm run test:ci && npm run build
 	cd backend && ./mvnw --batch-mode --no-transfer-progress clean verify
 
 e2e: ## Browser tests against http://localhost:8000 (`make up` first)

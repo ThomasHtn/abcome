@@ -1,6 +1,5 @@
 package io.github.thomashtn.littlewords.word.controller;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.thomashtn.littlewords.shared.exception.ApiErrorResponse;
 import io.github.thomashtn.littlewords.word.dto.PronunciationRequest;
 import io.github.thomashtn.littlewords.word.dto.PronunciationResponse;
@@ -37,11 +36,6 @@ public class PronunciationController {
      *
      * @param pronunciationService stage service
      */
-    @SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "PronunciationService is a stateless singleton shared on purpose; "
-            + "SpotBugs only deems it mutable because it declares delete."
-    )
     public PronunciationController(PronunciationService pronunciationService) {
         this.pronunciationService = pronunciationService;
     }

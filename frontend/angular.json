@@ -92,7 +92,14 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "providersFile": "src/test-providers.ts",
-            "setupFiles": ["src/test-setup.ts"]
+            "setupFiles": ["src/test-setup.ts"],
+            "coverageReporters": ["text-summary", "html"],
+            "coverageThresholds": {
+              "statements": 85,
+              "branches": 80,
+              "functions": 85,
+              "lines": 85
+            }
           }
         },
         "lint": {

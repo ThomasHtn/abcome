@@ -58,24 +58,6 @@ updates:
         patterns:
           - '*'
 
-  # compose.yaml for local runs, deploy/compose.yaml for servers (postgres, nginx, Caddy).
-  - package-ecosystem: docker-compose
-    directories:
-      - /
-      - /deploy
-    schedule:
-      interval: monthly
-    # Major versions are migrations (Spring Boot, Angular and its TypeScript, Java, Node, Postgres),
-    # done on purpose, not merged from a weekly bump.
-    ignore:
-      - dependency-name: '*'
-        update-types:
-          - version-update:semver-major
-    groups:
-      compose-images:
-        patterns:
-          - '*'
-
   # The workflows pin actions by commit SHA (version in a comment); these updates move both.
   - package-ecosystem: github-actions
     directory: /

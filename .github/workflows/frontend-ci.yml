@@ -56,8 +56,18 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Fails below the coverage floors of angular.json.
       - name: Test
-        run: npm test -- --watch=false
+        run: npm run test:ci
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: frontend-coverage-report
+          path: frontend/coverage/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Build
         run: npm run build

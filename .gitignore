@@ -9,17 +9,11 @@ frontend/coverage/
 frontend/test-results/
 frontend/playwright-report/
 frontend/e2e/.auth/
-__screenshots__/
 
 # -----------------------------------------------------------------------------
 # Maven build output
 # -----------------------------------------------------------------------------
 target/
-!**/src/main/**/target/
-!**/src/test/**/target/
-
-# Keep the Maven Wrapper JAR when the wrapper is added to the repository.
-!.mvn/wrapper/maven-wrapper.jar
 
 # -----------------------------------------------------------------------------
 # IntelliJ IDEA

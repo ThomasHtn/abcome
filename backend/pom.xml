@@ -23,9 +23,9 @@
     <java.version>25</java.version>
 
     <springdoc.version>3.1.1</springdoc.version>
-    <spring-dotenv.version>5.1.0</spring-dotenv.version>
     <bouncycastle.version>1.86</bouncycastle.version>
     <testcontainers.version>2.0.5</testcontainers.version>
+    <archunit.version>1.5.1</archunit.version>
 
     <!-- Patch releases ahead of Spring Boot 4.1.1 for advisories the image scan reports; drop each once
          the parent manages the same version or a newer one. -->
@@ -105,12 +105,6 @@
       <artifactId>spring-boot-configuration-processor</artifactId>
       <optional>true</optional>
     </dependency>
-    <!-- Loads backend/.env at startup. -->
-    <dependency>
-      <groupId>me.paulschwarz</groupId>
-      <artifactId>springboot4-dotenv</artifactId>
-      <version>${spring-dotenv.version}</version>
-    </dependency>
     <!-- Narrowly justified SpotBugs suppressions. -->
     <dependency>
       <groupId>com.github.spotbugs</groupId>
@@ -147,6 +141,13 @@
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
+    <!-- Architecture rules: the one-way package tiers and the layers inside a feature. -->
+    <dependency>
+      <groupId>com.tngtech.archunit</groupId>
+      <artifactId>archunit-junit5</artifactId>
+      <version>${archunit.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -163,17 +164,6 @@
               <version>${project.parent.version}</version>
             </path>
           </annotationProcessorPaths>
-        </configuration>
-      </plugin>
-
-      <!-- Tests never read the developer's backend/.env, so the suite gives the same result on every machine. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <systemPropertyVariables>
-            <springdotenv.enabled>false</springdotenv.enabled>
-          </systemPropertyVariables>
         </configuration>
       </plugin>
 
@@ -241,14 +231,15 @@
         </executions>
       </plugin>
 
+      <!-- Default threshold: low-priority findings are mostly noise. Shared false positives in exclude.xml. -->
       <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
         <version>${spotbugs-maven-plugin.version}</version>
         <configuration>
           <effort>Max</effort>
-          <threshold>Low</threshold>
           <failOnError>true</failOnError>
+          <excludeFilterFile>config/spotbugs/exclude.xml</excludeFilterFile>
         </configuration>
         <executions>
           <execution>
@@ -310,6 +301,12 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <!-- `spring-boot:run` reads backend/.env; the jar, the image and the tests never do. -->
+        <configuration>
+          <arguments>
+            <argument>--spring.config.import=optional:file:.env[.properties]</argument>
+          </arguments>
+        </configuration>
         <executions>
           <!-- Version and build time on /actuator/info, to check what runs on the VPS. -->
           <execution>

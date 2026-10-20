@@ -47,9 +47,6 @@ jobs:
           cache: maven
           cache-dependency-path: backend/pom.xml
 
-      - name: Grant execute permission to Maven Wrapper
-        run: chmod +x mvnw
-
       # Runs Spotless, Checkstyle, the unit and Testcontainers suites, SpotBugs and the
       # JaCoCo coverage gate. Docker is preinstalled on the runner image.
       - name: Build, test and analyze
@@ -60,9 +57,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: backend-test-reports
-          path: |
-            backend/target/surefire-reports/
-            backend/target/failsafe-reports/
+          path: backend/target/surefire-reports/
           if-no-files-found: ignore
           retention-days: 7
 

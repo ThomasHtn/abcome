@@ -4,8 +4,7 @@
 
 # ---- Build stage ------------------------------------------------------------
 # Quality gates (format, lint, test) run in CI before an image is built, so this stage only builds.
-# Runs on the builder's own platform: the bundle is static, the same for every architecture.
-FROM --platform=$BUILDPLATFORM node:22.23.3-alpine3.24@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS build
+FROM node:22.23.3-alpine3.24@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS build
 WORKDIR /workspace
 
 # Installed before the sources, so this layer only changes with the dependencies.

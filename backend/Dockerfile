@@ -5,9 +5,7 @@
 # ---- Build stage ------------------------------------------------------------
 # Builds the executable jar. Quality gates (Checkstyle, SpotBugs, tests, JaCoCo) already run in CI
 # via `./mvnw verify` before an image is ever built here, so this stage only packages the artifact.
-# Runs on the builder's own platform: the jar is the same for every architecture, so an arm64 image
-# never compiles under emulation.
-FROM --platform=$BUILDPLATFORM eclipse-temurin:25.0.4.1_1-jdk-noble@sha256:ba0f0e1a33864105e1d454e88105c617ab40f71062db1f306bf58be32a3f8e5e AS build
+FROM eclipse-temurin:25.0.4.1_1-jdk-noble@sha256:ba0f0e1a33864105e1d454e88105c617ab40f71062db1f306bf58be32a3f8e5e AS build
 WORKDIR /workspace
 
 # Copied and resolved before the source tree, so this layer is only invalidated when a dependency
