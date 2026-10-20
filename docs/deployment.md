@@ -12,7 +12,7 @@ docker pull ghcr.io/thomashtn/littlewords-frontend:sha-<commit>
 
 Every push to main that passes the tests, the image scan and the browser tests publishes **sha-&lt;commit&gt;** and moves **main**. A release adds **x.y.z** and **x.y**. Deploy a sha or a release: a commit that failed its checks has no image, so it cannot sneak into production.
 
-Both images run as a regular user, carry their own healthcheck and are happy with a read-only root filesystem plus a tmpfs on /tmp. The backend wants about 512 MB: its heap takes 60 % of the limit, and it quits cleanly on an OutOfMemoryError so your restart policy brings a fresh one.
+Both images run as a regular user, carry their own healthcheck and are happy with a read-only root filesystem plus a tmpfs on /tmp. Give the backend 768 MB: the JVM settles around 500 MB in all, its heap takes 60 % of the limit, and it quits cleanly on an OutOfMemoryError so your restart policy brings a fresh one.
 
 ## The floor plan
 
