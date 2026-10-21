@@ -31,8 +31,7 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "public",
-                "ignore": ["**/*.md"]
+                "input": "public"
               }
             ],
             "styles": [

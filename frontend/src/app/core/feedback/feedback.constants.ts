@@ -14,7 +14,7 @@ export const TOAST_DURATIONS_MS: Readonly<Record<Toast['tone'], number>> = {
 export const UNDO_WINDOW_MS = 6000;
 
 /**
- * How long the confetti burst lasts, matching `assets/celebration/confetti.svg`.
+ * How long the confetti burst lasts: its longest piece in `assets/celebration/confetti.svg` (1.2 s plus 0.09 s delay) and a margin.
  */
 export const CELEBRATION_DURATION_MS = 1400;
 

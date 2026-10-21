@@ -123,7 +123,9 @@ Backend test methods are named by their @DisplayName instead. Checkstyle and ESL
 
 **A new screen**: a folder in pages with its files and spec, and a lazy route in app.routes.ts.
 
-**A new picture**: an optimised file in frontend/public/assets, with a still version if it moves.
+**A new picture**: an optimised file in frontend/public/assets, with a still version if it moves. An SVG shown through `<img>` cannot read CSS variables, so it takes hex colours from styles/tokens/colors.css and keeps its animation inside, under `prefers-reduced-motion: no-preference`. Mascot states share the viewBox `0 -30 120 150`, the top 30 units leaving room for the jump.
+
+**A new icon**: copy the shapes of `icons/<name>.svg` from `npm pack lucide-static@1.59.0` into a `<symbol id="<name>" viewBox="0 0 24 24">` of icons.svg, in alphabetical order, then add the name to ICON_NAMES.
 
 ## Shipping a release
 
