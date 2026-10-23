@@ -227,6 +227,15 @@ export function isWholeClip(range: TrimRange, durationMs: number): boolean {
 }
 
 /**
+ * The whole clip in a format every browser plays: a WebM, which older iPhones cannot, becomes a WAV.
+ */
+export function playableEverywhere(clip: RecordedClip, decoded: DecodedClip): RecordedClip {
+  return clip.blob.type.startsWith('audio/webm')
+    ? { ...clip, blob: encodeWav(decoded.samples, decoded.sampleRate) }
+    : clip;
+}
+
+/**
  * The kept part as a new WAV clip, faded in and out at the cuts, with its own waveform.
  */
 export function trimClip(decoded: DecodedClip, range: TrimRange): RecordedClip {

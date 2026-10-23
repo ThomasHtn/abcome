@@ -223,7 +223,7 @@ describe('RecordingNewPage', () => {
     expect(uploadedTypes).toEqual(['audio/wav']);
   });
 
-  it('undoes the cut, back to the sound as recorded', async () => {
+  it('undoes the cut, back to the whole sound, filed as WAV for older iPhones', async () => {
     stubDecoder();
     const fixture = render('1');
     const element = fixture.nativeElement as HTMLElement;
@@ -238,7 +238,7 @@ describe('RecordingNewPage', () => {
     await press(fixture, 'apin');
 
     expect(uploads).toEqual([[11, 2400]]);
-    expect(uploadedTypes).toEqual(['audio/webm']);
+    expect(uploadedTypes).toEqual(['audio/wav']);
   });
 
   it('explains a refused microphone', async () => {

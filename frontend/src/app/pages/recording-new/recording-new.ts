@@ -78,6 +78,7 @@ import {
   doneCopy,
   isWholeClip,
   liveBars,
+  playableEverywhere,
   recordingInstruction,
   recordingTitle,
   saveButtonText,
@@ -481,7 +482,7 @@ export class RecordingNewPage {
 
   /**
    * Keeps the part between the handles as the clip to listen to and save; the whole recording is
-   * kept untouched, in its own format.
+   * kept untouched, in a format every browser plays.
    */
   protected settleTrim(range: TrimRange): void {
     const recorded = this.recorded();
@@ -753,7 +754,8 @@ export class RecordingNewPage {
   }
 
   /**
-   * Decodes a fresh recording for the handles, unless another one was recorded meanwhile.
+   * Decodes a fresh recording for the handles, unless another one was recorded meanwhile; a WebM is
+   * swapped for a WAV so older iPhones can play it.
    */
   private async prepareTrim(clip: RecordedClip): Promise<void> {
     const decoded = await decodeClip(clip.blob);
@@ -762,6 +764,11 @@ export class RecordingNewPage {
     }
     this.decoded.set(decoded);
     this.trim.set({ startMs: 0, endMs: decoded.durationMs });
+    const playable = playableEverywhere(clip, decoded);
+    this.recorded.set(playable);
+    if (this.clip() === clip) {
+      this.setClip(playable);
+    }
   }
 
   /**

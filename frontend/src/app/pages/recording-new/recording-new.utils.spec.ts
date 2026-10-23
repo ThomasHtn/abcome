@@ -6,6 +6,7 @@ import {
   liveBars,
   microphoneErrorKind,
   moveTrimEdge,
+  playableEverywhere,
   recordingInstruction,
   recordingTitle,
   rmsLevel,
@@ -143,6 +144,24 @@ describe('recording-new utils', () => {
     expect(view.getInt16(44, true)).toBe(0);
     expect(view.getInt16(44 + 300 * 2, true)).toBe(16_383);
     expect(clip.levels.every((level) => level === 1)).toBe(true);
+  });
+
+  it('re-encodes a WebM clip to WAV and keeps an MP4 one as recorded', () => {
+    const decoded = { samples: new Float32Array(100), sampleRate: 1000, durationMs: 100 };
+    const webm = {
+      blob: new Blob(['a'], { type: 'audio/webm;codecs=opus' }),
+      durationMs: 100,
+      levels: [0.4],
+    };
+    const mp4 = { blob: new Blob(['a'], { type: 'audio/mp4' }), durationMs: 100, levels: [0.4] };
+
+    const playable = playableEverywhere(webm, decoded);
+
+    expect(playable.blob.type).toBe('audio/wav');
+    expect(playable.blob.size).toBe(44 + 100 * 2);
+    expect(playable.durationMs).toBe(100);
+    expect(playable.levels).toEqual([0.4]);
+    expect(playableEverywhere(mp4, decoded)).toBe(mp4);
   });
 
   it('reads a handle position aloud in seconds', () => {
